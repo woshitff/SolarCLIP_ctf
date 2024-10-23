@@ -8,7 +8,7 @@ from omegaconf import OmegaConf
 import pytorch_lightning as pl
 from pytorch_lightning import seed_everything
 from pytorch_lightning.trainer import Trainer
-from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger, CSVLogger
+# from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger, CSVLogger
 
 from models.reconmodels.ldm.util import instantiate_from_config
 
@@ -179,8 +179,12 @@ if __name__ == '__main__':
         else:
             gpuinfo = trainer_config["gpus"]
             print(f"Running on GPUs {gpuinfo}")
+            if gpuinfo == 1:
+                trainer_config["accelerator"] = "gpu"
+            else:
+                trainer_config["accelerator"] = "ddp"
             cpu = False
-        trainer_opt = argparse.Namespace(**trainer_config)
+        trainer_opt = argparse.Namespace(**trainer_config) # configs.lightning.trainer
         lightning_config.trainer = trainer_config
 
         # instantiate model
@@ -200,15 +204,15 @@ if __name__ == '__main__':
                     "id": nowname,
                 }
             },
-            "testtube": {
-                "target": "pytorch_lightning.loggers.TestTubeLogger",
+            "tensorboard": {
+                "target": "pytorch_lightning.loggers.TensorBoardLogger",
                 "params": {
-                    "name": "testtube",
+                    "name": "tensorboard",
                     "save_dir": logdir,
                 }
             },
         }
-        default_logger_cfg = default_logger_cfgs["testtube"]
+        default_logger_cfg = default_logger_cfgs["tensorboard"]
         if "logger" in lightning_config:
             logger_cfg = lightning_config.logger
         else:
@@ -243,7 +247,7 @@ if __name__ == '__main__':
         # add callback which sets up log directory
         default_callbacks_cfg = {
             "setup_callback": {
-                "target": "main.SetupCallback",
+                "target": "train.utils.callback.SetupCallback",
                 "params": {
                     "resume": opt.resume,
                     "now": now,
@@ -255,7 +259,7 @@ if __name__ == '__main__':
                 }
             },
             "image_logger": {
-                "target": "main.ImageLogger",
+                "target": "train.utils.callback.ImageLogger",
                 "params": {
                     "batch_frequency": 750,
                     "max_images": 4,
@@ -263,14 +267,14 @@ if __name__ == '__main__':
                 }
             },
             "learning_rate_logger": {
-                "target": "main.LearningRateMonitor",
+                "target": "train.utils.callback.LearningRateMonitor",
                 "params": {
                     "logging_interval": "step",
                     # "log_momentum": True
                 }
             },
             "cuda_callback": {
-                "target": "main.CUDACallback"
+                "target": "train.utils.callback.CUDACallback"
             },
         }
         if version.parse(pl.__version__) >= version.parse('1.4.0'):
@@ -308,7 +312,7 @@ if __name__ == '__main__':
 
         trainer_kwargs["callbacks"] = [instantiate_from_config(callbacks_cfg[k]) for k in callbacks_cfg]
 
-        trainer = Trainer.from_argparse_args(trainer_opt, **trainer_kwargs)
+        trainer = Trainer(**trainer_config, logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"]) 
         trainer.logdir = logdir  ###
 
         # data
@@ -383,12 +387,12 @@ if __name__ == '__main__':
             import pdb as debugger
         debugger.post_mortem()
         print(e)
-    # finally:
-    #     # move newly created debug project to debug_runs
-    #     if opt.debug and not opt.resume and trainer.global_rank == 0:
-    #         dst, name = os.path.split(logdir)
-    #         dst = os.path.join(dst, "debug_runs", name)
-    #         os.makedirs(os.path.split(dst)[0], exist_ok=True)
-    #         os.rename(logdir, dst)
-    #     if trainer.global_rank == 0:
-    #         print(trainer.profiler.summary())
+    finally:
+        # move newly created debug project to debug_runs
+        if opt.debug and not opt.resume and trainer.global_rank == 0:
+            dst, name = os.path.split(logdir)
+            dst = os.path.join(dst, "debug_runs", name)
+            os.makedirs(os.path.split(dst)[0], exist_ok=True)
+            os.rename(logdir, dst)
+        if trainer.global_rank == 0:
+            print(trainer.profiler.summary())

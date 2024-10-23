@@ -121,6 +121,7 @@ class CNN_VAE(pl.LightningModule):
                  loss_type: str = 'MSE',
                  lambda_kl: float = 1.0):
         super().__init__()
+        self.save_hyperparameters()
 
         self.input_size = input_size
         self.image_channels = image_channels

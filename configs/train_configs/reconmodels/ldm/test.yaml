@@ -20,7 +20,7 @@ model:
     unet_config:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
       params:
-        ch: 128
+        ch: 512
         out_ch: 3
         ch_mult:
           - 1
@@ -97,6 +97,10 @@ data:
         time_step: 115200
 
 lightning:
+  trainer:
+    gpus: 1
+    benchmark: True
+
   callbacks:
     image_logger:
       target: main.ImageLogger
@@ -105,5 +109,10 @@ lightning:
         max_images: 8
         increase_log_steps: False
 
-  trainer:
-    benchmark: True
+  # logger:
+  #   target: pytorch_lightning.loggers.TensorBoardLogger
+  #   params:
+  #     name: tensorboard_logs
+  #     save_dir: logs
+
+  
