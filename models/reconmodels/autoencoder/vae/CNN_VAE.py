@@ -3,7 +3,9 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import pytorch_lightning as pl
 
+from models.reconmodels.autoencoder.util import config_optimizers
 """
 SolarReconModel_VAE Model.
 This model use VAE architecture to reconstruct the solar image without clip model.
@@ -105,26 +107,28 @@ class VAE_ResidualBlock(nn.Module):
         x = self.conv2(x)
         return self.nonlinear(self.groupnorm_post(x + residue))
     
-class CNN_VAE(nn.Module):
-    def __init__(self, 
-                 input_size: int = 1024, 
-                 image_channels: int = 1, 
+class CNN_VAE(pl.LightningModule):
+    def __init__(self,
+                 ckpt_path: str = None,
+                 input_size: int = 1024,
+                 image_channels: int = 1,
                  hidden_dim: int = 64,
                  layers: int = 3,
-                 kernel_sizes: list = [7,7,7],
-                 strides: list = [4,4,4],
+                 kernel_sizes: list = [7, 7, 7],
+                 strides: list = [4, 4, 4],
                  group_nums: int = 16,
                  latent_dim: int = 3,
                  loss_type: str = 'MSE',
                  lambda_kl: float = 1.0):
         super().__init__()
+
         self.input_size = input_size
         self.image_channels = image_channels
-        self.group_nums = group_nums
         self.hidden_dim = hidden_dim
-        self.layers = layers  
+        self.layers = layers
         self.kernel_sizes = kernel_sizes
         self.strides = strides
+        self.group_nums = group_nums
         self.latent_dim = latent_dim
         self.loss_type = loss_type
         self.lambda_kl = lambda_kl
@@ -163,6 +167,13 @@ class CNN_VAE(nn.Module):
         ])
         self.decoder = nn.Sequential(*self.decoder_list)
 
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path)
+
+    def init_from_ckpt(self, ckpt_path):
+        checkpoint = torch.load(ckpt_path)
+        self.load_state_dict(checkpoint['state_dict'])
+
     def encode(self, x):
         """
         x: (B, C, H, W) eg: (B, 1, 1024, 1024)
@@ -176,7 +187,10 @@ class CNN_VAE(nn.Module):
     def reparameterize(self, mu, logvar, scale=1.0):
         std = torch.exp(0.5*logvar)
         eps = torch.randn_like(std)
-        z = mu + eps*std
+        if self.training:   
+            z = mu + eps*std
+        else:
+            z = mu
         z = z*scale
         return z
 
@@ -186,19 +200,19 @@ class CNN_VAE(nn.Module):
         output: (B, input_dim, H, W) eg: (B, 1, 1024, 1024)
         """
         return self.decoder(z)
-    
+
     def forward(self, x):
-        memory_encode = torch.cuda.memory_allocated()
         mu, logvar = self.encode(x)
-        print(f"Memeory Usage in VAE encoder): {(torch.cuda.memory_allocated() - memory_encode)/1e6:.2f} MB")
-        if self.training:
-            z = self.reparameterize(mu, logvar)
-        else:
-            z = mu
-        memory_decode = torch.cuda.memory_allocated()
+        z = self.reparameterize(mu, logvar)
+        z = mu
         recon_x = self.decode(z)
-        print(f"Memeory Usage in VAE decoder): {(torch.cuda.memory_allocated() - memory_decode)/1e6:.2f} MB")
         return recon_x, mu, logvar
+
+    def get_input(self, batch):
+        return batch[0]
+    
+    def get_label(self, batch):
+        return batch[1]
     
     def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):
         if self.loss_type == 'MSE':
@@ -215,11 +229,48 @@ class CNN_VAE(nn.Module):
         total_loss = RECON_LOSS_weighted + KLD*lambda_kl
         return total_loss, RECON_LOSS.detach(), RECON_LOSS_weighted.detach(), KLD.detach()
     
-    def sample(self, x):
-        mu, logvar = self.encode(x)
-        z = self.reparameterize(mu, logvar)
-        return z
+    def get_loss(self, recon_x, x, weights, mu, logvar, lambda_kl):
+        log_prefix = 'train' if self.training else 'val'
+        loss_dict = {}
+
+        loss, recon_loss, recon_loss_weighted, kl_loss = self.loss_function(recon_x, x, weights, mu, logvar, lambda_kl)
+        loss_dict.update({f'{log_prefix}/loss': loss})
+        loss_dict.update({f'{log_prefix}/recon_loss': recon_loss})
+        loss_dict.update({f'{log_prefix}/recon_loss_weighted': recon_loss_weighted})
+        loss_dict.update({f'{log_prefix}/kl_loss': kl_loss})
+
+        return loss, loss_dict
     
-    def generate(self, z):
-        return self.decode(z)
+    def shared_step(self, batch, batch_idx):
+        x = self.get_input(batch)
+        label = self.get_label(batch)
+        recon_x, mu, logvar = self(x)
+        weights = label.float()
+        loss, loss_dict = self.get_loss(recon_x, x, weights, mu, logvar, self.lambda_kl)
+        # print(loss, loss_dict)
+        return loss, loss_dict
+    
+    def training_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss_recon', loss_dict['train/recon_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss_recon_weighted', loss_dict['train/recon_loss_weighted'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss_kl', loss_dict['train/kl_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        # self.log('val_loss_recon', loss_dict['RECON_LOSS'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        # self.log('val_loss_recon_weighted', loss_dict['RECON_LOSS_weighted'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        # self.log('val_loss_kl', loss_dict['KLD'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+    
+    def configure_optimizers(self):
+        lr = self.learning_rate
+        opt, scheduler = config_optimizers(self.learning_optimizer, self.parameters(), lr, self.learning_schedule)
+        return (opt, scheduler)
+
+    
+
 

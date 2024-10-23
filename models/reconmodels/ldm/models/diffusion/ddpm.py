@@ -555,7 +555,7 @@ class LatentDiffusion(DDPM):
     """main class"""
     def __init__(self,
                  first_stage_config,
-                 cond_stage_config, # "__is_unconditional__" or "__is_first_stage__" or None
+                 cond_stage_config, # "__is_unconditional__" or "__is_first_stage__" or condition_model_config
                  num_timesteps_cond=None, # TOCHECK: should be 1 by default?
                  cond_stage_key="image",
                  cond_stage_trainable=False,
@@ -650,6 +650,7 @@ class LatentDiffusion(DDPM):
             param.requires_grad = False
 
     def instantiate_cond_stage(self, config):
+        print(1)
         if not self.cond_stage_trainable:
             if config == "__is_first_stage__":
                 print("Using first stage also as cond stage.")
