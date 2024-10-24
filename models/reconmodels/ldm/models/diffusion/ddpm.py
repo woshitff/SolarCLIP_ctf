@@ -705,6 +705,9 @@ class LatentDiffusion(DDPM):
                 c = self.cond_stage_model.encode(c)
                 if isinstance(c, DiagonalGaussianDistribution):
                     c = c.mode()
+                elif isinstance(c, tuple):
+                    mu, logvar = c
+                    c = mu
             else:
                 c = self.cond_stage_model(c)
         else:
