@@ -31,7 +31,7 @@ model:
         attn_resolutions: [ ]
         dropout: 0.0
         resamp_with_conv: true
-        in_channels: 3
+        in_channels: 6
         resolution: 64
         use_timestep: true
         use_linear_attn: false
