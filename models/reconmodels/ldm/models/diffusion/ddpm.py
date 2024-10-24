@@ -692,6 +692,9 @@ class LatentDiffusion(DDPM):
             z = encoder_posterior.sample()
         elif isinstance(encoder_posterior, torch.Tensor):
             z = encoder_posterior
+        elif isinstance(encoder_posterior, tuple):
+            mu, logvar = encoder_posterior
+            z = mu + torch.exp(0.5 * logvar) * torch.randn_like(mu)
         else:
             raise NotImplementedError(f"encoder_posterior of type '{type(encoder_posterior)}' not yet implemented")
         return self.scale_factor * z
