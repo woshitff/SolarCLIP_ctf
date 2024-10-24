@@ -94,7 +94,7 @@ class ImageLogger(Callback):
         self.batch_freq = batch_frequency
         self.max_images = max_images
         self.logger_log_images = {
-            pl.loggers.TestTubeLogger: self._testtube,
+            pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
         }
         self.log_steps = [2 ** n for n in range(int(np.log2(self.batch_freq)) + 1)]
         if not increase_log_steps:
@@ -106,11 +106,10 @@ class ImageLogger(Callback):
         self.log_first_step = log_first_step
 
     @rank_zero_only
-    def _testtube(self, pl_module, images, batch_idx, split):
+    def _log_images_tensorboard(self, pl_module, images, batch_idx, split):
         for k in images:
-            grid = torchvision.utils.make_grid(images[k])
+            grid = torchvision.utils.make_grid(images[k], nrow=4)
             grid = (grid + 1.0) / 2.0  # -1,1 -> 0,1; c,h,w
-
             tag = f"{split}/{k}"
             pl_module.logger.experiment.add_image(
                 tag, grid,
@@ -149,7 +148,7 @@ class ImageLogger(Callback):
                 pl_module.eval()
 
             with torch.no_grad():
-                images = pl_module.log_images(batch, split=split, **self.log_images_kwargs)
+                images = pl_module.log_images(batch, **self.log_images_kwargs)
 
             for k in images:
                 N = min(images[k].shape[0], self.max_images)
@@ -179,7 +178,7 @@ class ImageLogger(Callback):
             return True
         return False
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         if not self.disabled and (pl_module.global_step > 0 or self.log_first_step):
             self.log_img(pl_module, batch, batch_idx, split="train")
 
