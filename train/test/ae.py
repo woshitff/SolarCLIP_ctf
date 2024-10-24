@@ -7,12 +7,12 @@ from omegaconf import OmegaConf
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
+import pytorch_lightning as pl
 from pytorch_lightning.trainer import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning import seed_everything
 
 # from pytorch_lightning.utilities.seed import seed_everything
-from train.utils.callback import CUDACallback   
 from models.reconmodels.autoencoder.util import instantiate_from_config
 
 def get_parser(**parser_kwargs):
@@ -187,6 +187,70 @@ if __name__ == "__main__":
             if (isinstance(trainer_config.devices, int) and trainer_config.devices > 1) or \
                 (isinstance(trainer_config['devices'], list) and len(trainer_config['devices']) > 1): # use ddp as default
                 trainer_config['strategy'] = 'ddp' if not trainer_config.get('strategy', None) else trainer_config['strategy']
+
+        # init callbacks
+        # add callback which sets up log directory
+        default_callbacks_cfg = {
+            "setup_callback": {
+                "target": "train.utils.callback.SetupCallback",
+                "params": {
+                    "resume": opt.resume,
+                    "now": now,
+                    "logdir": logdir,
+                    "ckptdir": ckptdir,
+                    "cfgdir": cfgdir,
+                    "config": config,
+                    "lightning_config": lightning_config,
+                }
+            },
+            # "image_logger": {
+            #     "target": "train.utils.callback.ImageLogger",
+            #     "params": {
+            #         "batch_frequency": 750,
+            #         "max_images": 4,
+            #         "clamp": True
+            #     }
+            # },
+            # "learning_rate_logger": {
+            #     "target": "train.utils.callback.LearningRateMonitor",
+            #     "params": {
+            #         "logging_interval": "step",
+            #         # "log_momentum": True
+            #     }
+            # },
+            "cuda_callback": {
+                "target": "train.utils.callback.CUDACallback"
+            },
+        }
+        # if version.parse(pl.__version__) >= version.parse('1.4.0'):
+        #     default_callbacks_cfg.update({'checkpoint_callback': modelckpt_cfg})
+
+        if "callbacks" in lightning_config:
+            callbacks_cfg = lightning_config.callbacks
+        else:
+            callbacks_cfg = OmegaConf.create()
+
+        if 'metrics_over_trainsteps_checkpoint' in callbacks_cfg:
+            print(
+                'Caution: Saving checkpoints every n train steps without deleting. This might require some free space.')
+            default_metrics_over_trainsteps_ckpt_dict = {
+                'metrics_over_trainsteps_checkpoint':
+                    {"target": 'pytorch_lightning.callbacks.ModelCheckpoint',
+                     'params': {
+                         "dirpath": os.path.join(ckptdir, 'trainstep_checkpoints'),
+                         "filename": "{epoch:06}-{step:09}",
+                         "verbose": True,
+                         'save_top_k': -1,
+                         'every_n_train_steps': 10000,
+                         'save_weights_only': True
+                     }
+                     }
+            }
+            default_callbacks_cfg.update(default_metrics_over_trainsteps_ckpt_dict)
+
+        callbacks_cfg = OmegaConf.merge(default_callbacks_cfg, callbacks_cfg)
+
+        callbacks_kwargs = [instantiate_from_config(callbacks_cfg[k]) for k in callbacks_cfg]
             
         # init model
         model = instantiate_from_config(config.model)
@@ -209,7 +273,9 @@ if __name__ == "__main__":
         train_dataloader = DataLoader(dataset, batch_size=batch_size)
 
         tb_logger = TensorBoardLogger("logs/", name="my_model")
-        trainer = Trainer(max_epochs=100, logger=tb_logger, callbacks=[CUDACallback()])
+        trainer = Trainer(max_epochs=100, logger=tb_logger, callbacks=callbacks_kwargs)
+
+        
 
         # Step 4: 运行训练
         try:
