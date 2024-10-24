@@ -182,7 +182,8 @@ if __name__ == '__main__':
             if gpuinfo == 1:
                 trainer_config["accelerator"] = "gpu"
             else:
-                trainer_config["accelerator"] = "ddp"
+                trainer_config["strategy"] = "ddp"
+                trainer_config["accelerator"] = "gpu"
             cpu = False
         trainer_opt = argparse.Namespace(**trainer_config) # configs.lightning.trainer
         lightning_config.trainer = trainer_config

@@ -98,7 +98,9 @@ data:
 
 lightning:
   trainer:
-    devices: 1
+    strategy: "ddp"
+    accelerator: "gpu"
+    devices: 4
     benchmark: True
 
   # callbacks:
