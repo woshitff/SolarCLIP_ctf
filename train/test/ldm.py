@@ -329,7 +329,12 @@ if __name__ == '__main__':
         # configure learning rate
         bs, base_lr = config.data.params.batch_size, config.model.base_learning_rate
         if not cpu:
-            ngpu = len(lightning_config.trainer.gpus.strip(",").split(','))
+            if isinstance(lightning_config.trainer.devices, int):
+                ngpu = lightning_config.trainer.devices
+            elif isinstance(lightning_config.trainer.devices, list):
+                ngpu = len(lightning_config.trainer.devices)
+            else:
+                ngpu = 1
         else:
             ngpu = 1
         if 'accumulate_grad_batches' in lightning_config.trainer:
