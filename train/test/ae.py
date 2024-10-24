@@ -273,7 +273,7 @@ if __name__ == "__main__":
         dataset = TensorDataset(images, labels)
         train_dataloader = DataLoader(dataset, batch_size=batch_size)
 
-        tb_logger = TensorBoardLogger("logs/", name="my_model")
+        tb_logger = TensorBoardLogger(save_dir=logdir, name="tensorboard")
         trainer = Trainer(max_epochs=100, logger=tb_logger, callbacks=callbacks_kwargs)
 
         
