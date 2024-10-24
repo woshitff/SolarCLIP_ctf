@@ -111,7 +111,7 @@ def get_parser(**parser_kwargs):
 
 def nondefault_trainer_args(opt):
     parser = argparse.ArgumentParser()
-    parser = Trainer.add_argparse_args(parser)
+    # parser = Trainer.add_argparse_args(parser)
     args = parser.parse_args([])
     return sorted(k for k in vars(args) if getattr(opt, k) != getattr(args, k))
 
@@ -177,7 +177,8 @@ if __name__ == "__main__":
             trainer_config[k] = getattr(opt, k)
         if not "devices" in trainer_config:
             cpu = True
-            del trainer_config['strategy']
+            if 'strategy' in trainer_config:
+                del trainer_config['strategy']
             trainer_config['accelerator'] = 'cpu'
             trainer_config['devices'] = "auto"
         else:
