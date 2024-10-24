@@ -12,7 +12,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning import seed_everything
 
 # from pytorch_lightning.utilities.seed import seed_everything
-
+from train.utils.callback import CUDACallback   
 from models.reconmodels.autoencoder.util import instantiate_from_config
 
 def get_parser(**parser_kwargs):
@@ -170,6 +170,23 @@ if __name__ == "__main__":
         cli = OmegaConf.from_dotlist(unknown)
         config = OmegaConf.merge(*configs, cli)
 
+        # init device
+        lightning_config = config.pop("lightning", OmegaConf.create())
+        trainer_config = lightning_config.get("trainer", OmegaConf.create())
+        for k in nondefault_trainer_args(opt):
+            trainer_config[k] = getattr(opt, k)
+        if not "devices" in trainer_config:
+            cpu = True
+            del trainer_config['strategy']
+            trainer_config['accelerator'] = 'cpu'
+            trainer_config['devices'] = "auto"
+        else:
+            cpu = False
+            trainer_config['accelerator'] = 'gpu'
+            if (isinstance(trainer_config.devices, int) and trainer_config.devices > 1) or \
+                (isinstance(trainer_config['devices'], list) and len(trainer_config['devices']) > 1): # use ddp as default
+                trainer_config['strategy'] = 'ddp' if not trainer_config.get('strategy', None) else trainer_config['strategy']
+            
         # init model
         model = instantiate_from_config(config.model)
         print(model.device)
@@ -191,7 +208,7 @@ if __name__ == "__main__":
         train_dataloader = DataLoader(dataset, batch_size=batch_size)
 
         tb_logger = TensorBoardLogger("logs/", name="my_model")
-        trainer = Trainer(max_epochs=100, logger=tb_logger)
+        trainer = Trainer(max_epochs=100, logger=tb_logger, callbacks=[CUDACallback()])
 
         # Step 4: 运行训练
         try:
