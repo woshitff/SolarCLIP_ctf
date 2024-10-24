@@ -98,16 +98,16 @@ data:
 
 lightning:
   trainer:
-    gpus: 1
+    devices: 1
     benchmark: True
 
-  callbacks:
-    image_logger:
-      target: main.ImageLogger
-      params:
-        batch_frequency: 5000
-        max_images: 8
-        increase_log_steps: False
+  # callbacks:
+  #   image_logger:
+  #     target: train.utils.callback.ImageLogger
+  #     params:
+  #       batch_frequency: 5000
+  #       max_images: 8
+  #       increase_log_steps: False
 
   # logger:
   #   target: pytorch_lightning.loggers.TensorBoardLogger

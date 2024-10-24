@@ -13,7 +13,6 @@ def instantiate_from_config(config):
         raise KeyError("Expected key `target` to instantiate.")
     return get_obj_from_str(config["target"])(**config.get("params", dict()))
 
-
 def get_obj_from_str(string, reload=False):
     module, cls = string.rsplit(".", 1)
     if reload:
@@ -39,7 +38,7 @@ class DataModuleFromConfig(pl.LightningDataModule):
                  shuffle_val_dataloader=False):
         super().__init__()
         self.batch_size = batch_size
-        self.data_config = dict()
+        self.dataset_configs = dict()
         self.num_workers = num_workers if num_workers is not None else 0
         self.use_worker_init_fn = use_worker_init_fn
 

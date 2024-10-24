@@ -48,7 +48,7 @@ def get_parser(**parser_kwargs):
         metavar="/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=["/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml"],
+        default=["/mnt/nas/home/huxing/202407/ctf/SolarCLIP_ctf_v2/SolarCLIP_ctf/configs/train_configs/reconmodels/ldm/test.yaml"],
     )
     parser.add_argument(
         "-f",
@@ -173,11 +173,11 @@ if __name__ == '__main__':
         trainer_config["accelerator"] = "ddp"
         for k in nondefault_trainer_args(opt):
             trainer_config[k] = getattr(opt, k)
-        if not "gpus" in trainer_config:
+        if not "devices" in trainer_config:
             del trainer_config["accelerator"]
             cpu = True
         else:
-            gpuinfo = trainer_config["gpus"]
+            gpuinfo = trainer_config["devices"]
             print(f"Running on GPUs {gpuinfo}")
             if gpuinfo == 1:
                 trainer_config["accelerator"] = "gpu"
@@ -258,14 +258,14 @@ if __name__ == '__main__':
                     "lightning_config": lightning_config,
                 }
             },
-            "image_logger": {
-                "target": "train.utils.callback.ImageLogger",
-                "params": {
-                    "batch_frequency": 750,
-                    "max_images": 4,
-                    "clamp": True
-                }
-            },
+            # "image_logger": {
+            #     "target": "train.utils.callback.ImageLogger",
+            #     "params": {
+            #         "batch_frequency": 750,
+            #         "max_images": 4,
+            #         "clamp": True
+            #     }
+            # },
             "learning_rate_logger": {
                 "target": "train.utils.callback.LearningRateMonitor",
                 "params": {
@@ -381,18 +381,18 @@ if __name__ == '__main__':
 
     except Exception as e:
         # if opt.debug and trainer.global_rank == 0:
-        try:
-            import pudb as debugger
-        except ImportError:
-            import pdb as debugger
-        debugger.post_mortem()
+        # try:
+        #     import pudb as debugger
+        # except ImportError:
+        #     import pdb as debugger
+        # debugger.post_mortem()
         print(e)
-    finally:
-        # move newly created debug project to debug_runs
-        if opt.debug and not opt.resume and trainer.global_rank == 0:
-            dst, name = os.path.split(logdir)
-            dst = os.path.join(dst, "debug_runs", name)
-            os.makedirs(os.path.split(dst)[0], exist_ok=True)
-            os.rename(logdir, dst)
-        if trainer.global_rank == 0:
-            print(trainer.profiler.summary())
+    # finally:
+    #     # move newly created debug project to debug_runs
+    #     if opt.debug and not opt.resume and trainer.global_rank == 0:
+    #         dst, name = os.path.split(logdir)
+    #         dst = os.path.join(dst, "debug_runs", name)
+    #         os.makedirs(os.path.split(dst)[0], exist_ok=True)
+    #         os.rename(logdir, dst)
+    #     if trainer.global_rank == 0:
+    #         print(trainer.profiler.summary())
