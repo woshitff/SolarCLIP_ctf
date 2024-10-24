@@ -1,2 +1,4 @@
 /lightning_logs
 /logs
+**.pkl
+**.pyc

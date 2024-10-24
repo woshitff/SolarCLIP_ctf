@@ -104,12 +104,12 @@ class multimodal_dataset(Dataset):
         time_slice = slice(time_interval[0],time_interval[1],time_step)
         if 'magnet' in modal_list:
             # mag_dir_list = load_list('./Data/dir_list/magnet_dir_list_pt.pkl')[time_slice]
-            mag_idx = load_list('./Data/idx_list/magnet_exist_idx.pkl')
+            mag_idx = load_list('./data/idx_list/magnet_exist_idx.pkl')
             self.dataset.append(Dataset_one_modal('magnet',mag_idx))
 
         if '0094' in modal_list:
             # h0094_dir_list = load_list('./Data/dir_list/0094_dir_list_pt.pkl')[time_slice]
-            h0094_idx = load_list('./Data/idx_list/0094_exist_idx.pkl')
+            h0094_idx = load_list('./data/idx_list/0094_exist_idx.pkl')
             self.dataset.append(Dataset_one_modal('0094',h0094_idx))
 
         # find the all exist index
@@ -170,7 +170,7 @@ class multimodal_dataset(Dataset):
 if __name__ == '__main__':
 
     dataset = multimodal_dataset(modal_list=['magnet','0094'], load_imgs=True, enhance_list=[224,0.5,90],time_interval=[0,7452000],time_step=60)
-    print(len(dataset))
+    # print(len(dataset))
     # start_date = transfer_date_to_id(2010, 5, 1)
     # end_date = transfer_date_to_id(2020, 6, 30)
     # time_interval = [start_date, end_date]

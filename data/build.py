@@ -70,17 +70,17 @@ class DataModuleFromConfig(pl.LightningDataModule):
                 self.datasets[k] = WrappedDataset(self.datasets[k])
 
     def _train_dataloader(self):
-        return DataLoader(self.dataset["train"], batch_size=self.batch_size, 
+        return DataLoader(self.datasets["train"], batch_size=self.batch_size, 
                           shuffle=True, num_workers=self.num_workers)
 
     def _val_dataloader(self, shuffle=False):
-        return DataLoader(self.dataset["validation"], batch_size=self.batch_size, 
+        return DataLoader(self.datasets["validation"], batch_size=self.batch_size, 
                           shuffle=shuffle, num_workers=self.num_workers)
 
     def _test_dataloader(self, shuffle=False):
-        return DataLoader(self.dataset["test"], batch_size=self.batch_size, 
+        return DataLoader(self.datasets["test"], batch_size=self.batch_size, 
                           shuffle=shuffle, num_workers=self.num_workers)
     
     def _predict_dataloader(self):
-        return DataLoader(self.dataset["predict"], batch_size=self.batch_size, 
+        return DataLoader(self.datasets["predict"], batch_size=self.batch_size, 
                           shuffle=False, num_workers=self.num_workers)

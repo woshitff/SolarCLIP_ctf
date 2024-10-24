@@ -20,7 +20,7 @@ model:
     unet_config:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
       params:
-        ch: 512
+        ch: 256
         out_ch: 3
         ch_mult:
           - 1
@@ -62,11 +62,11 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 4
+    batch_size: 2
     num_workers: 0
     wrap: false
     train:
-      target: data.SolarDataset.multimodal_dataset
+      target: data.dataset.SolarDataset.multimodal_dataset
       params:
         modal_list: 
           - 'magnet'
@@ -78,10 +78,10 @@ data:
           - 90
         time_interval: 
           - 0
-          - 7452000
+          - 5346720
         time_step: 115200
     validation:
-      target: data.SolarDataset.multimodal_dataset
+      target: data.dataset.SolarDataset.multimodal_dataset
       params:
         modal_list: 
           - 'magnet'
@@ -92,7 +92,7 @@ data:
           - 0.5
           - 90
         time_interval: 
-          - 0
+          - 5346720
           - 7452000
         time_step: 115200
 

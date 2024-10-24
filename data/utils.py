@@ -231,4 +231,8 @@ if __name__ == '__main__':
     
 
     # transfer_fits_to_pt('0094',exist_list='./Data/idx_list/0094_exist_idx.pkl')
-    transfer_fits_to_pt('magnet',exist_list='./Data/idx_list/magnet_exist_idx.pkl')
+    # transfer_fits_to_pt('magnet',exist_list='./Data/idx_list/magnet_exist_idx.pkl')
+    start_date = transfer_date_to_id(2010, 5, 1)
+    end_date = transfer_date_to_id(2020, 6, 30)
+    time_interval = [start_date, end_date]
+    print(time_interval)
