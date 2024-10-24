@@ -52,7 +52,7 @@ def get_parser(**parser_kwargs):
         metavar="/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=["/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/autoencoder/test.yaml"],
+        default=["/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/autoencoder/vae/test.yaml"],
     )
     parser.add_argument(
         "-f",
@@ -153,8 +153,9 @@ if __name__ == "__main__":
             name = "_" + opt.name
         elif opt.base:
             cfg_fname = os.path.split(opt.base[0])[-1]
+            model_name = os.path.split(opt.base[0])[0].split("/")[-1]
             cfg_name = os.path.splitext(cfg_fname)[0]
-            name = "_" + cfg_name
+            name = "_" + model_name + "_" + cfg_name
         else:
             name = ""
         nowname = now + name + opt.postfix
