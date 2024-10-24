@@ -449,10 +449,14 @@ class DDPM(pl.LightningModule):
         return self.p_losses(x, t, *args, **kwargs)
 
     def get_input(self, batch, k):
-        x = batch[k]
+        if k == 'magnet_image':
+            x = batch[:, 0, :, :, :]
+        elif k == '0094_image':
+            x = batch[:, 1, :, :, :]
+        else:
+            raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
-        x = rearrange(x, 'b h w c -> b c h w')
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
 

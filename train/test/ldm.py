@@ -74,7 +74,7 @@ def get_parser(**parser_kwargs):
         "--train",
         type=str2bool,
         const=True,
-        default=False,
+        default=True,
         nargs="?",
         help="train",
     )
@@ -377,10 +377,10 @@ if __name__ == '__main__':
         # run
         if opt.train:
             try:
-                trainer.fit(model, data)
+                trainer.fit(model=model, datamodule=data)
             except Exception:
                 melk()
-                raise
+                raise Exception("Training failed. Checkpointed.")
         if not opt.no_test and not trainer.interrupted:
             trainer.test(model, data)
 
