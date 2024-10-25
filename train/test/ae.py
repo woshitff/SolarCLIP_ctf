@@ -2,6 +2,7 @@ import argparse
 import datetime, os, sys, glob
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
+from packaging import version
 from omegaconf import OmegaConf
 
 import torch
@@ -171,116 +172,55 @@ if __name__ == "__main__":
         cli = OmegaConf.from_dotlist(unknown)
         config = OmegaConf.merge(*configs, cli)
 
-        # init device
-        lightning_config = config.pop("lightning", OmegaConf.create())
-        trainer_config = lightning_config.get("trainer", OmegaConf.create())
-        for k in nondefault_trainer_args(opt):
-            trainer_config[k] = getattr(opt, k)
-        if not "devices" in trainer_config:
-            cpu = True
-            if 'strategy' in trainer_config:
-                del trainer_config['strategy']
-            trainer_config['accelerator'] = 'cpu'
-            trainer_config['devices'] = "auto"
-        else:
-            cpu = False
-            trainer_config['accelerator'] = 'gpu'
-            if (isinstance(trainer_config.devices, int) and trainer_config.devices > 1) or \
-                (isinstance(trainer_config['devices'], list) and len(trainer_config['devices']) > 1): # use ddp as default
-                trainer_config['strategy'] = 'ddp' if not trainer_config.get('strategy', None) else trainer_config['strategy']
-
-        # init callbacks
-        # add callback which sets up log directory
-        default_callbacks_cfg = {
-            "setup_callback": {
-                "target": "train.utils.callback.SetupCallback",
-                "params": {
-                    "resume": opt.resume,
-                    "now": now,
-                    "logdir": logdir,
-                    "ckptdir": ckptdir,
-                    "cfgdir": cfgdir,
-                    "config": config,
-                    "lightning_config": lightning_config,
-                }
-            },
-            # "image_logger": {
-            #     "target": "train.utils.callback.ImageLogger",
-            #     "params": {
-            #         "batch_frequency": 750,
-            #         "max_images": 4,
-            #         "clamp": True
-            #     }
-            # },
-            # "learning_rate_logger": {
-            #     "target": "train.utils.callback.LearningRateMonitor",
-            #     "params": {
-            #         "logging_interval": "step",
-            #         # "log_momentum": True
-            #     }
-            # },
-            "cuda_callback": {
-                "target": "train.utils.callback.CUDACallback"
-            },
-        }
-        # if version.parse(pl.__version__) >= version.parse('1.4.0'):
-        #     default_callbacks_cfg.update({'checkpoint_callback': modelckpt_cfg})
-
-        if "callbacks" in lightning_config:
-            callbacks_cfg = lightning_config.callbacks
-        else:
-            callbacks_cfg = OmegaConf.create()
-
-        if 'metrics_over_trainsteps_checkpoint' in callbacks_cfg:
-            print(
-                'Caution: Saving checkpoints every n train steps without deleting. This might require some free space.')
-            default_metrics_over_trainsteps_ckpt_dict = {
-                'metrics_over_trainsteps_checkpoint':
-                    {"target": 'pytorch_lightning.callbacks.ModelCheckpoint',
-                     'params': {
-                         "dirpath": os.path.join(ckptdir, 'trainstep_checkpoints'),
-                         "filename": "{epoch:06}-{step:09}",
-                         "verbose": True,
-                         'save_top_k': -1,
-                         'every_n_train_steps': 10000,
-                         'save_weights_only': True
-                     }
-                     }
-            }
-            default_callbacks_cfg.update(default_metrics_over_trainsteps_ckpt_dict)
-
-        callbacks_cfg = OmegaConf.merge(default_callbacks_cfg, callbacks_cfg)
-
-        callbacks_kwargs = [instantiate_from_config(callbacks_cfg[k]) for k in callbacks_cfg]
-            
-        # init model
+        #### init model
         model = instantiate_from_config(config.model)
-        print(model.device)
         model.learning_rate, model.learning_optimizer, model.learning_schedule = config.model.base_learning_rate, config.model.base_learning_optimizer, config.model.base_learning_schedule
         print(f"Setting learning rate to {model.learning_rate:.2e}")
         print(f"Setting learning optimizer to {model.learning_optimizer}")
         print(f"Setting learning schedule to {model.learning_schedule}")
-    
-        # init data
-        batch_size = 2
-        input_size = (batch_size, 1, 1024, 1024)  # 模拟输入的大小
 
-        # 随机生成图像和标签（这里假设 label 是全 1 的图像）
-        images = torch.randn(input_size)
-        labels = torch.ones(input_size)
 
-        # 创建 TensorDataset 和 DataLoader
-        dataset = TensorDataset(images, labels)
-        train_dataloader = DataLoader(dataset, batch_size=batch_size)
+        #### init data
+        # # init data
+        # batch_size = 2
+        # input_size = (batch_size, 1, 1024, 1024)  # 模拟输入的大小
 
-        tb_logger = TensorBoardLogger(save_dir=logdir, name="tensorboard")
-        trainer = Trainer(max_epochs=100, logger=tb_logger, callbacks=callbacks_kwargs)
+        # # 随机生成图像和标签（这里假设 label 是全 1 的图像）
+        # images = torch.randn(input_size)
+        # labels = torch.ones(input_size)
 
+        # # 创建 TensorDataset 和 DataLoader
+        # dataset = TensorDataset(images, labels)
+        # train_dataloader = DataLoader(dataset, batch_size=batch_size)
+
+        data = instantiate_from_config(config.data)
+        # NOTE according to https://pytorch-lightning.readthedocs.io/en/latest/datamodules.html
+        # calling these ourselves should not be necessary but it is.
+        # lightning still takes care of proper multiprocessing though
         
+        data.prepare_data()
+        data.setup()
+        print("#### Data #####")
+        for k in data.datasets:
+            print(f"{k}, {data.datasets[k].__class__.__name__}, {len(data.datasets[k])}")
+
+
+        #### init trainer
+        # init trainer_config specificly device
+        lightning_config = config.pop("lightning", OmegaConf.create())
+        trainer_config = lightning_config.get("trainer", OmegaConf.create())
+        for k in nondefault_trainer_args(opt):
+            trainer_config[k] = getattr(opt, k)
+        
+        from train.utils.util import TrainerSetup
+        trainer_setup = TrainerSetup(config, lightning_config, trainer_config, opt, now, logdir, cfgdir, ckptdir, model)
+        trainer_config, trainer_kwargs = trainer_setup.trainer_config, trainer_setup.trainer_kwargs
+        
+        trainer = Trainer(**trainer_config, logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
 
         # Step 4: 运行训练
         try:
-            trainer.fit(model, train_dataloader)
+            trainer.fit(model=model, datamodule=data)
         except Exception as e:
             print(f"Training error: {e}")
 
