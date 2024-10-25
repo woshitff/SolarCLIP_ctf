@@ -181,23 +181,10 @@ if __name__ == "__main__":
 
 
         #### init data
-        # # init data
-        # batch_size = 2
-        # input_size = (batch_size, 1, 1024, 1024)  # 模拟输入的大小
-
-        # # 随机生成图像和标签（这里假设 label 是全 1 的图像）
-        # images = torch.randn(input_size)
-        # labels = torch.ones(input_size)
-
-        # # 创建 TensorDataset 和 DataLoader
-        # dataset = TensorDataset(images, labels)
-        # train_dataloader = DataLoader(dataset, batch_size=batch_size)
-
         data = instantiate_from_config(config.data)
         # NOTE according to https://pytorch-lightning.readthedocs.io/en/latest/datamodules.html
         # calling these ourselves should not be necessary but it is.
         # lightning still takes care of proper multiprocessing though
-        
         data.prepare_data()
         data.setup()
         print("#### Data #####")
