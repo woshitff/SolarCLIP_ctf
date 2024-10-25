@@ -17,6 +17,6 @@ class RandomImageDataset(Dataset):
         return self.num_samples
 
     def __getitem__(self, idx):
-        image = torch.randn(self.input_size)  # 随机生成图像
-        label = torch.ones(self.input_size) * self.label_value  # 生成标签
+        image = torch.randn(tuple(self.input_size))  # 生成随机图像
+        label = torch.ones(tuple(self.input_size)) * self.label_value  # 生成标签
         return image, label
