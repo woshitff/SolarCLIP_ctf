@@ -2,18 +2,12 @@ import argparse
 import datetime, os, sys, glob
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from packaging import version
 from omegaconf import OmegaConf
-
-import torch
-from torch.utils.data import DataLoader, TensorDataset
 
 import pytorch_lightning as pl
 from pytorch_lightning.trainer import Trainer
-from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning import seed_everything
 
-# from pytorch_lightning.utilities.seed import seed_everything
 from models.reconmodels.autoencoder.util import instantiate_from_config
 
 def get_parser(**parser_kwargs):
