@@ -244,12 +244,6 @@ class CNN_VAE(pl.LightningModule):
     
     def shared_step(self, batch, batch_idx):
         x = self.get_input(batch)
-
-        logged_initial_images = False
-        if not logged_initial_images:
-            self.logger.experiment.add_images('initial_images', x, self.current_epoch, dataformats='NCHW')
-            logger_initial_images = True
-
         label = self.get_label(batch)
         recon_x, mu, logvar = self(x)
         weights = label.float()
