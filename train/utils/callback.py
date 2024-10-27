@@ -1,11 +1,12 @@
-import os, time
-
+import os, time, sys
+import logging
 from omegaconf import OmegaConf
 from PIL import Image
 
 import numpy as np
 import torch
 import torchvision
+from torchvision.utils import save_image
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback, LearningRateMonitor
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
@@ -189,5 +190,76 @@ class ImageLogger(Callback):
             if (pl_module.calibrate_grad_norm and batch_idx % 25 == 0) and batch_idx > 0:
                 self.log_gradients(trainer, pl_module, batch_idx=batch_idx)
 
+class GlobalLoggingCallback(Callback):
+    def __init__(self, logdir, log_filename='trainer_log.log'):
+        super().__init__()
+        self.log_dir = logdir
+        self.log_filename = log_filename
 
+    def on_fit_start(self, trainer, pl_module):
+        # 在训练开始时配置日志记录
+        os.makedirs(self.log_dir, exist_ok=True)
+        log_path = os.path.join(self.log_dir, self.log_filename)
+        
+        # 设置 logging 基本配置
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            handlers=[
+                logging.FileHandler(log_path),
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
 
+        # 重定向 stdout 和 stderr 到 logging
+        sys.stdout = self.StreamToLogger(logging.getLogger('stdout'), logging.INFO)
+        sys.stderr = self.StreamToLogger(logging.getLogger('stderr'), logging.ERROR)
+
+        logging.info("Training started - all output will be logged.")
+
+    def on_fit_end(self, trainer, pl_module):
+        logging.info("Training finished.")
+        # 恢复 sys.stdout 和 sys.stderr
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+
+    class StreamToLogger(object):
+        """用于将 stdout 和 stderr 重定向到 logging 的自定义类"""
+        def __init__(self, logger, log_level=logging.INFO):
+            self.logger = logger
+            self.log_level = log_level
+            self.line_buffer = ""
+
+        def write(self, message):
+            if message != '\n':  # 过滤掉空行
+                self.logger.log(self.log_level, message.strip())
+
+        def flush(self):
+            pass  # 不需要实际刷新操作
+
+class ImageSaveCallback(Callback):
+    def __init__(self, logdir, log_key='images'):
+        super().__init__()
+        self.save_dir = logdir + f"/{log_key}"
+        self.log_key = log_key
+        os.makedirs(self.save_dir, exist_ok=True)
+
+    def on_train_epoch_start(self, trainer, pl_module):
+        # 重置标记，每个 epoch 开始时重新保存第一个 batch
+        self.saved_first_batch = False
+
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+        # 仅处理每个 epoch 的第一个 batch
+        if not self.saved_first_batch and batch_idx == 0:
+            # 获取输入数据、重构数据和潜在空间
+            x = pl_module.get_input(batch)  # 获取原图
+            recon_x, mu, logvar = pl_module(x)  # 获取重构图和潜在空间
+    
+            trainer.logger.experiment.add_images(f'{self.log_key}/original', x, trainer.current_epoch, dataformats='NCHW')
+            trainer.logger.experiment.add_images(f'{self.log_key}/reconstructed', recon_x, trainer.current_epoch, dataformats='NCHW')
+            
+            for i, (orig, recon) in enumerate(zip(x, recon_x)):
+                save_image(orig, os.path.join(self.save_dir, f"original_epoch_{trainer.current_epoch}_img_{i}.png"))
+                save_image(recon, os.path.join(self.save_dir, f"reconstructed_epoch_{trainer.current_epoch}_img_{i}.png"))
+            
+            self.saved_first_batch = True

@@ -29,12 +29,13 @@ data:
       target: data.dataset.randomDataset.RandomImageDataset
       params:
         input_size: [1, 1024, 1024]
-        num_samples: 200
+        num_samples: 50
         label_value: 0
     validation:
       target: data.dataset.randomDataset.RandomImageDataset
       params: 
         input_size: [1, 1024, 1024]
-        num_samples: 200
+        num_samples: 50
         label_value: 1
+
 
