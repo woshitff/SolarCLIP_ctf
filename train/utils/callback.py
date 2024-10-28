@@ -1,8 +1,9 @@
-import os, time, sys
+import os, time, sys, io
 import logging
 from omegaconf import OmegaConf
 from PIL import Image
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision
@@ -265,3 +266,139 @@ class ImageSaveCallback(Callback):
                 save_image(recon, os.path.join(self.save_dir, f"reconstructed_epoch_{trainer.current_epoch}_img_{i}.png"))
             
             self.saved_first_batch = True
+
+class SolarImageLogger(Callback):
+    # see https://github.com/CompVis/stable-diffusion/blob/main/main.py
+    def __init__(self, batch_frequency, max_images, clamp=True, increase_log_steps=True,
+                 rescale=True, disabled=False, log_on_batch_idx=False, log_first_step=False,
+                 log_images_kwargs=None):
+        super().__init__()
+        self.rescale = rescale
+        self.batch_freq = batch_frequency
+        self.max_images = max_images
+        self.logger_log_images = {
+            pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
+        }
+        self.log_steps = [2 ** n for n in range(int(np.log2(self.batch_freq)) + 1)]
+        if not increase_log_steps:
+            self.log_steps = [self.batch_freq]
+        self.clamp = clamp
+        self.disabled = disabled
+        self.log_on_batch_idx = log_on_batch_idx
+        self.log_images_kwargs = log_images_kwargs if log_images_kwargs else {}
+        self.log_first_step = log_first_step
+
+    @rank_zero_only
+    def _log_images_tensorboard(self, pl_module, images, batch_idx, split):
+        inputs = images['inputs'].cpu().numpy()
+        vmin = np.min(inputs)
+        vmax = np.max(inputs)
+        vmax = np.max([np.abs(vmin), np.abs(vmax)])/2
+        vmin = -vmax
+
+        target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
+        for k in images:
+            if k not in target_keys:
+                continue
+            fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+            fig.suptitle(f"{split}/{k}")
+            for i in range(min(4, images[k].shape[0])):
+                axes[i].imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=vmin, vmax=vmax)
+                axes[i].axis('off')
+                axes[i].set_title(f"{k} - Image {i}")
+
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png')
+            buf.seek(0)
+            plt.close(fig)
+
+            print(2)
+
+            # img_np = np.array(Image.open(buf))
+            # img_np = np.array(Image.open(buf).convert("RGB"), dtype=np.uint8)
+            img_rgb = plt.imread(buf)[:, :, :3]
+            print(3)
+            tag = f"{split}/{k}"
+            pl_module.logger.experiment.add_image(
+                tag, img_rgb,
+                global_step=pl_module.global_step, dataformats='HWC')
+            print(4)
+
+    @rank_zero_only
+    def log_local(self, save_dir, split, images,
+                  global_step, current_epoch, batch_idx):
+        root = os.path.join(save_dir, "images", split)
+
+        inputs = images['inputs'].cpu().numpy()
+        vmin = np.min(inputs)
+        vmax = np.max(inputs)
+        vmax = np.max([np.abs(vmin), np.abs(vmax)])/2
+        vmin = -vmax
+        target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
+
+        for k in images:
+            if k not in target_keys:
+                continue
+            plt.figure(figsize=(32, 16))
+            for i in range(2):
+                plt.subplot(1, 2, i+1)
+                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=vmin, vmax=vmax)
+                plt.title(f"{k} - Image {i}")
+
+            filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(
+            k,
+            global_step,
+            current_epoch,
+            batch_idx)
+            path = os.path.join(root, filename)
+            os.makedirs(os.path.split(path)[0], exist_ok=True)
+
+            plt.savefig(path)
+            plt.close()
+
+    def log_img(self, pl_module, batch, batch_idx, split="train"):
+        check_idx = batch_idx if self.log_on_batch_idx else pl_module.global_step
+        if (self.check_frequency(check_idx) and  # batch_idx % self.batch_freq == 0
+                hasattr(pl_module, "log_images") and
+                callable(pl_module.log_images) and
+                self.max_images > 0):
+            logger = type(pl_module.logger)
+
+            is_train = pl_module.training
+            if is_train:
+                pl_module.eval()
+
+            with torch.no_grad():
+                images = pl_module.log_images(batch, **self.log_images_kwargs)
+
+            for k in images:
+                N = min(images[k].shape[0], self.max_images)
+                images[k] = images[k][:N]
+                if isinstance(images[k], torch.Tensor):
+                    images[k] = images[k].detach().cpu()
+                    if self.clamp:
+                        images[k] = torch.clamp(images[k], -1., 1.)
+
+            self.log_local(pl_module.logger.save_dir, split, images,
+                           pl_module.global_step, pl_module.current_epoch, batch_idx)
+
+            logger_log_images = self.logger_log_images.get(logger, lambda *args, **kwargs: None)
+            logger_log_images(pl_module, images, pl_module.global_step, split)
+
+            if is_train:
+                pl_module.train()
+
+    def check_frequency(self, check_idx):
+        if ((check_idx % self.batch_freq) == 0 or (check_idx in self.log_steps)) and (
+                check_idx > 0 or self.log_first_step):
+            try:
+                self.log_steps.pop(0)
+            except IndexError as e:
+                print(e)
+                pass
+            return True
+        return False
+
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+        if not self.disabled and (pl_module.global_step > 0 or self.log_first_step):
+            self.log_img(pl_module, batch, batch_idx, split="train")

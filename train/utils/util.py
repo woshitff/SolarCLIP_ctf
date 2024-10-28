@@ -91,7 +91,7 @@ class TrainerSetup:
                 }
             },
             "image_logger": {
-                "target": "train.utils.callback.ImageLogger",
+                "target": "train.utils.callback.SolarImageLogger",
                 "params": {
                     "batch_frequency": 750,
                     "max_images": 4,

@@ -8,21 +8,21 @@ model:
     linear_start: 0.00085
     linear_end: 0.0120
     log_every_t: 200
-    timesteps: 1000
+    timesteps: 100
     first_stage_key: "magnet_image"
     cond_stage_key: "magnet_image"
     image_size: 64
     channels: 3
     cond_stage_trainable: false
     conditioning_key: concat
-    scale_factor: 0.18215
+    scale_factor: 1
     monitor: val/loss_simple_ema
     use_ema: False
 
     unet_config:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
       params:
-        ch: 256
+        ch: 384
         out_ch: 3
         ch_mult:
           - 1
@@ -74,7 +74,7 @@ data:
         modal_list: 
           - 'magnet'
           - '0094'
-        load_imgs: true
+        load_imgs: false
         enhance_list:
           - 1024
           - 0.5
@@ -89,7 +89,7 @@ data:
         modal_list: 
           - 'magnet'
           - '0094'
-        load_imgs: true
+        load_imgs: false
         enhance_list:
           - 1024
           - 0.5
