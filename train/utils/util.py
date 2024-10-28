@@ -108,12 +108,12 @@ class TrainerSetup:
             "cuda_callback": {
                 "target": "train.utils.callback.CUDACallback"
             },
-            "image_save":{
-                "target": "train.utils.callback.ImageSaveCallback",
-                "params": {
-                    "logdir": self.logdir,
-                }
-            },
+            # "image_save":{
+            #     "target": "train.utils.callback.ImageSaveCallback",
+            #     "params": {
+            #         "logdir": self.logdir,
+            #     }
+            # },
             "global_logging": {
                 "target": "train.utils.callback.GlobalLoggingCallback",
                 "params": {

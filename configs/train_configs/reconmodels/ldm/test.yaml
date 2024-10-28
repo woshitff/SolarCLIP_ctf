@@ -1,5 +1,7 @@
 model:
   base_learning_rate: 1.0e-04
+  base_learning_optimizer: "Adam"
+  base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LatentDiffusion
   params:
     parameterization: "eps"
