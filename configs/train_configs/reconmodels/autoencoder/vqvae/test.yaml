@@ -1,0 +1,71 @@
+model:
+  base_learning_rate: 1.0e-04
+  base_learning_optimizer: "Adam"
+  base_learning_schedule: "CosineAnnealingLR"
+  target: models.reconmodels.autoencoder.vqvae.models.cnn_vqvae.CNN_VQVAE
+  params:
+    input_size: 1024
+    image_channels: 1
+    hidden_dim: 64
+    layers: 2
+    kernel_sizes: 
+      - 7
+      - 7
+    strides: 
+      - 4
+      - 4
+    group_nums: 16
+    latent_dim: 768
+    codebook_size: 512
+    vq_decay: 0.99
+    vq_commitment_weight: 1.0
+    learned_notebook: false
+    ema_update: true
+    loss_type: MSE
+    lambda_kl: 1.0
+
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 2
+    num_workers: 9
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 5346720
+        time_step: 115200
+    validation:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 5346720
+          - 7452000
+        time_step: 115200
+
+lightning:
+  trainer:
+    strategy: "ddp"
+    accelerator: "gpu"
+    devices: 4
+    benchmark: True
+
+  
