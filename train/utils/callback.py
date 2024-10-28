@@ -231,7 +231,9 @@ class GlobalLoggingCallback(Callback):
             self.line_buffer = ""
 
         def write(self, message):
-            if message != '\n':  # 过滤掉空行
+            if message and message.strip() != "":
+                if '\r' in message:
+                    message = message.replace('\r', '')
                 self.logger.log(self.log_level, message.strip())
 
         def flush(self):
