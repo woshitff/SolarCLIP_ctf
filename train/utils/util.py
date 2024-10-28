@@ -95,7 +95,7 @@ class TrainerSetup:
                 "params": {
                     "batch_frequency": 750,
                     "max_images": 4,
-                    "clamp": True
+                    "clamp": False,
                 }
             },
             "learning_rate_logger": {

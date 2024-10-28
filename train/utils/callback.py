@@ -269,7 +269,7 @@ class ImageSaveCallback(Callback):
 
 class SolarImageLogger(Callback):
     # see https://github.com/CompVis/stable-diffusion/blob/main/main.py
-    def __init__(self, batch_frequency, max_images, clamp=True, increase_log_steps=True,
+    def __init__(self, batch_frequency, max_images, clamp=False, increase_log_steps=True,
                  rescale=True, disabled=False, log_on_batch_idx=False, log_first_step=False,
                  log_images_kwargs=None):
         super().__init__()
@@ -300,29 +300,30 @@ class SolarImageLogger(Callback):
         for k in images:
             if k not in target_keys:
                 continue
-            fig, axes = plt.subplots(1, 4, figsize=(16, 4))
-            fig.suptitle(f"{split}/{k}")
-            for i in range(min(4, images[k].shape[0])):
-                axes[i].imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=vmin, vmax=vmax)
-                axes[i].axis('off')
-                axes[i].set_title(f"{k} - Image {i}")
+
+            plt.figure(figsize=(16, 8))
+            for i in range(2):
+                plt.subplot(1, 2, i+1)
+                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=vmin, vmax=vmax)
+                plt.title(f"{k} - Image {i}")
+                plt.subplots_adjust(wspace=0, hspace=0)
 
             buf = io.BytesIO()
             plt.savefig(buf, format='png')
             buf.seek(0)
-            plt.close(fig)
+            plt.close()
 
-            print(2)
+            # print(2)
 
             # img_np = np.array(Image.open(buf))
             # img_np = np.array(Image.open(buf).convert("RGB"), dtype=np.uint8)
             img_rgb = plt.imread(buf)[:, :, :3]
-            print(3)
+            # print(3)
             tag = f"{split}/{k}"
             pl_module.logger.experiment.add_image(
                 tag, img_rgb,
                 global_step=pl_module.global_step, dataformats='HWC')
-            print(4)
+            # print(4)
 
     @rank_zero_only
     def log_local(self, save_dir, split, images,
@@ -344,6 +345,7 @@ class SolarImageLogger(Callback):
                 plt.subplot(1, 2, i+1)
                 plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
+                plt.subplots_adjust(wspace=0, hspace=0)
 
             filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(
             k,
