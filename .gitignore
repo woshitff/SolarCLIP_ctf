@@ -2,3 +2,4 @@
 /logs
 **.pkl
 **.pyc
+/checkpoints
