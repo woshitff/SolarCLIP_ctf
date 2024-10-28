@@ -4,7 +4,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import pytorch_lightning as pl
 
+from models.reconmodels.autoencoder.util import config_optimizers
 from models.reconmodels.autoencoder.vqvae.modules.vector_quantize_pytorch import VectorQuantize
 
 """
@@ -108,8 +110,9 @@ class VAE_ResidualBlock(nn.Module):
         x = self.conv2(x)
         return self.nonlinear(self.groupnorm_post(x + residue))
     
-class CNN_VQVAE(nn.Module):
+class CNN_VQVAE(pl.LightningModule):
     def __init__(self, 
+                 ckpt_path: str = None,
                  input_size: int = 1024, 
                  image_channels: int = 1, 
                  hidden_dim: int = 64,
@@ -182,12 +185,31 @@ class CNN_VQVAE(nn.Module):
             nn.Conv2d(hidden_dim, image_channels, kernel_size=3, stride=1, padding=1), # B, 512, 64, 64 -> B, 1, 64, 64
         ])
         self.decoder = nn.Sequential(*self.decoder_list)
+
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path)
+
+    def init_from_ckpt(self, ckpt_path):
+        checkpoint = torch.load(ckpt_path)
+        self.load_state_dict(checkpoint['model'])
+
+    def encode(self, x):
+        return self.encoder(x)
+    
+    def decode(self, z):
+        return self.decoder(z)
     
     def forward(self, x):
-        z = self.encoder(x)
+        z = self.encode(x)
         quantized, indices, commit_loss = self.vq(z)
-        recon_x = self.decoder(quantized)
+        recon_x = self.decode(quantized)
         return recon_x, indices, commit_loss
+    
+    def get_input(self, batch):
+        return batch[0]
+    
+    def get_label(self, batch):
+        return batch[1]
     
     def loss_function(self, recon_x, x, weights, commit_loss, lambda_vq):
         if self.loss_type == 'MSE':
@@ -205,10 +227,51 @@ class CNN_VQVAE(nn.Module):
 
         return total_loss, RECON_LOSS.detach(), RECON_LOSS_weighted.detach(), commit_loss.detach()
     
+    def get_loss(self, recon_x, x, weights, mu, logvar, lambda_kl):
+        log_prefix = 'train' if self.training else 'val'
+        loss_dict = {}
+
+        loss, recon_loss, recon_loss_weighted, kl_loss = self.loss_function(recon_x, x, weights, mu, logvar, lambda_kl)
+        loss_dict.update({f'{log_prefix}/loss': loss})
+        loss_dict.update({f'{log_prefix}/recon_loss': recon_loss})
+        loss_dict.update({f'{log_prefix}/recon_loss_weighted': recon_loss_weighted})
+        loss_dict.update({f'{log_prefix}/kl_loss': kl_loss})
+
+        return loss, loss_dict
+    
+    def shared_step(self, batch, batch_idx):
+        x = self.get_input(batch)
+        label = self.get_label(batch)
+        recon_x, mu, logvar = self(x)
+        weights = label.float()
+        loss, loss_dict = self.get_loss(recon_x, x, weights, mu, logvar, self.lambda_kl)
+        return loss, loss_dict
+    
+    def training_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss_recon', loss_dict['train/recon_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss_recon_weighted', loss_dict['train/recon_loss_weighted'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss_kl', loss_dict['train/kl_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_loss_recon', loss_dict['val/recon_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_loss_recon_weighted', loss_dict['val/recon_loss_weighted'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_loss_kl', loss_dict['val/kl_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+    
+    def configure_optimizers(self):
+        lr = self.learning_rate
+        opt, scheduler = config_optimizers(self.learning_optimizer, self.parameters(), lr, self.learning_schedule)
+        return (opt, scheduler)
+
     def sample(self, x):
-        z = self.encoder(x)
+        z = self.encode(x)
         quantized, _ , _= self.vq(z)
         return quantized
     
     def generate(self, quantized):
-        return self.decoder(quantized)
+        return self.decode(quantized)
