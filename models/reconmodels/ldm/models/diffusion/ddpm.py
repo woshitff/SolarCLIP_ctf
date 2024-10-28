@@ -1223,12 +1223,12 @@ class LatentDiffusion(DDPM):
                                            bs=N)
         N = min(x.shape[0], N)
         n_row = min(x.shape[0], n_row)
-        log["inputs"] = x
-        log["reconstruction"] = xrec
+        log["inputs"] = x # input images
+        log["reconstruction"] = xrec # reconstructed images by first stage model
         if self.model.conditioning_key is not None:
             if hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
-                log["conditioning"] = xc
+                log["conditioning"] = xc # reconstructed images by cond stage model
             elif self.cond_stage_key in ["caption", "txt"]:
                 xc = log_txt_as_img((x.shape[2], x.shape[3]), batch[self.cond_stage_key], size=x.shape[2] // 25)
                 log["conditioning"] = xc
@@ -1260,7 +1260,7 @@ class LatentDiffusion(DDPM):
             diffusion_grid = rearrange(diffusion_row, 'n b c h w -> b n c h w')
             diffusion_grid = rearrange(diffusion_grid, 'b n c h w -> (b n) c h w')
             diffusion_grid = make_grid(diffusion_grid, nrow=diffusion_row.shape[0])
-            log["diffusion_row"] = diffusion_grid
+            log["diffusion_row"] = diffusion_grid # diffusion row, get from z_start to add noise
 
         if sample:
             # get denoise row
@@ -1269,7 +1269,7 @@ class LatentDiffusion(DDPM):
                                                          ddim_steps=ddim_steps, eta=ddim_eta)
                 # samples, z_denoise_row = self.sample(cond=c, batch_size=N, return_intermediates=True)
             x_samples = self.decode_first_stage(samples)
-            log["samples"] = x_samples
+            log["samples"] = x_samples # what we want to generate
             if plot_denoise_rows:
                 denoise_grid = self._get_denoise_row_from_list(z_denoise_row)
                 log["denoise_row"] = denoise_grid
@@ -1327,7 +1327,7 @@ class LatentDiffusion(DDPM):
                                                                shape=(self.channels, self.image_size, self.image_size),
                                                                batch_size=N)
             prog_row = self._get_denoise_row_from_list(progressives, desc="Progressive Generation")
-            log["progressive_row"] = prog_row
+            log["progressive_row"] = prog_row # progressive denoising
 
         if return_keys:
             if np.intersect1d(list(log.keys()), return_keys).shape[0] == 0:

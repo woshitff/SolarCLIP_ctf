@@ -90,14 +90,14 @@ class TrainerSetup:
                     "lightning_config": self.lightning_config,
                 }
             },
-            # "image_logger": {
-            #     "target": "train.utils.callback.ImageLogger",
-            #     "params": {
-            #         "batch_frequency": 750,
-            #         "max_images": 4,
-            #         "clamp": True
-            #     }
-            # },
+            "image_logger": {
+                "target": "train.utils.callback.ImageLogger",
+                "params": {
+                    "batch_frequency": 750,
+                    "max_images": 4,
+                    "clamp": True
+                }
+            },
             "learning_rate_logger": {
                 "target": "train.utils.callback.LearningRateMonitor",
                 "params": {
