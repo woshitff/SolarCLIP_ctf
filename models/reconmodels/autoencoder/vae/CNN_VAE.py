@@ -173,7 +173,7 @@ class CNN_VAE(pl.LightningModule):
 
     def init_from_ckpt(self, ckpt_path):
         checkpoint = torch.load(ckpt_path)
-        self.load_state_dict(checkpoint['state_dict'])
+        self.load_state_dict(checkpoint['model'])
 
     def encode(self, x):
         """

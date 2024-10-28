@@ -42,6 +42,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
       params:
+        ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_1000.pt"
         input_size: 1024
         image_channels: 1
         hidden_dim: 64
@@ -55,7 +56,7 @@ model:
         group_nums: 16
         latent_dim: 3
         loss_type: MSE
-        lambda_kl: 1.0
+        lambda_kl: 0.1
       lossconfig:
         target: torch.nn.Identity
 
