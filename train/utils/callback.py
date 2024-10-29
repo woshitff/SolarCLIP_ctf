@@ -198,11 +198,19 @@ class GlobalLoggingCallback(Callback):
         self.log_filename = log_filename
 
     def on_fit_start(self, trainer, pl_module):
-        # 在训练开始时配置日志记录
-        os.makedirs(self.log_dir, exist_ok=True)
-        log_path = os.path.join(self.log_dir, self.log_filename)
+        if trainer.strategy.global_rank == 0:
+            os.makedirs(self.log_dir, exist_ok=True)
+            os.environ['SHARED_LOG_DIR'] = self.log_dir
+        else:
+            trainer.strategy.barrier()
         
-        # 设置 logging 基本配置
+        ##  other ranks cannot get the environment variable
+        log_dir = os.environ.get('SHARED_LOG_DIR', None)
+        log_path = os.path.join(log_dir, self.log_filename)
+            
+        if trainer.strategy.global_rank == 0:
+            logging.info(f"Logging to {log_path}")
+
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
@@ -212,7 +220,6 @@ class GlobalLoggingCallback(Callback):
             ]
         )
 
-        # 重定向 stdout 和 stderr 到 logging
         sys.stdout = self.StreamToLogger(logging.getLogger('stdout'), logging.INFO)
         sys.stderr = self.StreamToLogger(logging.getLogger('stderr'), logging.ERROR)
 
