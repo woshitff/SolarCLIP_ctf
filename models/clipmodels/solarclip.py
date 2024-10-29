@@ -8,6 +8,7 @@ from models.clipmodels.modules.vit import VisionTransformer
 
 class SolarCLIP(nn.Module):
     def __init__(self,
+                 ckpt_path: str,
                  embed_dim: int,
                  vision_width: int,
                  # mag vision
@@ -23,6 +24,7 @@ class SolarCLIP(nn.Module):
                  norm_type: str 
                  ):
         super().__init__()
+        # self.save_hyperparameters()
 
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
         self.transformer_token_type = transformer_token_type
@@ -51,6 +53,13 @@ class SolarCLIP(nn.Module):
                 token_type = transformer_token_type,
                 norm_type = norm_type
             )
+
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path)
+
+    def init_from_ckpt(self, ckpt_path: str):
+        ckpt = torch.load(ckpt_path)
+        self.load_state_dict(ckpt['model'])
 
     @property
     def dtype(self):
