@@ -221,13 +221,16 @@ class GlobalLoggingCallback(Callback):
             ]
         )
 
-        sys.stdout = self.StreamToLogger(logging.getLogger('stdout'), logging.INFO)
-        sys.stderr = self.StreamToLogger(logging.getLogger('stderr'), logging.ERROR)
+        current_rank = trainer.strategy.global_rank
+        self.logger = logging.LoggerAdapter(logging.getLogger(), {'rank': current_rank})
 
-        logging.info("Training started - all output will be logged.")
+        sys.stdout = self.StreamToLogger(self.logger, logging.INFO)
+        sys.stderr = self.StreamToLogger(self.logger, logging.ERROR)
+
+        self.logger.info("Training started - all output will be logged.")
 
     def on_fit_end(self, trainer, pl_module):
-        logging.info("Training finished.")
+        self.logger.info("Training finished.")
         # 恢复 sys.stdout 和 sys.stderr
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
