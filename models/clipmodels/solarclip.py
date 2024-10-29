@@ -9,15 +9,14 @@ from models.clipmodels.modules.vit import VisionTransformer
 class SolarCLIP(nn.Module):
     def __init__(self,
                  embed_dim: int,
+                 vision_width: int,
                  # mag vision
                  image_resolution_hmi: int,
                  vision_layers_hmi: Union[Tuple[int, int, int, int], int],
-                 vision_width: int,
                  vision_patch_size_hmi: int,
                  # 11 channels
                  image_resolution_aia: int,
                  vision_layers_aia: Union[Tuple[int, int, int, int], int],
-                 #vision_width: int,
                  vision_patch_size_aia: int,
                  # loss token type
                  transformer_token_type: str,

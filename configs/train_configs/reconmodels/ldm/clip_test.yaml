@@ -2,7 +2,7 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.ldm.models.diffusion.ddpm.ImageEmbeddingConditionedLatentDiffusion
+  target: models.reconmodels.ldm.models.diffusion.ddpm.SolarCLIPConditionedLatentDiffusion
   params:
     embedding_dropout: 0.25
     parameterization: "v"
@@ -12,6 +12,7 @@ model:
     timesteps: 100
     first_stage_key: "magnet_image"
     cond_stage_key: "magnet_image"
+    embedding_key: "magnet_image"
     image_size: 64
     channels: 3
     cond_stage_trainable: false
@@ -21,22 +22,18 @@ model:
     use_ema: False
 
     embedder_config:
-      target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
+      target: models.clipmodels.solarclip.SolarCLIP
       params:
-        input_size: 1024
-        image_channels: 1
-        hidden_dim: 64
-        layers: 2
-        kernel_sizes: 
-          - 7
-          - 7
-        strides: 
-          - 4
-          - 4
-        group_nums: 16
-        latent_dim: 3
-        loss_type: MSE
-        lambda_kl: 1.0
+        embed_dim: 512  
+        vision_width: 768
+        image_resolution_hmi: 1024  
+        vision_layers_hmi: [2, 2, 2, 2]    
+        vision_patch_size_hmi: 64  
+        image_resolution_aia: 1024  
+        vision_layers_aia: [2, 2, 2, 2]  
+        vision_patch_size_aia: 64 
+        transformer_token_type: "all embedding"  
+        norm_type: "bn1d"  
       lossconfig:
         target: torch.nn.Identity
 
