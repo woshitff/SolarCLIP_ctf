@@ -1,4 +1,5 @@
 import os, time, sys, io
+from datetime import datetime
 import logging
 from omegaconf import OmegaConf
 from PIL import Image
@@ -200,12 +201,12 @@ class GlobalLoggingCallback(Callback):
     def on_fit_start(self, trainer, pl_module):
         if trainer.strategy.global_rank == 0:
             os.makedirs(self.log_dir, exist_ok=True)
-            os.environ['SHARED_LOG_DIR'] = self.log_dir
+            trainer.strategy.barrier()
         else:
             trainer.strategy.barrier()
         
-        ##  other ranks cannot get the environment variable
-        log_dir = os.environ.get('SHARED_LOG_DIR', None)
+        log_dir = trainer.strategy.broadcast(self.log_dir, src=0)
+        self.log_dir = log_dir
         log_path = os.path.join(log_dir, self.log_filename)
             
         if trainer.strategy.global_rank == 0:
@@ -213,7 +214,7 @@ class GlobalLoggingCallback(Callback):
 
         logging.basicConfig(
             level=logging.INFO,
-            format="%(asctime)s - %(levelname)s - %(message)s",
+            format="%(asctime)s - [Rank %(rank)d] - %(levelname)s - %(message)s",
             handlers=[
                 logging.FileHandler(log_path),
                 logging.StreamHandler(sys.stdout)
