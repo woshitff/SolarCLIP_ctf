@@ -313,17 +313,11 @@ class SolarImageLogger(Callback):
             buf.seek(0)
             plt.close()
 
-            # print(2)
-
-            # img_np = np.array(Image.open(buf))
-            # img_np = np.array(Image.open(buf).convert("RGB"), dtype=np.uint8)
             img_rgb = plt.imread(buf)[:, :, :3]
-            # print(3)
             tag = f"{split}/{k}"
             pl_module.logger.experiment.add_image(
                 tag, img_rgb,
                 global_step=pl_module.global_step, dataformats='HWC')
-            # print(4)
 
     @rank_zero_only
     def log_local(self, save_dir, split, images,

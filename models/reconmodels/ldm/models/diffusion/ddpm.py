@@ -1439,3 +1439,30 @@ class ImageEmbeddingConditionedLatentDiffusion(LatentDiffusion):
             x_samples_cfg = self.decode_first_stage(samples_cfg)
             log[f"samplescfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
         return log
+    
+
+class SolarCLIPConditionedLatentDiffusion(LatentDiffusion):
+    @torch.no_grad()
+    def log_images(self, batch, N=8, n_row=4, **kwargs):
+        log = dict()
+        z, c, x, xrec, xc = self.get_input(batch, self.first_stage_key, bs=N, return_first_stage_outputs=True,
+                                           return_original_cond=True)
+        log["inputs"] = x
+        log["reconstruction"] = xrec
+        assert self.model.conditioning_key is not None
+        assert self.cond_stage_key in ["caption", "txt"]
+        xc = log_txt_as_img((x.shape[2], x.shape[3]), batch[self.cond_stage_key], size=x.shape[2] // 25)
+        log["conditioning"] = xc
+        uc = self.get_unconditional_conditioning(N, kwargs.get('unconditional_guidance_label', ''))
+        unconditional_guidance_scale = kwargs.get('unconditional_guidance_scale', 5.)
+
+        uc_ = {"c_crossattn": [uc], "c_adm": c["c_adm"]}
+        ema_scope = self.ema_scope if kwargs.get('use_ema_scope', True) else nullcontext
+        with ema_scope(f"Sampling"):
+            samples_cfg, _ = self.sample_log(cond=c, batch_size=N, ddim=True,
+                                             ddim_steps=kwargs.get('ddim_steps', 50), eta=kwargs.get('ddim_eta', 0.),
+                                             unconditional_guidance_scale=unconditional_guidance_scale,
+                                             unconditional_conditioning=uc_, )
+            x_samples_cfg = self.decode_first_stage(samples_cfg)
+            log[f"samplescfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
+        return log
