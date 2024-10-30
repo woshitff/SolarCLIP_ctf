@@ -1482,8 +1482,8 @@ class SolarCLIPConditionedLatentDiffusion(LatentDiffusion):
         return log
     
 class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         
     def instantiate_cond_stage(self, config):
         if not self.cond_stage_trainable:
