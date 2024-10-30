@@ -162,7 +162,7 @@ class TrainerSetup:
                 "dirpath": self.ckptdir,
                 "filename": "{epoch:06}",
                 "verbose": True,
-                "save_last": True,
+                "save_last": False,
                 'save_top_k': -1,
                 'every_n_epochs': 20,
                 'save_weights_only': True
