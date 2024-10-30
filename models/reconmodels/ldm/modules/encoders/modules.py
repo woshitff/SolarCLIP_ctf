@@ -1,6 +1,7 @@
 import torch.nn as nn
 from einops import rearrange
 
+from models.clipmodels.modules.vit import Remove_class_token
 from models.reconmodels.ldm.util import instantiate_from_config
 
 
@@ -16,7 +17,7 @@ class ReshapeTo2D(nn.Module):
         self.w = w
 
     def forward(self, x):
-        return rearrange(x, 'b c (h w) -> b c h w', h=self.h, w=self.w)
+        return rearrange(x, 'b (h w) c -> b c h w', h=self.h, w=self.w)
     
 class LinearProjectionToImage(nn.Module):
     def __init__(self, input_dim=(768, 16, 16), output_dim=(3, 64, 64)):
@@ -27,10 +28,10 @@ class LinearProjectionToImage(nn.Module):
         self.activation = nn.Tanh()
 
     def forward(self, x):
-        x = x.view(x.size(0), -1)  
+        x = x.reshape(x.size(0), -1)  
         x = self.fc(x)             
         x = self.activation(x)      
-        return x.view(x.size(0), 3, 64, 64)  
+        return x.reshape(x.size(0), 3, 64, 64)  
 
 #-*************************************-#
 
@@ -86,14 +87,7 @@ class SolarCLIPImageEmbedder(nn.Module):
 
     def forward(self, x):
         x = self.solarclip(x)
+        x = Remove_class_token()(x) # (B, 257, 768) -> (B, 256, 768)
         x = self.ReshapeProjection(x)
         return x
         
-# test
-if __name__=='__main__':
-    from omegaconf import OmegaConf
-    configs = OmegaConf.load('/mnt/nas/home/huxing/202407/ctf/SolarCLIP_ctf_v2/SolarCLIP_ctf/configs/train_configs/reconmodels/ldm/embedder_config.yaml')
-    import sys
-    sys.path.insert(0, "/mnt/nas/home/huxing/202407/ctf/SolarCLIP_ctf_v2/SolarCLIP_ctf")
-    from models.reconmodels.ldm.util import instantiate_from_config
-    model = instantiate_from_config(configs)
