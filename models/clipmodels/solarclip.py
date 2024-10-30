@@ -59,7 +59,7 @@ class SolarCLIP(nn.Module):
 
     def init_from_ckpt(self, ckpt_path: str):
         ckpt = torch.load(ckpt_path)
-        self.load_state_dict(ckpt['model'])
+        self.load_state_dict(ckpt)
 
     @property
     def dtype(self):

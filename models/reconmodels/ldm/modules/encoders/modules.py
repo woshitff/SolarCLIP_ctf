@@ -89,3 +89,11 @@ class SolarCLIPImageEmbedder(nn.Module):
         x = self.ReshapeProjection(x)
         return x
         
+# test
+if __name__=='__main__':
+    from omegaconf import OmegaConf
+    configs = OmegaConf.load('/mnt/nas/home/huxing/202407/ctf/SolarCLIP_ctf_v2/SolarCLIP_ctf/configs/train_configs/reconmodels/ldm/embedder_config.yaml')
+    import sys
+    sys.path.insert(0, "/mnt/nas/home/huxing/202407/ctf/SolarCLIP_ctf_v2/SolarCLIP_ctf")
+    from models.reconmodels.ldm.util import instantiate_from_config
+    model = instantiate_from_config(configs)
