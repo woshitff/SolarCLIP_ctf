@@ -209,9 +209,6 @@ class GlobalLoggingCallback(Callback):
         self.log_dir = log_dir
         log_path = os.path.join(log_dir, self.log_filename)
             
-        if trainer.strategy.global_rank == 0:
-            logging.info(f"Logging to {log_path}")
-
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s - [Rank %(rank)d] - %(levelname)s - %(message)s",
@@ -224,10 +221,12 @@ class GlobalLoggingCallback(Callback):
         current_rank = trainer.strategy.global_rank
         self.logger = logging.LoggerAdapter(logging.getLogger(), {'rank': current_rank})
 
-        sys.stdout = self.StreamToLogger(self.logger, logging.INFO)
-        sys.stderr = self.StreamToLogger(self.logger, logging.ERROR)
+        sys.stdout = self.StreamToLogger(sys.stdout, self.logger, logging.INFO)
+        sys.stderr = self.StreamToLogger(sys.stderr, self.logger, logging.ERROR)
 
-        self.logger.info("Training started - all output will be logged.")
+        if trainer.strategy.global_rank == 0:
+            self.logger.info(f"Logging to {log_path}")
+            self.logger.info("Training started - all output will be logged.")
 
     def on_fit_end(self, trainer, pl_module):
         self.logger.info("Training finished.")
@@ -236,8 +235,8 @@ class GlobalLoggingCallback(Callback):
         sys.stderr = sys.__stderr__
 
     class StreamToLogger(object):
-        """用于将 stdout 和 stderr 重定向到 logging 的自定义类"""
-        def __init__(self, logger, log_level=logging.INFO):
+        def __init__(self, orgin_stream, logger, log_level=logging.INFO):
+            self.orgin_stream = orgin_stream
             self.logger = logger
             self.log_level = log_level
             self.line_buffer = ""
@@ -247,6 +246,8 @@ class GlobalLoggingCallback(Callback):
                 if '\r' in message:
                     message = message.replace('\r', '')
                 self.logger.log(self.log_level, message.strip())
+                self.orgin_stream.write(message)
+                self.orgin_stream.flush()
 
         def flush(self):
             pass  # 不需要实际刷新操作
