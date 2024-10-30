@@ -1409,11 +1409,20 @@ class SolarCLIPConditionedLatentDiffusion(LatentDiffusion):
     def _init_embedder(self, config, freeze=True):
         embedder = instantiate_from_config(config)
         if freeze:
-            self.embedder = embedder.eval()
-            self.embedder.train = disabled_train
-            for param in self.embedder.parameters():
+            # self.embedder = embedder.eval()
+            # self.embedder.train = disabled_train
+            # for param in self.embedder.parameters():
+            #     param.requires_grad = False
+            self.embedder = embedder
+            for name, param in self.embedder.solarclip.named_parameters():
+                print(f"{name} requires_grad: {param.requires_grad}")
+            print('before freeze:',sum(p.numel() for p in self.embedder.parameters() if p.requires_grad))
+            self.embedder.solarclip = embedder.solarclip.eval()
+            self.embedder.solarclip.train = disabled_train
+            for param in self.embedder.solarclip.parameters():
                 param.requires_grad = False
-
+            print('after freeze:',sum(p.numel() for p in self.embedder.parameters() if p.requires_grad))
+            
     def _init_noise_aug(self, config):
         if config is not None:
             # use the KARLO schedule for noise augmentation on CLIP image embeddings

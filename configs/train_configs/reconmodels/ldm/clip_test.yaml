@@ -5,7 +5,6 @@ model:
   target: models.reconmodels.ldm.models.diffusion.ddpm.SolarCLIPConditionedLatentDiffusion
   params:
     embedding_dropout: 0.25
-    freeze_embedder: false
     parameterization: "v"
     linear_start: 0.00085
     linear_end: 0.0120
@@ -42,27 +41,26 @@ model:
           lossconfig:
             target: torch.nn.Identity
         embedding_key: "magnet_image"
-        projection_type: "Linear"
+        projection_type: "ConvTrans"
 
     unet_config:
-      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
+      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.openaimodel.UNetModel 
       params:
-        ch: 384
-        out_ch: 3
-        ch_mult:
-          - 1
-          - 2
-          - 4
-          - 4
-        num_res_blocks: 2
-        attn_resolutions: [ ]
-        dropout: 0.0
-        resamp_with_conv: true
+        image_size: 64
         in_channels: 3
-        resolution: 64
-        use_timestep: true
-        use_linear_attn: false
-        attn_type: "vanilla"
+        out_channels: 3
+        model_channels: 224
+        attention_resolutions:
+        - 8
+        - 4
+        - 2
+        num_res_blocks: 2
+        channel_mult:
+        - 1
+        - 2
+        - 3
+        - 4
+        num_head_channels: 32
 
     first_stage_config:
       target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
