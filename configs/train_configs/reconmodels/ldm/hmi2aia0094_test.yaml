@@ -127,18 +127,7 @@ lightning:
     devices: 4
     benchmark: True
 
-  # callbacks:
-  #   image_logger:
-  #     target: train.utils.callback.ImageLogger
-  #     params:
-  #       batch_frequency: 5000
-  #       max_images: 8
-  #       increase_log_steps: False
-
-  # logger:
-  #   target: pytorch_lightning.loggers.TensorBoardLogger
-  #   params:
-  #     name: tensorboard_logs
-  #     save_dir: logs
-
+  callbacks:
+    metrics_over_trainsteps_checkpoint: null
+  
   
