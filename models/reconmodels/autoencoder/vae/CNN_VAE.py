@@ -119,7 +119,8 @@ class CNN_VAE(pl.LightningModule):
                  group_nums: int = 16,
                  latent_dim: int = 3,
                  loss_type: str = 'MSE',
-                 lambda_kl: float = 1.0):
+                 lambda_kl: float = 1.0,
+                 bottle_neck: bool = False,):
         super().__init__()
         self.save_hyperparameters()
 
@@ -140,9 +141,12 @@ class CNN_VAE(pl.LightningModule):
         ])
         for i, kernel_size, stride in zip(range(self.layers), self.kernel_sizes, self.strides):
             self.encoder_list.append(VAE_ResidualBlock(hidden_dim*(2**i), hidden_dim*(2**(i+1)), kernel_size=kernel_size, stride=stride, padding=kernel_size//2))
-        self.encoder_list.extend([
-            VAE_ResidualBlock(hidden_dim*(2**self.layers), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
+        if bottle_neck:
+            self.encoder_list.extend([
+                VAE_ResidualBlock(hidden_dim*(2**self.layers), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
             VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
+            ])
+        self.encoder_list.extend([
             nn.GroupNorm(group_nums, hidden_dim*(2**self.layers)), # B, 1024, 16, 16 -> B, 1024, 16, 16
             nn.ELU(),
             nn.Conv2d(hidden_dim*(2**self.layers), self.latent_dim*2, kernel_size=1, stride=1, padding=0), # B, 1024, 16, 16 -> B, 6, 16, 16
@@ -153,9 +157,12 @@ class CNN_VAE(pl.LightningModule):
             nn.ConvTranspose2d(self.latent_dim, hidden_dim*(2**self.layers), kernel_size=3, stride=1, padding=1), # B, 3, 16, 16 -> B, 1024, 16, 16
             nn.ELU(),
             nn.GroupNorm(group_nums, hidden_dim*(2**self.layers)), # B, 1024, 16, 16 -> B, 1024, 16, 16
-            VAE_ResidualBlock(hidden_dim*(2**self.layers), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
-            VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1)  # B, 1024, 16, 16 -> B, 1024, 16, 16
         ])
+        if bottle_neck:
+            self.decoder_list.extend([
+                VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
+                VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
+            ])
         for i, kernel_size, stride in zip(range(self.layers-1, -1, -1), self.kernel_sizes[::-1], self.strides[::-1]):
             self.decoder_list.extend([
                 nn.Upsample(scale_factor=stride, mode='nearest'), # B, 1024, 16, 16 -> B, 1024, 64, 64

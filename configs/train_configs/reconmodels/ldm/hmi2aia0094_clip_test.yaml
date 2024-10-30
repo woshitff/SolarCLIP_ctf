@@ -57,6 +57,7 @@ model:
         latent_dim: 3
         loss_type: MSE
         lambda_kl: 0.1
+        bottle_neck: false
       lossconfig:
         target: torch.nn.Identity
     
