@@ -163,12 +163,15 @@ class TrainerSetup:
                 "filename": "{epoch:06}",
                 "verbose": True,
                 "save_last": True,
+                'save_top_k': -1,
+                'every_n_epochs': 20,
+                'save_weights_only': True
             }
         }
-        if hasattr(self.model, "monitor"):
-            print(f"Monitoring {self.model.monitor} as checkpoint metric.")
-            default_modelckpt_cfg["params"]["monitor"] = self.model.monitor
-            default_modelckpt_cfg["params"]["save_top_k"] = 3
+        # if hasattr(self.model, "monitor"):
+        #     print(f"Monitoring {self.model.monitor} as checkpoint metric.")
+        #     default_modelckpt_cfg["params"]["monitor"] = self.model.monitor
+        #     default_modelckpt_cfg["params"]["save_top_k"] = 3
         if "modelcheckpoint" in self.lightning_config:
             modelckpt_cfg = self.lightning_config.modelcheckpoint
         else:
