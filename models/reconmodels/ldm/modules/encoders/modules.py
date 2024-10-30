@@ -35,7 +35,7 @@ class LinearProjectionToImage(nn.Module):
 #-*************************************-#
 
 class SolarCLIPImageEmbedder(nn.Module):
-
+    """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
                  solarclip_config,
                  embedding_key='magnet_image', 
