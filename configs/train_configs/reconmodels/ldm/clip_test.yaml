@@ -5,6 +5,7 @@ model:
   target: models.reconmodels.ldm.models.diffusion.ddpm.SolarCLIPConditionedLatentDiffusion
   params:
     embedding_dropout: 0.25
+    freeze_embedder: false
     parameterization: "v"
     linear_start: 0.00085
     linear_end: 0.0120
