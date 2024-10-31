@@ -378,7 +378,7 @@ class SolarImageLogger(Callback):
                 if k == 'mu':
                     plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=-vmax, vmax=vmax)
                 else:
-                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap=cmap, vmin=vmin, vmax=vmax)
+                    plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 
