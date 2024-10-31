@@ -299,7 +299,7 @@ class CNN_VAE(pl.LightningModule):
             samples = self.sample(x)
         log['recon'] = recon_x[:N]
         log['mu'] = mu[:N]
-        log['sample'] = samples[:N]
+        log['samples'] = samples[:N]
         self.train()
 
         return log

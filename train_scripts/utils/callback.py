@@ -300,7 +300,7 @@ class SolarImageLogger(Callback):
         self.log_images_kwargs = log_images_kwargs if log_images_kwargs else {}
         self.log_first_step = log_first_step
 
-    def get_cmap_and_limits(inputs, mode):
+    def get_cmap_and_limits(self, inputs, mode):
         cmap = "RdBu_r" if mode == 'magnet_image' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
@@ -312,11 +312,11 @@ class SolarImageLogger(Callback):
             vmin = 0
         return cmap, vmin, vmax
 
-    def get_target_keys_and_modal(pl_module):
+    def get_target_keys_and_modal(self, pl_module):
         if pl_module.__class__.__name__ in ["LatentDiffusion", "SolarCLIPConditionedLatentDiffusionV2"]:
             target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
             modal = pl_module.first_stage_key
-        elif pl_module.__class__.__name__ == "CNN_VAE":
+        elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
             modal = pl_module.vae_modal
         else:
