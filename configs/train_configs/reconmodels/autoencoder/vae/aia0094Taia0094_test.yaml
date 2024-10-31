@@ -21,7 +21,7 @@ model:
     lambda_kl: 0.1
 
     loss_config:
-      target: models.reconmodels.autoencoder.models.vae.loss.VAELoss.VAELoss
+      target: models.reconmodels.autoencoder.modules.losses.contperceptual.LPIPS
       params:
         rec_loss_type: l2
         log_var_init: 0.0
