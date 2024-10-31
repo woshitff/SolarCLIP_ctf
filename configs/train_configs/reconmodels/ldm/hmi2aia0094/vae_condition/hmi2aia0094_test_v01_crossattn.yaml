@@ -29,10 +29,10 @@ model:
         num_res_blocks: 1
         attention_resolutions: 
           - 2
-          # - 1 # TOCHECK
+          - 1 # TOCHECK
         dropout: 0.1 # TOCHECK
         channel_mult: 
-          # - 1
+          - 1
           - 2
           # - 4
           # - 8

@@ -57,7 +57,7 @@ def get_parser(**parser_kwargs):
     parser.add_argument(
         "--logdir",
         type=str,
-        default="logs",
+        default="logs/reconmodels/ldm",
         help="log directory",
     )
     parser.add_argument(
@@ -152,6 +152,7 @@ if __name__ == "__main__":
         else:
             name = ""
         nowname = now + name + opt.postfix
+        os.makedirs(opt.logdir, exist_ok=True)
         logdir = os.path.join(opt.logdir, nowname)
 
     ckptdir = os.path.join(logdir, "checkpoints")
