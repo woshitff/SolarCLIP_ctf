@@ -40,7 +40,7 @@ model:
         attn_type: "vanilla"
 
     first_stage_config:
-      target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
         ckpt_path: "checkpoints/reconmodels/vae/0094_0094/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_500.pt"
         input_size: 1024
@@ -61,7 +61,7 @@ model:
         target: torch.nn.Identity
     
     cond_stage_config:
-      target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
         ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_1000.pt"
         input_size: 1024
