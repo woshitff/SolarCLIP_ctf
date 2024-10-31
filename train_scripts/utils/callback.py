@@ -308,7 +308,19 @@ class SolarImageLogger(Callback):
         vmax = np.max([np.abs(vmin), np.abs(vmax)])/2
         vmin = -vmax
 
-        target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
+        if pl_module.__class__.__name__ == "LatentDiffusion" or pl_module.__class__.__name__ == "SolarCLIPConditionedLatentDiffusionV2":
+            target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
+        elif pl_module.__class__.__name__ == "CNN_VAE":
+            target_keys = ['input', 'recon', 'mu', 'samples']
+        else:
+            raise ValueError("Unknown model class")
+        if pl_module.first_stage_key == 'magnet_image' or pl_module.vae_modal == 'magnet_image':
+            cmap = "RdBu_r"
+        elif pl_module.first_stage_key == '0094_image' or pl_module.vae_modal == '0094_image':
+            cmap = "Reds"
+        else:
+            raise ValueError("Unknown first_stage_key or vae_modal")
+        
         for k in images:
             if k not in target_keys:
                 continue
@@ -316,7 +328,7 @@ class SolarImageLogger(Callback):
             plt.figure(figsize=(16, 8))
             for i in range(2):
                 plt.subplot(1, 2, i+1)
-                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=vmin, vmax=vmax)
+                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 
@@ -333,7 +345,7 @@ class SolarImageLogger(Callback):
 
     @rank_zero_only
     def log_local(self, save_dir, split, images,
-                  global_step, current_epoch, batch_idx):
+                  global_step, current_epoch, batch_idx, pl_module):
         root = os.path.join(save_dir, "images", split)
 
         inputs = images['inputs'].cpu().numpy()
@@ -341,6 +353,19 @@ class SolarImageLogger(Callback):
         vmax = np.max(inputs)
         vmax = np.max([np.abs(vmin), np.abs(vmax)])/2
         vmin = -vmax
+
+        if pl_module.__class__.__name__ == "LatentDiffusion" or pl_module.__class__.__name__ == "SolarCLIPConditionedLatentDiffusionV2":
+            target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
+        elif pl_module.__class__.__name__ == "CNN_VAE":
+            target_keys = ['input', 'recon', 'mu', 'samples']
+        else:
+            raise ValueError("Unknown model class")
+        if pl_module.first_stage_key == 'magnet_image' or pl_module.vae_modal == 'magnet_image':
+            cmap = "RdBu_r"
+        elif pl_module.first_stage_key == '0094_image' or pl_module.vae_modal == '0094_image':
+            cmap = "Reds"
+        else:
+            raise ValueError("Unknown first_stage_key or vae_modal")
         target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
 
         for k in images:
@@ -349,7 +374,7 @@ class SolarImageLogger(Callback):
             plt.figure(figsize=(32, 16))
             for i in range(2):
                 plt.subplot(1, 2, i+1)
-                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=vmin, vmax=vmax)
+                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 
@@ -388,7 +413,7 @@ class SolarImageLogger(Callback):
                         images[k] = torch.clamp(images[k], -1., 1.)
 
             self.log_local(pl_module.logger.save_dir, split, images,
-                           pl_module.global_step, pl_module.current_epoch, batch_idx)
+                           pl_module.global_step, pl_module.current_epoch, batch_idx, pl_module)
 
             logger_log_images = self.logger_log_images.get(logger, lambda *args, **kwargs: None)
             logger_log_images(pl_module, images, pl_module.global_step, split)
@@ -410,3 +435,4 @@ class SolarImageLogger(Callback):
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         if not self.disabled and (pl_module.global_step > 0 or self.log_first_step):
             self.log_img(pl_module, batch, batch_idx, split="train")
+

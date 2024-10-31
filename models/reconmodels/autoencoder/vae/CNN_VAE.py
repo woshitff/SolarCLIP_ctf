@@ -110,6 +110,7 @@ class VAE_ResidualBlock(nn.Module):
 class CNN_VAE(pl.LightningModule):
     def __init__(self,
                  ckpt_path: str = None,
+                 vae_modal: str = 'magnet_image',
                  input_size: int = 1024,
                  image_channels: int = 1,
                  hidden_dim: int = 64,
@@ -124,6 +125,7 @@ class CNN_VAE(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
+        self.vae_modal = vae_modal
         self.input_size = input_size
         self.image_channels = image_channels
         self.hidden_dim = hidden_dim
@@ -203,6 +205,13 @@ class CNN_VAE(pl.LightningModule):
         """
         return self.decoder(z)
 
+    def sample(self, x):
+        mu, logvar = self.encode(x)
+        std = torch.exp(0.5*logvar)
+        eps = torch.randn_like(std)
+        z = mu + eps*std
+        return self.decode(z)
+
     def forward(self, x):
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
@@ -210,11 +219,17 @@ class CNN_VAE(pl.LightningModule):
         recon_x = self.decode(z)
         return recon_x, mu, logvar
 
-    def get_input(self, batch):
-        return batch[0]
-    
-    def get_label(self, batch):
-        return batch[1]
+    def get_input(self, batch, k):
+        if k == 'magnet_image':
+            x = batch[:, 0, :, :, :]
+        elif k == '0094_image':
+            x = batch[:, 1, :, :, :]
+        else:
+            raise NotImplementedError(f"Key {k} not supported")
+        if len(x.shape) == 3:
+            x = x[..., None]
+        x = x.to(memory_format=torch.contiguous_format).float()
+        return x
     
     def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):
         if self.loss_type == 'MSE':
@@ -244,12 +259,10 @@ class CNN_VAE(pl.LightningModule):
         return loss, loss_dict
     
     def shared_step(self, batch, batch_idx):
-        x = self.get_input(batch)
-        label = self.get_label(batch)
+        x = self.get_input(batch, self.vae_modal)
         recon_x, mu, logvar = self(x)
-        weights = label.float()
+        weights = torch.ones_like(x)
         loss, loss_dict = self.get_loss(recon_x, x, weights, mu, logvar, self.lambda_kl)
-        # print(loss, loss_dict)
         return loss, loss_dict
     
     def training_step(self, batch, batch_idx):
@@ -273,6 +286,23 @@ class CNN_VAE(pl.LightningModule):
         opt, scheduler = config_optimizers(self.learning_optimizer, self.parameters(), lr, self.learning_schedule)
         return (opt, scheduler)
 
+    def log_images(self, batch, N=2):
+        log = dict()
+
+        x = self.get_input(batch, self.vae_modal)
+        N = min(N, x.shape[0])
+        log['input'] = x[:N]
+
+        self.eval()
+        with torch.no_grad():
+            recon_x, mu, logvar = self(x) 
+            samples = self.sample(x)
+        log['recon'] = recon_x[:N]
+        log['mu'] = mu[:N]
+        log['sample'] = samples[:N]
+        self.train()
+
+        return log
     
 
 
