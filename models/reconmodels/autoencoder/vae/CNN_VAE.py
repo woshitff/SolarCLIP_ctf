@@ -291,7 +291,7 @@ class CNN_VAE(pl.LightningModule):
 
         x = self.get_input(batch, self.vae_modal)
         N = min(N, x.shape[0])
-        log['input'] = x[:N]
+        log['inputs'] = x[:N]
 
         self.eval()
         with torch.no_grad():

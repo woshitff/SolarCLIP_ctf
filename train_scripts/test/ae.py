@@ -1,7 +1,6 @@
 import argparse
 import datetime, os, sys, glob
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
 from omegaconf import OmegaConf
 
 import pytorch_lightning as pl
@@ -9,9 +8,8 @@ from pytorch_lightning.trainer import Trainer
 from pytorch_lightning import seed_everything
 
 from models.reconmodels.autoencoder.util import instantiate_from_config
-
+from train_scripts.utils.util import TrainerSetup
 def get_parser(**parser_kwargs):
-
     def str2bool(v):
         if isinstance(v, bool):
             return v
@@ -47,7 +45,7 @@ def get_parser(**parser_kwargs):
         metavar="/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=["/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/autoencoder/vae/test.yaml"],
+        default=["configs/train_configs/reconmodels/autoencoder/vae/aia0094Taia0094_test.yaml"],
     )
     parser.add_argument(
         "-f",
@@ -59,7 +57,7 @@ def get_parser(**parser_kwargs):
     parser.add_argument(
         "--logdir",
         type=str,
-        default="logs",
+        default="logs/reconmodels/autoencoder/vae",
         help="log directory",
     )
     parser.add_argument(
@@ -73,7 +71,7 @@ def get_parser(**parser_kwargs):
         "--train",
         type=str2bool,
         const=True,
-        default=False,
+        default=True,
         nargs="?",
         help="train",
     )
@@ -90,7 +88,7 @@ def get_parser(**parser_kwargs):
         type=str2bool,
         nargs="?",
         const=True,
-        default=True,
+        default=False,
         help="scale base-lr by ngpu * batch_size * n_accumulate",
     )
     parser.add_argument(
@@ -154,6 +152,7 @@ if __name__ == "__main__":
         else:
             name = ""
         nowname = now + name + opt.postfix
+        os.makedirs(opt.logdir, exist_ok=True)
         logdir = os.path.join(opt.logdir, nowname)
 
     ckptdir = os.path.join(logdir, "checkpoints")
@@ -193,7 +192,7 @@ if __name__ == "__main__":
         for k in nondefault_trainer_args(opt):
             trainer_config[k] = getattr(opt, k)
         
-        from train.utils.util import TrainerSetup
+        
         trainer_setup = TrainerSetup(config, lightning_config, trainer_config, opt, now, logdir, cfgdir, ckptdir, model)
         trainer_config, trainer_kwargs = trainer_setup.trainer_config, trainer_setup.trainer_kwargs
         

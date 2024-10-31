@@ -300,26 +300,39 @@ class SolarImageLogger(Callback):
         self.log_images_kwargs = log_images_kwargs if log_images_kwargs else {}
         self.log_first_step = log_first_step
 
-    @rank_zero_only
-    def _log_images_tensorboard(self, pl_module, images, batch_idx, split):
-        inputs = images['inputs'].cpu().numpy()
+    def get_cmap_and_limits(inputs, mode):
+        cmap = "RdBu_r" if mode == 'magnet_image' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
-        vmax = np.max([np.abs(vmin), np.abs(vmax)])/2
-        vmin = -vmax
+        if mode == 'magnet_image':
+            vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+            vmin = -vmax
+        else:  # '0094_image'
+            vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+            vmin = 0
+        return cmap, vmin, vmax
 
-        if pl_module.__class__.__name__ == "LatentDiffusion" or pl_module.__class__.__name__ == "SolarCLIPConditionedLatentDiffusionV2":
+    def get_target_keys_and_modal(pl_module):
+        if pl_module.__class__.__name__ in ["LatentDiffusion", "SolarCLIPConditionedLatentDiffusionV2"]:
             target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
+            modal = pl_module.first_stage_key
         elif pl_module.__class__.__name__ == "CNN_VAE":
-            target_keys = ['input', 'recon', 'mu', 'samples']
+            target_keys = ['inputs', 'recon', 'mu', 'samples']
+            modal = pl_module.vae_modal
         else:
-            raise ValueError("Unknown model class")
-        if pl_module.first_stage_key == 'magnet_image' or pl_module.vae_modal == 'magnet_image':
-            cmap = "RdBu_r"
-        elif pl_module.first_stage_key == '0094_image' or pl_module.vae_modal == '0094_image':
-            cmap = "Reds"
+            raise ValueError("Unsupported model type")
+        return target_keys, modal
+
+    @rank_zero_only
+    def _log_images_tensorboard(self, pl_module, images, batch_idx, split):
+        
+        target_keys, modal = self.get_target_keys_and_modal(pl_module)
+        inputs = images['inputs'].cpu().numpy()
+
+        if modal in ['magnet_image', '0094_image']:
+            cmap, vmin, vmax = self.get_cmap_and_limits(inputs, modal)
         else:
-            raise ValueError("Unknown first_stage_key or vae_modal")
+            raise ValueError("Unknown modal type")
         
         for k in images:
             if k not in target_keys:
@@ -348,25 +361,13 @@ class SolarImageLogger(Callback):
                   global_step, current_epoch, batch_idx, pl_module):
         root = os.path.join(save_dir, "images", split)
 
+        target_keys, modal = self.get_target_keys_and_modal(pl_module)
         inputs = images['inputs'].cpu().numpy()
-        vmin = np.min(inputs)
-        vmax = np.max(inputs)
-        vmax = np.max([np.abs(vmin), np.abs(vmax)])/2
-        vmin = -vmax
 
-        if pl_module.__class__.__name__ == "LatentDiffusion" or pl_module.__class__.__name__ == "SolarCLIPConditionedLatentDiffusionV2":
-            target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
-        elif pl_module.__class__.__name__ == "CNN_VAE":
-            target_keys = ['input', 'recon', 'mu', 'samples']
+        if modal in ['magnet_image', '0094_image']:
+            cmap, vmin, vmax = self.get_cmap_and_limits(inputs, modal)
         else:
-            raise ValueError("Unknown model class")
-        if pl_module.first_stage_key == 'magnet_image' or pl_module.vae_modal == 'magnet_image':
-            cmap = "RdBu_r"
-        elif pl_module.first_stage_key == '0094_image' or pl_module.vae_modal == '0094_image':
-            cmap = "Reds"
-        else:
-            raise ValueError("Unknown first_stage_key or vae_modal")
-        target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
+            raise ValueError("Unknown modal type")
 
         for k in images:
             if k not in target_keys:
