@@ -318,9 +318,22 @@ class aia0094_CNN_VAE(CNN_VAE):
     def shared_step(self, batch, batch_idx):
         x = self.get_input(batch, '0094_image')
         recon_x, mu, logvar = self(x)
+        posteriors = (mu, logvar)
         weights = torch.ones_like(x)
-        loss, dict_loss = self.loss(recon_x, x, weights, mu, logvar, self.lambda_kl)
-        return loss, dict_loss
+        log_split = 'train' if self.training else 'val'
+
+        loss, loss_dict = self.loss(x, recon_x, posteriors, weights, log_split)
+        return loss, loss_dict
+    
+    def training_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        return loss
 
 
 # version 0-- : change the loss function 
