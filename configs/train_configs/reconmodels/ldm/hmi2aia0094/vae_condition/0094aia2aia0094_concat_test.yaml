@@ -9,49 +9,35 @@ model:
     linear_end: 0.0120
     log_every_t: 200
     timesteps: 100
-    first_stage_key: "0094_image"
+    first_stage_key: "magnet_image"
     cond_stage_key: "magnet_image"
     image_size: 64
     channels: 3
     cond_stage_trainable: false
-    conditioning_key: crossattn
+    conditioning_key: concat
     scale_factor: 1
     monitor: val/loss_simple_ema
     use_ema: False
 
     unet_config:
-      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.openaimodel.UNetModel
+      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
       params:
-        image_size: 64
-        in_channels: 3
-        model_channels: 256
-        out_channels: 3
-        num_res_blocks: 2
-        attention_resolutions: 
-          - 8 # TOCHECK
-        dropout: 0.1 
-        channel_mult: 
+        ch: 384
+        out_ch: 3
+        ch_mult:
           - 1
           - 2
           - 4
           - 4
-        conv_resample: True
-        dims: 2
-        num_classes: null
-        use_checkpoint: false
-        use_fp16: false
-        num_heads: 1
-        num_head_channels: 1
-        num_heads_upsample: -1
-        use_scale_shift_norm: false
-        resblock_updown: false
-        use_new_attention_order: false
-        use_spatial_transformer: false  # custom transformer support
-        transformer_depth: 1            # custom transformer support
-        context_dim: null               # custom transformer support
-        n_embed: null                   # custom support for prediction of discrete ids into codebook of first stage vq model
-        legacy: true
-
+        num_res_blocks: 2
+        attn_resolutions: [ ]
+        dropout: 0.0
+        resamp_with_conv: true
+        in_channels: 6
+        resolution: 64
+        use_timestep: true
+        use_linear_attn: false
+        attn_type: "vanilla"
 
     first_stage_config:
       target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
@@ -73,27 +59,8 @@ model:
         lambda_kl: 0.1
       lossconfig:
         target: torch.nn.Identity
-    
-    cond_stage_config:
-      target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
-      params:
-        ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_1000.pt"
-        input_size: 1024
-        image_channels: 1
-        hidden_dim: 64
-        layers: 2
-        kernel_sizes: 
-          - 7
-          - 7
-        strides: 
-          - 4
-          - 4
-        group_nums: 16
-        latent_dim: 3
-        loss_type: MSE
-        lambda_kl: 0.1
-      lossconfig:
-        target: torch.nn.Identity
+
+    cond_stage_config: __is_first_stage__
 
 data:
   target: data.build.DataModuleFromConfig
@@ -138,5 +105,19 @@ lightning:
     accelerator: "gpu"
     devices: 4
     benchmark: True
+
+  # callbacks:
+  #   image_logger:
+  #     target: train.utils.callback.ImageLogger
+  #     params:
+  #       batch_frequency: 5000
+  #       max_images: 8
+  #       increase_log_steps: False
+
+  # logger:
+  #   target: pytorch_lightning.loggers.TensorBoardLogger
+  #   params:
+  #     name: tensorboard_logs
+  #     save_dir: logs
 
   
