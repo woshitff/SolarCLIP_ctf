@@ -14,7 +14,7 @@ model:
     image_size: 64
     channels: 3
     cond_stage_trainable: false
-    conditioning_key: concat
+    conditioning_key: crossattn
     scale_factor: 1
     monitor: val/loss_simple_ema
     use_ema: False
@@ -27,13 +27,15 @@ model:
         model_channels: 32
         out_channels: 3
         num_res_blocks: 1
-        attention_resolutions: [16] # TOCHECK
+        attention_resolutions: 
+          - 2
+          # - 1 # TOCHECK
         dropout: 0.1 # TOCHECK
         channel_mult: 
-          - 1
+          # - 1
           - 2
-          - 4
-          - 8
+          # - 4
+          # - 8
         conv_resample: True
         dims: 2
         num_classes: null
