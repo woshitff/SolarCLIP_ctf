@@ -147,7 +147,7 @@ class CNN_VAE(pl.LightningModule):
             VAE_ResidualBlock(hidden_dim*(2**self.layers), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
             VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
             nn.GroupNorm(group_nums, hidden_dim*(2**self.layers)), # B, 1024, 16, 16 -> B, 1024, 16, 16
-            nn.ELU(),
+            nn.ELU(),   
             nn.Conv2d(hidden_dim*(2**self.layers), self.latent_dim*2, kernel_size=1, stride=1, padding=0), # B, 1024, 16, 16 -> B, 6, 16, 16
         ])
         self.encoder = nn.Sequential(*self.encoder_list)
@@ -305,4 +305,16 @@ class CNN_VAE(pl.LightningModule):
         return log
     
 
+class aia0094_CNN_VAE(CNN_VAE):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.activation = nn.Tanh()
+    
+    def encode(self, x):
+        x = self.encoder(x)
+        mu, logvar = torch.chunk(x, 2, dim=1)
+        mu = self.activation(mu)
+        logvar = torch.clamp(logvar, -30, 30)
+        return mu, logvar
 

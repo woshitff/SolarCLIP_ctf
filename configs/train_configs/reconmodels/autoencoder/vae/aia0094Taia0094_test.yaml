@@ -2,7 +2,7 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.autoencoder.vae.CNN_VAE.CNN_VAE
+  target: models.reconmodels.autoencoder.vae.CNN_VAE.aia0094_CNN_VAE
   params:
     vae_modal: '0094_image'
     input_size: 1024
@@ -56,3 +56,9 @@ data:
           - 5346720
           - 7452000
         time_step: 115200
+
+lighting:
+  trainer:
+    accelerator: "gpu"
+    devices: 1
+    max_epochs: 1000
