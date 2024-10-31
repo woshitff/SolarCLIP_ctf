@@ -1,0 +1,21 @@
+name: solarclip
+channels:
+  - pytorch
+  - conda-forge
+  - pypi
+  - defaults
+dependencies:
+  - python=3.12.4
+  - pytorch=2.5.0
+  - torchvision=0.20.0
+  - numpy=1.26.4
+  - pip:
+    - lpips==0.1.4
+  - conda:
+    - omegaconf=2.3.0
+    - pytorch-lightning=2.4.0
+    - einops=0.8.0
+    - scipy=1.14.1
+    - tensorboard=2.18.0
+    
+  
