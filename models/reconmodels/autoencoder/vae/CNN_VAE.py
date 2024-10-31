@@ -319,3 +319,64 @@ class aia0094_CNN_VAE(CNN_VAE):
         logvar = torch.clamp(logvar, -30, 30)
         return mu, logvar
 
+
+# version 0-- : change the loss function 
+class aia0094_CNN_VAE_v01(CNN_VAE):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):
+        if self.loss_type == 'MSE':
+            with torch.no_grad():
+                RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
+            RECON_LOSS_weighted = weights*F.mse_loss(recon_x, x, reduction='none')
+            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+        elif self.loss_type == 'BCE':
+            RECON_LOSS = F.binary_cross_entropy(recon_x, x, reduction='sum')
+        elif self.loss_type == 'L1 + MSE':
+            with torch.no_grad():
+                RECON_LOSS = 0.5 * F.l1_loss(recon_x, x, reduction='mean') + 0.5 *F.mse_loss(recon_x, x, reduction='mean')
+            RECON_LOSS_weighted = weights*0.5 * F.l1_loss(recon_x, x, reduction='none') + 0.5 *F.mse_loss(recon_x, x, reduction='none')
+            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+        else:
+            raise ValueError(f"loss_type {self.loss_type} is not supported")
+        KLD = (-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))/mu.numel()
+
+        total_loss = RECON_LOSS_weighted + KLD*lambda_kl
+        return total_loss, RECON_LOSS.detach(), RECON_LOSS_weighted.detach(), KLD.detach()
+
+class aia0094_CNN_VAE_v02(aia0094_CNN_VAE_v01):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def gradient_loss(recon_x, x):
+        grad_recon_x_h = torch.abs(recon_x[:, :, :, :-1] - recon_x[:, :, :, 1:])
+        grad_x_h = torch.abs(x[:, :, :, :-1] - x[:, :, :, 1:])
+        
+        grad_recon_x_v = torch.abs(recon_x[:, :, :-1, :] - recon_x[:, :, 1:, :])
+        grad_x_v = torch.abs(x[:, :, :-1, :] - x[:, :, 1:, :])
+        
+        loss_h = F.l1_loss(grad_recon_x_h, grad_x_h)
+        loss_v = F.l1_loss(grad_recon_x_v, grad_x_v)
+        
+        return loss_h + loss_v
+    
+    def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):
+        if self.loss_type == 'MSE':
+            with torch.no_grad():
+                RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
+            RECON_LOSS_weighted = weights*F.mse_loss(recon_x, x, reduction='none')
+            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+        elif self.loss_type == 'BCE':
+            RECON_LOSS = F.binary_cross_entropy(recon_x, x, reduction='sum')
+        elif self.loss_type == 'L1 + MSE':
+            with torch.no_grad():
+                RECON_LOSS = 0.5 * F.l1_loss(recon_x, x, reduction='mean') + 0.5 *F.mse_loss(recon_x, x, reduction='mean')
+            RECON_LOSS_weighted = weights*0.5 * F.l1_loss(recon_x, x, reduction='none') + 0.5 *F.mse_loss(recon_x, x, reduction='none')
+            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+        else:
+            raise ValueError(f"loss_type {self.loss_type} is not supported")
+        KLD = (-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))/mu.numel()
+        GRAD_LOSS = self.gradient_loss(recon_x, x)/mu.numel()
+        total_loss = RECON_LOSS_weighted + KLD*lambda_kl + GRAD_LOSS*0.1
+        return total_loss, RECON_LOSS.detach(), RECON_LOSS_weighted.detach(), KLD.detach()
