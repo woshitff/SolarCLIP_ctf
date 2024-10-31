@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 
 from models.reconmodels.autoencoder.util import config_optimizers
+from models.reconmodels.autoencoder.util import instantiate_from_config
 """
 SolarReconModel_VAE Model.
 This model use VAE architecture to reconstruct the solar image without clip model.
@@ -179,6 +180,8 @@ class CNN_VAE(pl.LightningModule):
         checkpoint = torch.load(ckpt_path)
         self.load_state_dict(checkpoint['model'])
 
+        print(f"Loaded model from {ckpt_path}")
+
     def encode(self, x):
         """
         x: (B, C, H, W) eg: (B, 1, 1024, 1024)
@@ -307,17 +310,17 @@ class CNN_VAE(pl.LightningModule):
     
 
 class aia0094_CNN_VAE(CNN_VAE):
-    def __init__(self, **kwargs):
+    def __init__(self, loss_config, **kwargs):
         super().__init__(**kwargs)
 
-        self.activation = nn.Tanh()
-    
-    def encode(self, x):
-        x = self.encoder(x)
-        mu, logvar = torch.chunk(x, 2, dim=1)
-        mu = self.activation(mu)
-        logvar = torch.clamp(logvar, -30, 30)
-        return mu, logvar
+        self.loss = instantiate_from_config(loss_config)
+
+    def shared_step(self, batch, batch_idx):
+        x = self.get_input(batch, '0094_image')
+        recon_x, mu, logvar = self(x)
+        weights = torch.ones_like(x)
+        loss, dict_loss = self.loss(recon_x, x, weights, mu, logvar, self.lambda_kl)
+        return loss, dict_loss
 
 
 # version 0-- : change the loss function 
