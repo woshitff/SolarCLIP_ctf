@@ -107,6 +107,7 @@ class VAE_ResidualBlock(nn.Module):
         x = self.conv2(x)
         return self.nonlinear(self.groupnorm_post(x + residue))
     
+    
 class CNN_VAE(pl.LightningModule):
     def __init__(self,
                  ckpt_path: str = None,
