@@ -79,13 +79,13 @@ class TrainerSetup:
     def _init_callbacks(self):
         default_callbacks_cfg = {
             "global_logging": {
-                "target": "train.utils.callback.GlobalLoggingCallback",
+                "target": "train_scripts.utils.callback.GlobalLoggingCallback",
                 "params": {
                     "logdir": self.logdir,
                 }
             },
             "setup_callback": {
-                "target": "train.utils.callback.SetupCallback",
+                "target": "train_scripts.utils.callback.SetupCallback",
                 "params": {
                     "resume": self.opt.resume,
                     "now": self.now,
@@ -97,7 +97,7 @@ class TrainerSetup:
                 }
             },
             "image_logger": {
-                "target": "train.utils.callback.SolarImageLogger",
+                "target": "train_scripts.utils.callback.SolarImageLogger",
                 "params": {
                     "batch_frequency": 750,
                     "max_images": 4,
@@ -105,14 +105,14 @@ class TrainerSetup:
                 }
             },
             "learning_rate_logger": {
-                "target": "train.utils.callback.LearningRateMonitor",
+                "target": "train_scripts.utils.callback.LearningRateMonitor",
                 "params": {
                     "logging_interval": "step",
                     # "log_momentum": True
                 }
             },
             "cuda_callback": {
-                "target": "train.utils.callback.CUDACallback"
+                "target": "train_scripts.utils.callback.CUDACallback"
             }
             # "image_save":{
             #     "target": "train.utils.callback.ImageSaveCallback",

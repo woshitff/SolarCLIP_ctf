@@ -8,7 +8,7 @@ from pytorch_lightning.trainer import Trainer
 from pytorch_lightning import seed_everything
 
 from models.reconmodels.autoencoder.util import instantiate_from_config
-from train.utils.util import TrainerSetup
+from train_scripts.utils.util import TrainerSetup
 def get_parser(**parser_kwargs):
     def str2bool(v):
         if isinstance(v, bool):
@@ -45,7 +45,7 @@ def get_parser(**parser_kwargs):
         metavar="/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=["/mnt/nas/home/huxing/202407/ctf/SolarCLIP_ctf_v2/SolarCLIP_ctf/configs/train_configs/reconmodels/ldm/hmi2aia0094_test.yaml"],
+        default=["configs/train_configs/reconmodels/ldm/hmi2aia0094/vae_condition/hmi2aia0094_test_v01_crossattn.yaml"],
     )
     parser.add_argument(
         "-f",
