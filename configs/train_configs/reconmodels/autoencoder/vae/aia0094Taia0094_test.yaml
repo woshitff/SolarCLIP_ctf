@@ -18,7 +18,7 @@ model:
     group_nums: 16
     latent_dim: 3
     loss_type: MSE
-    lambda_kl: 1.0
+    lambda_kl: 0.1
 
 data:
   target: data.build.DataModuleFromConfig
