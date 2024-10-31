@@ -320,8 +320,8 @@ class aia0094_CNN_VAE(CNN_VAE):
         recon_x, mu, logvar = self(x)
         posteriors = (mu, logvar)
         weights = torch.ones_like(x)
-        log_split = 'train' if self.training else 'val'
 
+        log_split = 'train' if self.training else 'val'
         loss, loss_dict = self.loss(x, recon_x, posteriors, weights, log_split)
         return loss, loss_dict
     
