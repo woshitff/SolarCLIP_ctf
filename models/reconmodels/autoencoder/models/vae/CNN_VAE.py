@@ -1,4 +1,5 @@
 import math
+import os
 
 import torch
 import torch.nn as nn
@@ -177,8 +178,14 @@ class CNN_VAE(pl.LightningModule):
             self.init_from_ckpt(ckpt_path)
 
     def init_from_ckpt(self, ckpt_path):
-        checkpoint = torch.load(ckpt_path)
-        self.load_state_dict(checkpoint['model'])
+        if os.path.splitext(ckpt_path)[-1] == '.pt':
+            checkpoint = torch.load(ckpt_path)
+            self.load_state_dict(checkpoint['model'])
+        elif os.path.splitext(ckpt_path)[-1] == '.ckpt':
+            checkpoint = torch.load(ckpt_path)
+            if 'loss' in checkpoint['state_dict']:
+                del checkpoint['state_dict']['loss']
+            self.load_state_dict(checkpoint['state_dict'], strict=False)
 
         print(f"Loaded model from {ckpt_path}")
 

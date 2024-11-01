@@ -42,7 +42,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
-        ckpt_path: "checkpoints/reconmodels/vae/0094_0094/epoch=000399.pt"
+        ckpt_path: "checkpoints/reconmodels/vae/0094_0094/epoch=000399.ckpt"
         input_size: 1024
         image_channels: 1
         hidden_dim: 64
