@@ -831,6 +831,7 @@ class LatentDiffusion(DDPM):
             x = x[:bs]
         x = x.to(self.device)
         encoder_posterior = self.encode_first_stage(x)
+        print("encoder_posterior", encoder_posterior[0][0, 0, 28:36, 28:36])
         z = self.get_first_stage_encoding(encoder_posterior).detach()
 
         if self.model.conditioning_key is not None and not self.force_null_conditioning:
@@ -850,6 +851,7 @@ class LatentDiffusion(DDPM):
                     c = self.get_learned_conditioning(xc)
                 else:
                     c = self.get_learned_conditioning(xc.to(self.device))
+                    print("c", c[0, 0, 28:36, 28:36])
             else:
                 c = xc
             if bs is not None:
