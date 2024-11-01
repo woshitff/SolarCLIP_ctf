@@ -9,8 +9,8 @@ model:
     linear_end: 0.0120
     log_every_t: 200
     timesteps: 100
-    first_stage_key: "magnet_image"
-    cond_stage_key: "magnet_image"
+    first_stage_key: "0094_image"
+    cond_stage_key: "0094_image"
     image_size: 64
     channels: 3
     cond_stage_trainable: false
@@ -42,7 +42,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
-        ckpt_path: "checkpoints/reconmodels/vae/0094_0094/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_500.pt"
+        ckpt_path: "checkpoints/reconmodels/vae/0094_0094/epoch=000399.pt"
         input_size: 1024
         image_channels: 1
         hidden_dim: 64
