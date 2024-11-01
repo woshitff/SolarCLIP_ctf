@@ -43,7 +43,7 @@ class LPIPS(nn.Module):
         if isinstance(posteriors, tuple):
             post_mu, post_logvar = posteriors
             kl_loss = -0.5 * torch.sum(1 + post_logvar - post_mu.pow(2) - post_logvar.exp())
-            kl_loss = kl_loss / self.mu.shape[0]
+            kl_loss = kl_loss / post_mu.shape[0]
         else:
             kl_loss = torch.tensor(0.0)
         
