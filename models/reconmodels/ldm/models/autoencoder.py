@@ -1,6 +1,6 @@
 import torch
 
-from models.reconmodels.autoencoder.vae.CNN_VAE import CNN_VAE
+from models.reconmodels.autoencoder.models.vae.CNN_VAE import CNN_VAE
 
 class IdentityFirstStage(torch.nn.Module):
     def __init__(self, *args, vq_interface=False, **kwargs):
