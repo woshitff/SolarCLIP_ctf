@@ -25,7 +25,7 @@ model:
       params:
         rec_loss_type: l2
         log_var_init: 0.0
-        kl_weight: 1.0
+        kl_weight: 1e-6
         perceptual_weight: 1.0
 
 data:
