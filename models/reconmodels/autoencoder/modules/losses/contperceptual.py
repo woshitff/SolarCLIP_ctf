@@ -16,7 +16,7 @@ class LPIPS(nn.Module):
         self.kl_weight = kl_weight
         self.perceptual_weight = perceptual_weight
 
-        self.logvar = nn.Parameter(torch.ones(size=())*log_var_init)
+        # self.logvar = nn.Parameter(torch.ones(size=())*log_var_init)
         self.perceptual_loss = lpips.LPIPS(net='vgg').eval()
 
         
