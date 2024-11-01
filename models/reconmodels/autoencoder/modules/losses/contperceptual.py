@@ -37,13 +37,13 @@ class LPIPS(nn.Module):
         weighted_nll_loss = nll_loss
         if weights is not None:
             weighted_nll_loss = weights*nll_loss
-        weighted_nll_loss = torch.sum(weighted_nll_loss) / weighted_nll_loss.shape[0]
-        nll_loss = torch.sum(nll_loss) / nll_loss.shape[0]
+        weighted_nll_loss = torch.sum(weighted_nll_loss) / weighted_nll_loss.numel()
+        nll_loss = torch.sum(nll_loss) / nll_loss.numel()
 
         if isinstance(posteriors, tuple):
             post_mu, post_logvar = posteriors
             kl_loss = -0.5 * torch.sum(1 + post_logvar - post_mu.pow(2) - post_logvar.exp())
-            kl_loss = kl_loss / post_mu.shape[0]
+            kl_loss = kl_loss / post_mu.numel()
         else:
             kl_loss = torch.tensor(0.0)
         
