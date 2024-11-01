@@ -33,7 +33,8 @@ class LPIPS(nn.Module):
             perceptual_loss = self.perceptual_loss(inputs.repeat(1, 3, 1, 1).contiguous(), recons.repeat(1, 3, 1, 1).contiguous())
             rec_loss = rec_loss + self.perceptual_weight * perceptual_loss
 
-        nll_loss = rec_loss / torch.exp(self.logvar) + self.logvar
+        # nll_loss = rec_loss / torch.exp(self.logvar) + self.logvar
+        nll_loss = rec_loss 
         weighted_nll_loss = nll_loss
         if weights is not None:
             weighted_nll_loss = weights*nll_loss
