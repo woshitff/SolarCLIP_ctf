@@ -280,7 +280,7 @@ class ImageSaveCallback(Callback):
             self.saved_first_batch = True
 
 class SolarImageLogger(Callback):
-    # see https://github.com/CompVis/stable-diffusion/blob/main/main.py
+    # see original https://github.com/CompVis/stable-diffusion/blob/main/main.py
     def __init__(self, batch_frequency, max_images, clamp=False, increase_log_steps=True,
                  rescale=True, disabled=False, log_on_batch_idx=False, log_first_step=False,
                  log_images_kwargs=None):
