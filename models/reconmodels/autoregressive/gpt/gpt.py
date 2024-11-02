@@ -196,4 +196,21 @@ class SolarLatentGPT(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
         return optimizer
     
+    def log_images(self, batch, N=2):
+        log = dict()
 
+        with torch.no_grad():
+            hmi_latent = self.get_latent(batch[:, 0, :, :, :], 'magnet_image')
+            aia_latent = self.get_latent(batch[:, 1, :, :, :], '0094_image')
+
+        N = min(N, hmi_latent.shape[0])
+        log['hmi_latent'] = hmi_latent[:N]
+        log['aia_latent'] = aia_latent[:N]
+
+        self.eval()
+        with torch.no_grad():
+            aia_latent_hat = self.generate(hmi_latent, self.max_new_tokens)
+        log['aia_latent_hat'] = aia_latent_hat[:N]
+        self.train()
+
+        return log

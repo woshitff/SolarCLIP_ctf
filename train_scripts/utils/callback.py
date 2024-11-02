@@ -307,9 +307,11 @@ class SolarImageLogger(Callback):
         if mode == 'magnet_image':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
-        else:  # '0094_image'
+        elif mode == '0094_image':  # '0094_image'
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = 0
+        else:
+            raise ValueError("Unknown modal type")
         return cmap, vmin, vmax
 
     def get_target_keys_and_modal(self, pl_module):
