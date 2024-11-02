@@ -45,6 +45,10 @@ class unpatchify(nn.Module):
 
 class SolarLatentGPT(pl.LightningModule):
     def __init__(self, 
+                 inputs_modal: str='magnet_image',
+                 targets_modal: str='0094_image',
+                 inputs_config: dict=None,
+                 targets_config: dict=None,
                  in_channels: int=3, 
                  input_size: int=64 , 
                  patch_size: int=2, 
@@ -54,11 +58,11 @@ class SolarLatentGPT(pl.LightningModule):
                  drop_out: float=0.1,
                  attn_mask: bool=False,
                  loss_type: str='l2',
-                 hmi_vae_config: dict=None,
-                 aia0094_vae_config: dict=None
                 ):
         super().__init__()
         self.save_hyperparameters()
+        self.inputs_modal = inputs_modal
+        self.targets_modal = targets_modal
         self.in_channels = in_channels
         self.input_size = input_size
         self.patch_size = patch_size
@@ -76,8 +80,8 @@ class SolarLatentGPT(pl.LightningModule):
         self.unembedding = nn.Linear(width, patch_size ** 2)
         self.transformers = Transformer(width, heads, layers, drop_out, attn_mask=None)
 
-        self.instantiate_vae_model(hmi_vae_config)
-        self.instantiate_vae_model(aia0094_vae_config)
+        self.instantiate_vae_model(inputs_config)
+        self.instantiate_vae_model(targets_config)
 
     def instantiate_vae_model(self, vae_config):
         model = instantiate_from_config(vae_config)
@@ -200,17 +204,17 @@ class SolarLatentGPT(pl.LightningModule):
         log = dict()
 
         with torch.no_grad():
-            hmi_latent = self.get_latent(batch[:, 0, :, :, :], 'magnet_image')
-            aia_latent = self.get_latent(batch[:, 1, :, :, :], '0094_image')
+            inputs = self.get_latent(batch[:, 0, :, :, :], self.inputs_modal)
+            targets = self.get_latent(batch[:, 1, :, :, :], self.targets_modal)
 
-        N = min(N, hmi_latent.shape[0])
-        log['hmi_latent'] = hmi_latent[:N]
-        log['aia_latent'] = aia_latent[:N]
+        N = min(N, inputs.shape[0])
+        log['inputs'] = inputs[:N]
+        log['targets'] = targets[:N]
 
         self.eval()
         with torch.no_grad():
-            aia_latent_hat = self.generate(hmi_latent, self.max_new_tokens)
-        log['aia_latent_hat'] = aia_latent_hat[:N]
+            targets_hat = self.generate(inputs, self.max_new_tokens)
+        log['targets_hat'] = targets_hat[:N]
         self.train()
 
         return log

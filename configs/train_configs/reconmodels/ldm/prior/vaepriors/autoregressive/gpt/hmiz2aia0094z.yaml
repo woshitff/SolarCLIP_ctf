@@ -4,6 +4,8 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.autoregressive.gpt.gpt.SolarLatentGPT
   params:
+    inputs_modal: 'magnet_image'
+    targets_modal: '0094_image'
     in_channels: 3
     input_size: 64
     patch_size: 2
@@ -14,7 +16,7 @@ model:
     attn_mask: false
     loss_type: 'l2'
     
-    hmi_vae_config: 
+    inputs_config: 
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
         ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_1000.pt"
@@ -34,7 +36,7 @@ model:
         loss_type: MSE
         lambda_kl: 0.1
 
-    aia0094_vae_config: 
+    targets_config: 
       ckpt_path: "checkpoints/reconmodels/vae/0094_0094/epoch=000399.ckpt"
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
