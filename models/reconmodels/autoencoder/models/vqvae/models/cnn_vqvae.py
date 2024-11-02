@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 
 from models.reconmodels.autoencoder.util import config_optimizers
-from models.reconmodels.autoencoder.vqvae.modules.vector_quantize_pytorch import VectorQuantize
+from models.reconmodels.autoencoder.models.vqvae.modules.vector_quantize_pytorch import VectorQuantize
 
 """
 SolarReconModel_VAE Model.
