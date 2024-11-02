@@ -201,7 +201,15 @@ class SolarLatentGPT(pl.LightningModule):
         return optimizer
     
     def log_images(self, batch, N=2):
+        """
+        Log a batch of images to tensorboard and local
+
+        output:
+            log: dictionary of images to log
+            modals: dictionary of modalities determing the cmap and vmin/vmax for each image
+        """
         log = dict()
+        modals = dict()
 
         with torch.no_grad():
             inputs = self.get_latent(batch[:, 0, :, :, :], self.inputs_modal)
@@ -217,4 +225,8 @@ class SolarLatentGPT(pl.LightningModule):
         log['targets_hat'] = targets_hat[:N]
         self.train()
 
-        return log
+        modals['inputs'] = self.inputs_modal
+        modals['targets'] = self.targets_modal
+        modals['targets_hat'] = self.targets_modal
+
+        return log, modals

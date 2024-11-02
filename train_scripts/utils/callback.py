@@ -314,21 +314,16 @@ class SolarImageLogger(Callback):
             raise ValueError("Unknown modal type")
         return cmap, vmin, vmax
 
-    def get_target_keys_and_modal(self, pl_module):
+    def get_target_keys(self, pl_module):
         if pl_module.__class__.__name__ in ["LatentDiffusion", "SolarCLIPConditionedLatentDiffusionV2"]:
             target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
-            modal = pl_module.first_stage_key
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
-            modal = pl_module.vae_modal
         elif pl_module.__class__.__name__ in ["SolarLatentGPT"]:
             target_keys = ['inputs', 'targets', 'targets_hat']
-            inputs_modal = pl_module.inputs_modal
-            targets_modal = pl_module.targets_modal
-            return target_keys, inputs_modal, targets_modal
         else:
             raise ValueError("Unsupported model type")
-        return target_keys, modal
+        return target_keys
 
     @rank_zero_only
     def _log_images_tensorboard(self, pl_module, images, batch_idx, split):
@@ -364,29 +359,28 @@ class SolarImageLogger(Callback):
                 global_step=pl_module.global_step, dataformats='HWC')
 
     @rank_zero_only
-    def log_local(self, save_dir, split, images,
+    def log_local(self, save_dir, split, images, modals,
                   global_step, current_epoch, batch_idx, pl_module):
         root = os.path.join(save_dir, "images", split)
 
-        target_keys, modal = self.get_target_keys_and_modal(pl_module)
-        inputs = images['inputs'].cpu().numpy()
+        target_keys = self.get_target_keys(pl_module)
 
-        if modal in ['magnet_image', '0094_image']:
-            cmap, vmin, vmax = self.get_cmap_and_limits(inputs, modal)
-        else:
-            raise ValueError("Unknown modal type")
-
-        for k in images:
+        for k, img_tensor in images.items():
             if k not in target_keys:
+                print(f"Warning: No modal type provided for {k}. Skipping.")
                 continue
+            image_array = img_tensor.cpu().numpy()
+            modal = modals[k]
+
+            if modal in ['magnet_image', '0094_image']:
+                cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+            else:
+                raise ValueError("Unknown modal type")
+
             plt.figure(figsize=(32, 16))
             for i in range(2):
                 plt.subplot(1, 2, i+1)
-                if k == 'mu':
-                    vmax_mu = np.max([np.abs(np.min(images[k].cpu().numpy())), np.abs(np.max(images[k].cpu().numpy()))])/2
-                    plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap="RdBu_r", vmin=-vmax_mu, vmax=vmax_mu)
-                else:
-                    plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap=cmap, vmin=vmin, vmax=vmax)
+                plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 
@@ -414,7 +408,7 @@ class SolarImageLogger(Callback):
                 pl_module.eval()
 
             with torch.no_grad():
-                images = pl_module.log_images(batch, **self.log_images_kwargs)
+                images, modals = pl_module.log_images(batch, **self.log_images_kwargs)
 
             for k in images:
                 N = min(images[k].shape[0], self.max_images)
@@ -424,7 +418,7 @@ class SolarImageLogger(Callback):
                     if self.clamp:
                         images[k] = torch.clamp(images[k], -1., 1.)
 
-            self.log_local(pl_module.logger.save_dir, split, images,
+            self.log_local(pl_module.logger.save_dir, split, images, modals,
                            pl_module.global_step, pl_module.current_epoch, batch_idx, pl_module)
 
             logger_log_images = self.logger_log_images.get(logger, lambda *args, **kwargs: None)
