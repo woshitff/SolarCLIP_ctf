@@ -7,8 +7,7 @@ model:
     in_channels: 3
     input_size: 64
     patch_size: 2
-    embed_dim: 768
-    width: 64
+    width: 768
     heads: 12
     layers: 12
     drop_out: 0.1

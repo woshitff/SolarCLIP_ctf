@@ -28,15 +28,17 @@ class patchify(nn.Module):
         return tokens
     
 class unpatchify(nn.Module):
-    def __init__(self, patch_size, stride):
+    def __init__(self, input_size, patch_size, stride):
         super().__init__()
+        self.input_size = input_size
         self.patch_size = patch_size
         self.stride = stride
         assert self.patch_size==self.stride, "Patch size and stride should be equal"
 
     def forward(self, x):
-        tokens = einops.rearrange(x, 'b (c n_h n_w) (h w) -> b c h n_h w n_w', n_h=self.patch_size, n_w=self.patch_size) # (B, C*patch_size^2, H/patch_size*W/patch_size) -> (B, C, H/patch_size, patch_size, W/patch_size, patch_size)
-        tokens = tokens.fold(2, self.patch_size, self.stride).fold(3, self.patch_size, self.stride) # (B, C, H/patch_size, patch_size, W/patch_size, patch_size) -> (B, C, H, W)
+        B, L, D = x.size()
+        n_h = (self.input_size // self.patch_size)
+        tokens = einops.rearrange(x, 'b (c n_h n_w) (h w) -> b c (n_h h) (n_w w)', h=self.patch_size, w=self.patch_size, n_h=n_h, n_w=n_h) # (B, C*patch_size^2, H/patch_size*W/patch_size) -> (B, C, H/patch_size, patch_size, W/patch_size, patch_size)
 
         return tokens
     
@@ -46,8 +48,7 @@ class SolarLatentGPT(pl.LightningModule):
                  in_channels: int=3, 
                  input_size: int=64 , 
                  patch_size: int=2, 
-                 embed_dim: int=768, 
-                 width: int=64, 
+                 width: int=768, 
                  heads: int=12,
                  layers: int=12, 
                  drop_out: float=0.1,
@@ -61,19 +62,18 @@ class SolarLatentGPT(pl.LightningModule):
         self.in_channels = in_channels
         self.input_size = input_size
         self.patch_size = patch_size
-        self.block_size = in_channels * input_size ** 2 // (patch_size ** 2)
+        self.block_size = 2 *in_channels * input_size ** 2 // (patch_size ** 2)
         assert self.block_size % 2 == 0, "Block size should be even"
-        self.max_new_tokens = self.block_size // 2
-        self.embed_dim = embed_dim
+        self.max_new_tokens = self.block_size 
         self.width = width
         self.heads = heads
         self.layers = layers    
         self.loss_type = loss_type
 
         scale = width ** -0.5
-        self.pos_embedding = nn.Parameter(scale * torch.randn(2 * (input_size // patch_size) ** 2 , width))
-        self.embedding = nn.Linear(patch_size ** 2 , embed_dim)
-        self.unembedding = nn.Linear(embed_dim, patch_size ** 2)
+        self.pos_embedding = nn.Parameter(scale * torch.randn(2 * 3* (input_size // patch_size) ** 2 , width))
+        self.embedding = nn.Linear(patch_size ** 2 , width)
+        self.unembedding = nn.Linear(width, patch_size ** 2)
         self.transformers = Transformer(width, heads, layers, drop_out, attn_mask=None)
 
         self.instantiate_vae_model(hmi_vae_config)
@@ -95,11 +95,11 @@ class SolarLatentGPT(pl.LightningModule):
         assert t <= self.block_size, f"Cannot forward sequence of length {t}, total block size is only {self.block_size}, which is the sum of hmi and 0094 images' tokens"
 
         pos_embed = self.pos_embedding[:t, :].unsqueeze(0).expand(b, -1, -1)
-        token_embed = self.embedding(idx)
+        # token_embed = self.embedding(idx)
+        token_embed = idx
         x = token_embed + pos_embed
         
-        for layer in self.transformers:
-            x = layer(x)
+        x = self.transformers(x)
         
         return x
     
@@ -109,7 +109,7 @@ class SolarLatentGPT(pl.LightningModule):
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         Most likely you'll want to make sure to be in model.eval() mode of operation for this.
         """
-        if idx.size(1) <= self.block_size//2:
+        if idx.size(1) <= self.block_size:
             idx = self.embedding(idx)
 
         for _ in range(max_new_tokens):
@@ -120,7 +120,7 @@ class SolarLatentGPT(pl.LightningModule):
 
         y_hat = idx[:, self.block_size//2:, ]
         y_hat = self.unembedding(y_hat)
-        y_hat = unpatchify(self.patch_size, self.patch_size)(y_hat)
+        y_hat = unpatchify(self.input_size, self.patch_size, self.patch_size)(y_hat)
 
         return y_hat
                 
