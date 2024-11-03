@@ -22,8 +22,7 @@ class patchify(nn.Module):
         assert self.patch_size==self.stride, "Patch size and stride should be equal"
 
     def forward(self, x):
-        tokens = x.unfold(2, self.patch_size, self.stride).unfold(3, self.patch_size, self.stride) # (B, C, H, W) -> (B, C, H/patch_size, patch_size, W/patch_size, patch_size)
-        tokens = einops.rearrange(tokens, 'b c h n_h w n_w -> b (c n_h n_w) (h w)') # (B, C*patch_size^2, H/patch_size*W/patch_size)
+        tokens = einops.rearrange(x, 'b c (h n_h) (w n_w) -> b (c n_h n_w) (h w)', h=self.patch_size, w=self.patch_size) # (B, C*patch_size^2, H/patch_size*W/patch_size)
 
         return tokens
     
@@ -103,11 +102,11 @@ class vit_regressor(pl.LightningModule):
         token_embed = self.embedding(x) # (b, 3*32*32, 4) -> (b, 3*32*32, 768)
         # token_embed = x
         x = token_embed + pos_embed
-        
+        print('0',x.shape)
         x = self.transformers(x)
-
+        print('1', x.shape)
         x = self.unembedding(x) # (b, 3*32*32, 768) -> (b, 3*32*32, 4)
-        
+        print('2', x.shape)
         return x
                 
     @torch.no_grad()
@@ -135,8 +134,9 @@ class vit_regressor(pl.LightningModule):
             raise NotImplementedError(f"Key {k} not supported")
         
         latent = self.get_latent(x, k)
+        print('latent', latent.shape)
         tokens = patchify(self.patch_size, self.patch_size)(latent)
-
+        print('tokens', tokens.shape)
         return tokens
     
     def loss_function(self, y_hat, y, weights=None):
