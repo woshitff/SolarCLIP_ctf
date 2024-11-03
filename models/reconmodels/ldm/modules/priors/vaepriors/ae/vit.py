@@ -80,8 +80,8 @@ class vit_regressor(pl.LightningModule):
         self.unembedding = nn.Linear(width, patch_size ** 2)
         self.transformers = Transformer(width, heads, layers, drop_out, attn_mask=None)
 
-        self.instantiate_vae_model(inputs_config)
-        self.instantiate_vae_model(targets_config)
+        self.hmi_vae = self.instantiate_vae_model(inputs_config)
+        self.aia0094_vae = self.instantiate_vae_model(targets_config)
 
     def instantiate_vae_model(self, vae_config):
         model = instantiate_from_config(vae_config)
@@ -91,6 +91,7 @@ class vit_regressor(pl.LightningModule):
             param.requires_grad = False
         
         print(f"Loaded model")
+        return model
 
     def forward(self, x):
 

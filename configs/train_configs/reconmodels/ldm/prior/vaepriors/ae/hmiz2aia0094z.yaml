@@ -19,7 +19,7 @@ model:
     inputs_config: 
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
-        ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_1000.pt"
+        ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_kl_1e-1_epoch_1000.pt"
         vae_modal: 'magnet_image'
         input_size: 1024
         image_channels: 1
