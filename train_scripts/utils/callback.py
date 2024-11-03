@@ -319,7 +319,7 @@ class SolarImageLogger(Callback):
             target_keys = ['inputs', 'reconstruction', 'conditioning', 'samples']
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
-        elif pl_module.__class__.__name__ in ["SolarLatentGPT"]:
+        elif pl_module.__class__.__name__ in ["SolarLatentGPT", "vit_regressor"]:
             target_keys = ['inputs', 'targets', 'targets_hat']
         else:
             raise ValueError("Unsupported model type")
