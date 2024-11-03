@@ -100,11 +100,13 @@ class vit_regressor(pl.LightningModule):
         assert t <= self.block_size, f"Cannot forward sequence of length {t}, total block size is only {self.block_size}, which is the sum of hmi and 0094 images' tokens"
 
         pos_embed = self.pos_embedding.unsqueeze(0).expand(b, -1, -1)
-        # token_embed = self.embedding(idx)
-        token_embed = x
+        token_embed = self.embedding(x) # (b, 3*32*32, 4) -> (b, 3*32*32, 768)
+        # token_embed = x
         x = token_embed + pos_embed
         
         x = self.transformers(x)
+
+        x = self.unembedding(x) # (b, 3*32*32, 768) -> (b, 3*32*32, 4)
         
         return x
                 
