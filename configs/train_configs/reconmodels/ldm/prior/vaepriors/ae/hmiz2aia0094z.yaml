@@ -59,7 +59,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 2
+    batch_size: 16
     num_workers: 9
     wrap: false
     train:
@@ -76,7 +76,7 @@ data:
         time_interval: 
           - 0
           - 5346720
-        time_step: 115200
+        time_step: 11520
     validation:
       target: data.dataset.SolarDataset.multimodal_dataset
       params:
