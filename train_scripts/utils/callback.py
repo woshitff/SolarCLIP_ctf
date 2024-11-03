@@ -326,24 +326,29 @@ class SolarImageLogger(Callback):
         return target_keys
 
     @rank_zero_only
-    def _log_images_tensorboard(self, pl_module, images, batch_idx, split):
-        
-        target_keys, modal = self.get_target_keys_and_modal(pl_module)
+    def _log_images_tensorboard(self, pl_module, images, modals, batch_idx, split):
+        pass
+        target_keys = self.get_target_keys(pl_module)
         inputs = images['inputs'].cpu().numpy()
 
-        if modal in ['magnet_image', '0094_image']:
-            cmap, vmin, vmax = self.get_cmap_and_limits(inputs, modal)
-        else:
-            raise ValueError("Unknown modal type")
         
-        for k in images:
+        
+        for k, img_tensor in images.items():
             if k not in target_keys:
                 continue
 
-            plt.figure(figsize=(16, 8))
+            image_array = img_tensor.cpu().numpy()
+            modal = modals[k]
+
+            if modal in ['magnet_image', '0094_image']:
+                cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+            else:
+                raise ValueError("Unknown modal type")
+
+            plt.figure(figsize=(32, 16))
             for i in range(2):
                 plt.subplot(1, 2, i+1)
-                plt.imshow(images[k][i, 0, :, :].cpu().numpy(), cmap=cmap, vmin=vmin, vmax=vmax)
+                plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 
@@ -422,7 +427,7 @@ class SolarImageLogger(Callback):
                            pl_module.global_step, pl_module.current_epoch, batch_idx, pl_module)
 
             logger_log_images = self.logger_log_images.get(logger, lambda *args, **kwargs: None)
-            logger_log_images(pl_module, images, pl_module.global_step, split)
+            logger_log_images(pl_module, images, modals, pl_module.global_step, split)
 
             if is_train:
                 pl_module.train()
