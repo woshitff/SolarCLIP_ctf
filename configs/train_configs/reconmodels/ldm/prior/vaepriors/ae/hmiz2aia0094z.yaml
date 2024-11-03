@@ -1,0 +1,101 @@
+model:
+  base_learning_rate: 1.0e-04
+  base_learning_optimizer: "Adam"
+  base_learning_schedule: "CosineAnnealingLR"
+  target: models.reconmodels.ldm.modules.priors.vaepriors.ae.vit.vit_regressor
+  params:
+    inputs_modal: 'magnet_image'
+    targets_modal: '0094_image'
+    in_channels: 3
+    input_size: 64
+    patch_size: 2
+    width: 768
+    heads: 12
+    layers: 12
+    drop_out: 0.1
+    attn_mask: false
+    loss_type: 'l2'
+    
+    inputs_config: 
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
+      params:
+        ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_1000.pt"
+        vae_modal: 'magnet_image'
+        input_size: 1024
+        image_channels: 1
+        hidden_dim: 64
+        layers: 2
+        kernel_sizes: 
+          - 7
+          - 7
+        strides: 
+          - 4
+          - 4
+        group_nums: 16
+        latent_dim: 3
+        loss_type: MSE
+        lambda_kl: 0.1
+
+    targets_config: 
+      ckpt_path: "checkpoints/reconmodels/vae/0094_0094/epoch=000399.ckpt"
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
+      params:
+        vae_modal: '0094_image'
+        input_size: 1024
+        image_channels: 1
+        hidden_dim: 64
+        layers: 2
+        kernel_sizes: 
+          - 7
+          - 7
+        strides: 
+          - 4
+          - 4
+        group_nums: 16
+        latent_dim: 3
+        loss_type: MSE
+        lambda_kl: 0.1
+
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 2
+    num_workers: 9
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 5346720
+        time_step: 115200
+    validation:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 5346720
+          - 7452000
+        time_step: 115200
+
+lightning:
+  trainer:
+    strategy: "ddp"
+    accelerator: "gpu"
+    devices: 4
+    benchmark: True
