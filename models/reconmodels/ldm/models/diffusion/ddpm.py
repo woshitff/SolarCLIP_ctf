@@ -709,6 +709,8 @@ class LatentDiffusion(DDPM):
                 elif isinstance(c, tuple):
                     mu, logvar = c
                     c = mu
+            elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
+                c = self.cond_stage_model.prior(c)
             else:
                 c = self.cond_stage_model(c)
         else:

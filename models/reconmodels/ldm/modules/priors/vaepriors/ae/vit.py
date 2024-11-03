@@ -44,6 +44,7 @@ class unpatchify(nn.Module):
 
 class vit_regressor(pl.LightningModule):
     def __init__(self, 
+                 ckpt_path: str=None,
                  inputs_modal: str='magnet_image',
                  targets_modal: str='0094_image',
                  inputs_config: dict=None,
@@ -82,6 +83,21 @@ class vit_regressor(pl.LightningModule):
         self.hmi_vae = self.instantiate_vae_model(inputs_config)
         self.aia0094_vae = self.instantiate_vae_model(targets_config)
 
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path)
+
+    def init_from_ckpt(self, ckpt_path):
+        if os.path.splitext(ckpt_path)[-1] == '.pt':
+            checkpoint = torch.load(ckpt_path)
+            self.load_state_dict(checkpoint['model'])
+        elif os.path.splitext(ckpt_path)[-1] == '.ckpt':
+            checkpoint = torch.load(ckpt_path)
+            if 'loss' in checkpoint['state_dict']:
+                del checkpoint['state_dict']['loss']
+            self.load_state_dict(checkpoint['state_dict'], strict=False)
+
+        print(f"Loaded model from {ckpt_path}")
+
     def instantiate_vae_model(self, vae_config):
         model = instantiate_from_config(vae_config)
         self.first_stage_model = model.eval()
@@ -108,6 +124,14 @@ class vit_regressor(pl.LightningModule):
         x = self.unembedding(x) # (b, 3*32*32, 768) -> (b, 3*32*32, 4)
         print('2', x.shape)
         return x
+    
+    def prior(self, x):
+        latent = self.get_latent(x, 'magnet_image')
+        tokens = patchify(self.patch_size, self.patch_size)(latent)
+        targets_hat = self(tokens)
+        targets_hat = unpatchify(self.input_size, self.patch_size, self.patch_size)(targets_hat)
+
+        return targets_hat
                 
     @torch.no_grad()
     def get_latent(self, x, k):
@@ -178,7 +202,7 @@ class vit_regressor(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
         return optimizer
-    
+
     def log_images(self, batch, N=2):
         """
         Log a batch of images to tensorboard and local
