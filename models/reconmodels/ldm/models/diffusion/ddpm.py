@@ -1222,6 +1222,7 @@ class LatentDiffusion(DDPM):
         use_ddim = ddim_steps is not None
 
         log = dict()
+        modal = dict()
         z, c, x, xrec, xc = self.get_input(batch, self.first_stage_key,
                                            return_first_stage_outputs=True,
                                            force_c_encode=True,
@@ -1231,6 +1232,9 @@ class LatentDiffusion(DDPM):
         n_row = min(x.shape[0], n_row)
         log["inputs"] = x # input images
         log["reconstruction"] = xrec # reconstructed images by first stage model
+        modal['input'] = self.first_stage_key
+        modal['reconstruction'] = self.first_stage_key
+        modal['conditioning'] = self.cond_stage_key
         if self.model.conditioning_key is not None:
             if hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
@@ -1291,7 +1295,7 @@ class LatentDiffusion(DDPM):
                     #                                      quantize_denoised=True)
                 x_samples = self.decode_first_stage(samples.to(self.device))
                 log["samples_x0_quantized"] = x_samples
-
+        modal['sample'] = self.first_stage_key
         if unconditional_guidance_scale > 1.0:
             uc = self.get_unconditional_conditioning(N, unconditional_guidance_label)
             if self.model.conditioning_key == "crossattn-adm":

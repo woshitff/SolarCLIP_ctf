@@ -10,7 +10,7 @@ model:
     log_every_t: 200
     timesteps: 100
     first_stage_key: "0094_image"
-    cond_stage_key: "0094_image"
+    cond_stage_key: "magnet_image"
     image_size: 64
     channels: 3
     cond_stage_trainable: false
