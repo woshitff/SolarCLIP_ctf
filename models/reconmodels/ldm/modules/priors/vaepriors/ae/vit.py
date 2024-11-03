@@ -204,6 +204,7 @@ class vit_regressor(pl.LightningModule):
         self.eval()
         with torch.no_grad():
             targets_hat = self(inputs)
+            targets_hat = unpatchify(self.input_size, self.patch_size, self.patch_size)(targets_hat)
         log['targets_hat'] = targets_hat[:N]
         self.train()
 
