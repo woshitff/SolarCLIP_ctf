@@ -1344,7 +1344,7 @@ class LatentDiffusion(DDPM):
                 return log
             else:
                 return {key: log[key] for key in return_keys}
-        return log
+        return log, modal
 
     def configure_optimizers(self):
         lr = self.learning_rate
