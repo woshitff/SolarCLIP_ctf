@@ -1232,7 +1232,7 @@ class LatentDiffusion(DDPM):
         n_row = min(x.shape[0], n_row)
         log["inputs"] = x # input images
         log["reconstruction"] = xrec # reconstructed images by first stage model
-        modal['input'] = self.first_stage_key
+        modal['inputs'] = self.first_stage_key
         modal['reconstruction'] = self.first_stage_key
         modal['conditioning'] = self.cond_stage_key
         if self.model.conditioning_key is not None:
