@@ -1295,7 +1295,7 @@ class LatentDiffusion(DDPM):
                     #                                      quantize_denoised=True)
                 x_samples = self.decode_first_stage(samples.to(self.device))
                 log["samples_x0_quantized"] = x_samples
-        modal['sample'] = self.first_stage_key
+        modal['samples'] = self.first_stage_key
         if unconditional_guidance_scale > 1.0:
             uc = self.get_unconditional_conditioning(N, unconditional_guidance_label)
             if self.model.conditioning_key == "crossattn-adm":
