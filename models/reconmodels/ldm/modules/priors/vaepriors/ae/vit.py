@@ -118,11 +118,8 @@ class vit_regressor(pl.LightningModule):
         token_embed = self.embedding(x) # (b, 3*32*32, 4) -> (b, 3*32*32, 768)
         # token_embed = x
         x = token_embed + pos_embed
-        print('0',x.shape)
         x = self.transformers(x)
-        print('1', x.shape)
         x = self.unembedding(x) # (b, 3*32*32, 768) -> (b, 3*32*32, 4)
-        print('2', x.shape)
         return x
     
     def prior(self, x):
@@ -155,9 +152,7 @@ class vit_regressor(pl.LightningModule):
             raise NotImplementedError(f"Key {k} not supported")
         
         latent = self.get_latent(x, k)
-        print('latent', latent.shape)
         tokens = patchify(self.patch_size, self.patch_size)(latent)
-        print('tokens', tokens.shape)
         return tokens
     
     def loss_function(self, y_hat, y, weights=None):
@@ -220,15 +215,12 @@ class vit_regressor(pl.LightningModule):
 
         N = min(N, inputs.shape[0])
         log['inputs'] = inputs[:N]
-        print('inputs', inputs.shape)
         log['targets'] = targets[:N]
-        print('targets', targets.shape)
         self.eval()
         with torch.no_grad():
             inputs = patchify(self.patch_size, self.patch_size)(inputs)
             targets_hat = self(inputs)
             targets_hat = unpatchify(self.input_size, self.patch_size, self.patch_size)(targets_hat)
-            print('targets_hat', targets_hat.shape)
         log['targets_hat'] = targets_hat[:N]
         self.train()
 
