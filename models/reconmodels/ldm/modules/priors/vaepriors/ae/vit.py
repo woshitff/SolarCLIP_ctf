@@ -22,7 +22,7 @@ class patchify(nn.Module):
         assert self.patch_size==self.stride, "Patch size and stride should be equal"
 
     def forward(self, x):
-        tokens = einops.rearrange(x, 'b c (h n_h) (w n_w) -> b (c n_h n_w) (h w)', h=self.patch_size, w=self.patch_size) # (B, C*patch_size^2, H/patch_size*W/patch_size)
+        tokens = einops.rearrange(x, 'b c (n_h h) (n_w w) -> b (c n_h n_w) (h w)', h=self.patch_size, w=self.patch_size) # (B, C*patch_size^2, H/patch_size*W/patch_size)
 
         return tokens
     
@@ -118,11 +118,8 @@ class vit_regressor(pl.LightningModule):
         else:
             raise NotImplementedError(f"Key {k} not supported")
         
-        std = torch.exp(0.5*logvar)
-        eps = torch.randn_like(std)
-        z = mu + eps*std
 
-        return z
+        return mu
 
     @torch.no_grad()
     def get_data(self, batch, batch_idx, k):
@@ -199,12 +196,15 @@ class vit_regressor(pl.LightningModule):
 
         N = min(N, inputs.shape[0])
         log['inputs'] = inputs[:N]
+        print('inputs', inputs.shape)
         log['targets'] = targets[:N]
-
+        print('targets', targets.shape)
         self.eval()
         with torch.no_grad():
+            inputs = patchify(self.patch_size, self.patch_size)(inputs)
             targets_hat = self(inputs)
             targets_hat = unpatchify(self.input_size, self.patch_size, self.patch_size)(targets_hat)
+            print('targets_hat', targets_hat.shape)
         log['targets_hat'] = targets_hat[:N]
         self.train()
 
