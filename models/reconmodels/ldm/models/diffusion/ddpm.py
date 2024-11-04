@@ -853,6 +853,16 @@ class LatentDiffusion(DDPM):
                     c = self.get_learned_conditioning(xc)
                 else:
                     c = self.get_learned_conditioning(xc.to(self.device))
+                    if self.cond_stage_key == 'magnet_image':
+                        B, C, H, W = c.shape
+                        y_mask, x_mask = torch.meshgrid(torch.arange(H), torch.arange(W))  
+                        center = (H // 2, W // 2)  
+                        radius = 32  
+
+                        mask = (x_mask - center[1])**2 + (y_mask - center[0])**2 <= radius**2  
+                        mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(self.device)
+                        mask = mask.contiguous().expand(B, C, H, W)
+                        c = c * mask
                     # print("c", c[0, 0, 28:36, 28:36])
             else:
                 c = xc
