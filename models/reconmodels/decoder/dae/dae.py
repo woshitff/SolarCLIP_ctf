@@ -31,7 +31,7 @@ class LinearProjectionToImage(nn.Module):
         output_size = output_dim[0] * output_dim[1] * output_dim[2]  # 3 * 64 * 64
         self.output_dim = output_dim
         self.fc = nn.Linear(input_size, output_size)
-        self.activation = nn.Tanh()
+        self.activation = nn.laynorm(output_size)
 
     def forward(self, x):
         x = x.reshape(x.size(0), -1)  
@@ -86,7 +86,7 @@ class SolarCLIPDAE(pl.LightningModule):
             "Linear": nn.Sequential(
                 self.linear_projection,
                 ReshapeTo2D(16, 16),
-                LinearProjectionToImage(input_dim=(256, 16, 16), output_dim=(3, 64, 64))
+                LinearProjectionToImage(input_dim=(256, 16, 16), output_dim=(1, 256, 256))
                 )
         }
 
@@ -104,7 +104,7 @@ class SolarCLIPDAE(pl.LightningModule):
     def get_input(self, batch, k):
         if k == 'magnet_image':
             x = batch[:, 0, :, :, :]
-        elif k == '0094_image':
+        elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
@@ -116,7 +116,7 @@ class SolarCLIPDAE(pl.LightningModule):
     def get_target(self, batch, k):
         if k == 'magnet_image':
             x = batch[:, 0, :, :, :]
-        elif k == '0094_image':
+        elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
@@ -146,8 +146,8 @@ class SolarCLIPDAE(pl.LightningModule):
         return loss, loss_dict
 
     def shared_step(self, batch, batch_idx):
-        x = self.get_input(batch, batch_idx, self.decode_modal_key) 
-        y = self.get_target(batch, batch_idx, self.decode_modal_key)
+        x = self.get_input(batch, self.decode_modal_key) 
+        y = self.get_target(batch, self.decode_modal_key)
 
         y_hat = self(x)
 
@@ -181,8 +181,8 @@ class SolarCLIPDAE(pl.LightningModule):
         modals = dict()
 
         with torch.no_grad():
-            inputs = self.get_input(batch[:, 1, :, :, :], self.inputs_modal)
-            targets = self.get_target(batch[:, 1, :, :, :], self.inputs_modal)
+            inputs = self.get_input(batch[:, 1, :, :, :], self.decode_modal_key)
+            targets = self.get_target(batch[:, 1, :, :, :], self.decode_modal_key)
 
         N = min(N, inputs.shape[0])
         log['inputs'] = inputs[:N]

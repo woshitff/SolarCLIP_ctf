@@ -307,7 +307,7 @@ class SolarImageLogger(Callback):
         if mode == 'magnet_image':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
-        elif mode == '0094_image':  # '0094_image'
+        elif mode == '0094_image' or 'aia0094_image':  # '0094_image'
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = 0
         else:
@@ -331,8 +331,6 @@ class SolarImageLogger(Callback):
         target_keys = self.get_target_keys(pl_module)
         inputs = images['inputs'].cpu().numpy()
 
-        
-        
         for k, img_tensor in images.items():
             if k not in target_keys:
                 continue
@@ -340,7 +338,7 @@ class SolarImageLogger(Callback):
             image_array = img_tensor.cpu().numpy()
             modal = modals[k]
 
-            if modal in ['magnet_image', '0094_image']:
+            if modal in ['magnet_image', '0094_image', 'aia0094_image']:
                 cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
             else:
                 raise ValueError("Unknown modal type")
@@ -377,7 +375,7 @@ class SolarImageLogger(Callback):
             image_array = img_tensor.cpu().numpy()
             modal = modals[k]
 
-            if modal in ['magnet_image', '0094_image']:
+            if modal in ['magnet_image', '0094_image', 'aia0094_image']:
                 cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
             else:
                 raise ValueError("Unknown modal type")

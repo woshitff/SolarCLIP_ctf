@@ -5,27 +5,26 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.decoder.dae.dae.SolarCLIPDAE
   params:
-    decode_modal_keys: magnet_image
+    decode_modal_key: aia0094_image
     projection_type: "Linear"
     loss_type: "l2"
 
     solarclip_config:
-      solarclip_config:
-          target: models.clipmodels.solarclip.SolarCLIP
-          params:
-            ckpt_path: "checkpoints/clipmodels/innerloss_0_allembed_epoch_340_model.pt"
-            embed_dim: 768 
-            vision_width: 768
-            image_resolution_hmi: 1024  
-            vision_layers_hmi: 12 
-            vision_patch_size_hmi: 64  
-            image_resolution_aia: 1024  
-            vision_layers_aia: 12
-            vision_patch_size_aia: 64 
-            transformer_token_type: "all embedding"  
-            norm_type: "bn1d"  
-          lossconfig:
-            target: torch.nn.Identity
+        target: models.clipmodels.solarclip.SolarCLIP
+        params:
+          ckpt_path: "checkpoints/clipmodels/innerloss_0_allembed_epoch_340_model.pt"
+          embed_dim: 768 
+          vision_width: 768
+          image_resolution_hmi: 1024  
+          vision_layers_hmi: 12 
+          vision_patch_size_hmi: 64  
+          image_resolution_aia: 1024  
+          vision_layers_aia: 12
+          vision_patch_size_aia: 64 
+          transformer_token_type: "all embedding"  
+          norm_type: "bn1d"  
+        lossconfig:
+          target: torch.nn.Identity
 
 data:
   target: data.build.DataModuleFromConfig
