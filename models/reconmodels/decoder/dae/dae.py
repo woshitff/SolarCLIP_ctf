@@ -84,9 +84,8 @@ class SolarCLIPDAE(pl.LightningModule):
                 nn.Tanh()
                 ),
             "Linear": nn.Sequential(
-                self.linear_projection,
-                ReshapeTo2D(16, 16),
-                LinearProjectionToImage(input_dim=(256, 16, 16), output_dim=(1, 256, 256))
+                self.linear_projection, # (B, 256, 768) -> (B, 256, 256)
+                rearrange('b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=16, w=16),
                 )
         }
 
