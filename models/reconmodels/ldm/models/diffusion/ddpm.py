@@ -675,7 +675,7 @@ class LatentDiffusion(DDPM):
             assert config != '__is_unconditional__'
             model = instantiate_from_config(config)
             self.cond_stage_model = model
-    # 可视化去噪过程
+    # visualization of denoising process
     def _get_denoise_row_from_list(self, samples, desc='', force_no_decoder_quantization=False):
         denoise_row = []
         for zd in tqdm(samples, desc=desc):
@@ -853,17 +853,6 @@ class LatentDiffusion(DDPM):
                     c = self.get_learned_conditioning(xc)
                 else:
                     c = self.get_learned_conditioning(xc.to(self.device))
-                    if self.cond_stage_key == 'magnet_image':
-                        B, C, H, W = c.shape
-                        y_mask, x_mask = torch.meshgrid(torch.arange(H), torch.arange(W))  
-                        center = (H // 2, W // 2)  
-                        radius = 32  
-
-                        mask = (x_mask - center[1])**2 + (y_mask - center[0])**2 <= radius**2  
-                        mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(self.device)
-                        mask = mask.contiguous().expand(B, C, H, W)
-                        c = c * mask
-                    # print("c", c[0, 0, 28:36, 28:36])
             else:
                 c = xc
             if bs is not None:
@@ -1399,31 +1388,6 @@ class LatentDiffusion(DDPM):
         x = nn.functional.conv2d(x, weight=self.colorize)
         x = 2. * (x - x.min()) / (x.max() - x.min()) - 1.
         return x
-
-
-
-        log = dict()
-        z, c, x, xrec, xc = self.get_input(batch, self.first_stage_key, bs=N, return_first_stage_outputs=True,
-                                           return_original_cond=True)
-        log["inputs"] = x
-        log["reconstruction"] = xrec
-        assert self.model.conditioning_key is not None
-        assert self.cond_stage_key in ["caption", "txt"]
-        xc = log_txt_as_img((x.shape[2], x.shape[3]), batch[self.cond_stage_key], size=x.shape[2] // 25)
-        log["conditioning"] = xc
-        uc = self.get_unconditional_conditioning(N, kwargs.get('unconditional_guidance_label', ''))
-        unconditional_guidance_scale = kwargs.get('unconditional_guidance_scale', 5.)
-
-        uc_ = {"c_crossattn": [uc], "c_adm": c["c_adm"]}
-        ema_scope = self.ema_scope if kwargs.get('use_ema_scope', True) else nullcontext
-        with ema_scope(f"Sampling"):
-            samples_cfg, _ = self.sample_log(cond=c, batch_size=N, ddim=True,
-                                             ddim_steps=kwargs.get('ddim_steps', 50), eta=kwargs.get('ddim_eta', 0.),
-                                             unconditional_guidance_scale=unconditional_guidance_scale,
-                                             unconditional_conditioning=uc_, )
-            x_samples_cfg = self.decode_first_stage(samples_cfg)
-            log[f"samplescfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
-        return log
     
 
 class SolarCLIPConditionedLatentDiffusion(LatentDiffusion):
@@ -1510,6 +1474,95 @@ class SolarCLIPConditionedLatentDiffusion(LatentDiffusion):
             log[f"samplescfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
         return log
     
+
+class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @torch.no_grad()
+    def get_input(self, batch, k, return_first_stage_outputs=False, force_c_encode=False,
+                  cond_key=None, return_original_cond=False, bs=None, return_x=False):
+        """
+        x: input image, shape (B, C, H, W)
+        z: first stage encoding, shape (B, c, h, w)
+        if conditioning_key is None:
+            if use_positional_encodings:
+                c: {'pos_x': pos_x, 'pos_y': pos_y}
+            else:
+                c: None
+                xc: None
+        else:
+            xc=x: conditioning input, shape (B, C, H, W)
+            if not self.cond_stage_trainable or force_c_encode:
+                c: xc encoded by cond_stage_model  !!!!!!!!!!!!!!!!!!!!
+
+        xrec: reconstruction of x, shape (B, C, H, W)
+
+        return z,c(,xrec,x,x,xc)
+        """
+        x = super().get_input(batch, k)
+        if bs is not None:
+            x = x[:bs]
+        x = x.to(self.device)
+        encoder_posterior = self.encode_first_stage(x)
+        # print("encoder_posterior", encoder_posterior[0][0, 0, 28:36, 28:36])
+        z = self.get_first_stage_encoding(encoder_posterior).detach()
+
+        if self.model.conditioning_key is not None and not self.force_null_conditioning:
+            if cond_key is None:
+                cond_key = self.cond_stage_key
+            if cond_key != self.first_stage_key:
+                if cond_key in ['caption', 'coordinates_bbox', "txt"]:
+                    xc = batch[cond_key]
+                elif cond_key in ['class_label', 'cls']:
+                    xc = batch
+                else:
+                    xc = super().get_input(batch, cond_key).to(self.device)
+            else:
+                xc = x
+            if not self.cond_stage_trainable or force_c_encode:
+                if isinstance(xc, dict) or isinstance(xc, list):
+                    c = self.get_learned_conditioning(xc)
+                else:
+                    c = self.get_learned_conditioning(xc.to(self.device))
+                    if self.cond_stage_key == 'magnet_image':
+                        B, C, H, W = c.shape
+                        y_mask, x_mask = torch.meshgrid(torch.arange(H), torch.arange(W))  
+                        center = (H // 2, W // 2)  
+                        radius = 32  
+
+                        mask = (x_mask - center[1])**2 + (y_mask - center[0])**2 <= radius**2  
+                        mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(self.device)
+                        mask = mask.contiguous().expand(B, C, H, W)
+                        c = c * mask
+                    # print("c", c[0, 0, 28:36, 28:36])
+            else:
+                c = xc
+            if bs is not None:
+                c = c[:bs]
+
+            if self.use_positional_encodings:
+                pos_x, pos_y = self.compute_latent_shifts(batch)
+                ckey = __conditioning_keys__[self.model.conditioning_key]
+                c = {ckey: c, 'pos_x': pos_x, 'pos_y': pos_y}
+
+        else:
+            c = None
+            xc = None
+            if self.use_positional_encodings:
+                pos_x, pos_y = self.compute_latent_shifts(batch)
+                c = {'pos_x': pos_x, 'pos_y': pos_y}
+        out = [z, c]
+        if return_first_stage_outputs:
+            xrec = self.decode_first_stage(z)
+            out.extend([x, xrec])
+        if return_x:
+            out.extend([x])
+        if return_original_cond:
+            out.append(xc)
+        return out
+
+
 class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
