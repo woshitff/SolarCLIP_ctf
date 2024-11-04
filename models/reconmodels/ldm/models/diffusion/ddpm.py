@@ -1231,13 +1231,17 @@ class LatentDiffusion(DDPM):
         N = min(x.shape[0], N)
         n_row = min(x.shape[0], n_row)
         log["inputs"] = x # input images
+        log["inputs_latent"] = z # latent representation of input images
         log["reconstruction"] = xrec # reconstructed images by first stage model
         modal['inputs'] = self.first_stage_key
+        modal["inputs_latent"] = self.first_stage_key
         modal['reconstruction'] = self.first_stage_key
         modal['conditioning'] = self.cond_stage_key
+        modal['conditioning_latent'] = self.cond_stage_key
         if self.model.conditioning_key is not None:
             if hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
+                log["conditioning_latent"] = xc
                 log["conditioning"] = xc # reconstructed images by cond stage model
             elif self.cond_stage_key in ["caption", "txt"]:
                 xc = log_txt_as_img((x.shape[2], x.shape[3]), batch[self.cond_stage_key], size=x.shape[2] // 25)
@@ -1279,6 +1283,7 @@ class LatentDiffusion(DDPM):
                                                          ddim_steps=ddim_steps, eta=ddim_eta)
                 # samples, z_denoise_row = self.sample(cond=c, batch_size=N, return_intermediates=True)
             x_samples = self.decode_first_stage(samples)
+            log["samples_latent"] = samples
             log["samples"] = x_samples # what we want to generate
             if plot_denoise_rows:
                 denoise_grid = self._get_denoise_row_from_list(z_denoise_row)
@@ -1295,6 +1300,7 @@ class LatentDiffusion(DDPM):
                     #                                      quantize_denoised=True)
                 x_samples = self.decode_first_stage(samples.to(self.device))
                 log["samples_x0_quantized"] = x_samples
+        modal['samples_latent'] = self.first_stage_key
         modal['samples'] = self.first_stage_key
         if unconditional_guidance_scale > 1.0:
             uc = self.get_unconditional_conditioning(N, unconditional_guidance_label)
