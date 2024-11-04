@@ -122,8 +122,8 @@ class SolarCLIPDAE(pl.LightningModule):
             raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
-        x = x.to(memory_format=torch.contiguous_format).float()
         x = transforms.Resize(size=256)(x)
+        x = x.to(memory_format=torch.contiguous_format).float()
         return x
 
     def loss_function(self, y_hat, y, weights=None):
