@@ -85,7 +85,6 @@ class SolarCLIPDAE(pl.LightningModule):
                 ),
             "Linear": nn.Sequential(
                 self.linear_projection, # (B, 256, 768) -> (B, 256, 256)
-                rearrange('b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=16, w=16),
                 )
         }
 
@@ -97,7 +96,8 @@ class SolarCLIPDAE(pl.LightningModule):
     def forward(self, x):
         x = self.solarclip(x)
         x = Remove_class_token()(x) # (B, 257, 768) -> (B, 256, 768)
-        x = self.ReshapeProjection(x) # (B, 256, 768) -> (B, 1, 256, 256)
+        x = self.ReshapeProjection(x) # (B, 256, 768) -> (B, 256, 256)
+        x = rearrange(x, 'b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=16, w=16)
         return x
     
     def get_input(self, batch, k):
@@ -121,7 +121,7 @@ class SolarCLIPDAE(pl.LightningModule):
             raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
-        x = transforms.Resize(size=256)(x)
+        x = transforms.Resize(256)(x)
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
 
@@ -147,9 +147,7 @@ class SolarCLIPDAE(pl.LightningModule):
     def shared_step(self, batch, batch_idx):
         x = self.get_input(batch, self.decode_modal_key) 
         y = self.get_target(batch, self.decode_modal_key)
-
         y_hat = self(x)
-
         loss, loss_dict = self.get_loss(y_hat, y)
 
         return loss, loss_dict
@@ -180,9 +178,9 @@ class SolarCLIPDAE(pl.LightningModule):
         modals = dict()
 
         with torch.no_grad():
-            inputs = self.get_input(batch[:, 1, :, :, :], self.decode_modal_key)
-            targets = self.get_target(batch[:, 1, :, :, :], self.decode_modal_key)
-
+            inputs = self.get_input(batch, self.decode_modal_key)
+            targets = self.get_target(batch, self.decode_modal_key)
+        print(inputs.shape)
         N = min(N, inputs.shape[0])
         log['inputs'] = inputs[:N]
         log['targets'] = targets[:N]
@@ -192,8 +190,8 @@ class SolarCLIPDAE(pl.LightningModule):
         log['targets_hat'] = targets_hat[:N]
         self.train()
 
-        modals['inputs'] = self.inputs_modal
-        modals['targets'] = self.targets_modal
-        modals['targets_hat'] = self.targets_modal
-
+        modals['inputs'] = self.decode_modal_key
+        modals['targets'] = self.decode_modal_key
+        modals['targets_hat'] = self.decode_modal_key
+        print('log done')
         return log, modals
