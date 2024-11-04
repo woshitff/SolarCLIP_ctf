@@ -833,7 +833,7 @@ class LatentDiffusion(DDPM):
             x = x[:bs]
         x = x.to(self.device)
         encoder_posterior = self.encode_first_stage(x)
-        print("encoder_posterior", encoder_posterior[0][0, 0, 28:36, 28:36])
+        # print("encoder_posterior", encoder_posterior[0][0, 0, 28:36, 28:36])
         z = self.get_first_stage_encoding(encoder_posterior).detach()
 
         if self.model.conditioning_key is not None and not self.force_null_conditioning:
@@ -853,7 +853,7 @@ class LatentDiffusion(DDPM):
                     c = self.get_learned_conditioning(xc)
                 else:
                     c = self.get_learned_conditioning(xc.to(self.device))
-                    print("c", c[0, 0, 28:36, 28:36])
+                    # print("c", c[0, 0, 28:36, 28:36])
             else:
                 c = xc
             if bs is not None:
@@ -966,8 +966,8 @@ class LatentDiffusion(DDPM):
         loss_simple = self.get_loss(model_output, target, mean=False).mean([1, 2, 3])
         loss_dict.update({f'{prefix}/loss_simple': loss_simple.mean()})
         
-        print(self.logvar.device)
-        print(t.device)
+        # print(self.logvar.device)
+        # print(t.device)
         logvar_t = self.logvar.to(self.device)[t]
         # logvar_t = self.logvar[t].to(self.device)
         loss = loss_simple / torch.exp(logvar_t) + logvar_t
@@ -1233,15 +1233,10 @@ class LatentDiffusion(DDPM):
         log["inputs"] = x # input images
         log["inputs_latent"] = z # latent representation of input images
         log["reconstruction"] = xrec # reconstructed images by first stage model
-        modal['inputs'] = self.first_stage_key
-        modal["inputs_latent"] = self.first_stage_key
-        modal['reconstruction'] = self.first_stage_key
-        modal['conditioning'] = self.cond_stage_key
-        modal['conditioning_latent'] = self.cond_stage_key
         if self.model.conditioning_key is not None:
             if hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
-                log["conditioning_latent"] = xc
+                log["conditioning_latent"] = c
                 log["conditioning"] = xc # reconstructed images by cond stage model
             elif self.cond_stage_key in ["caption", "txt"]:
                 xc = log_txt_as_img((x.shape[2], x.shape[3]), batch[self.cond_stage_key], size=x.shape[2] // 25)
@@ -1300,8 +1295,7 @@ class LatentDiffusion(DDPM):
                     #                                      quantize_denoised=True)
                 x_samples = self.decode_first_stage(samples.to(self.device))
                 log["samples_x0_quantized"] = x_samples
-        modal['samples_latent'] = self.first_stage_key
-        modal['samples'] = self.first_stage_key
+        
         if unconditional_guidance_scale > 1.0:
             uc = self.get_unconditional_conditioning(N, unconditional_guidance_label)
             if self.model.conditioning_key == "crossattn-adm":
@@ -1350,6 +1344,15 @@ class LatentDiffusion(DDPM):
                 return log
             else:
                 return {key: log[key] for key in return_keys}
+
+        modal['inputs'] = self.first_stage_key
+        modal["inputs_latent"] = self.first_stage_key
+        modal['reconstruction'] = self.first_stage_key
+        modal['conditioning'] = self.cond_stage_key
+        modal['conditioning_latent'] = self.cond_stage_key
+        modal['samples_latent'] = self.first_stage_key
+        modal['samples'] = self.first_stage_key
+
         return log, modal
 
     def configure_optimizers(self):
