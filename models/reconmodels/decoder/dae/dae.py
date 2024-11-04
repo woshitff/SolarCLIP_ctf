@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 import pytorch_lightning as pl
+from torchvision import transforms
 
 from models.clipmodels.modules.vit import Remove_class_token
 from models.reconmodels.ldm.util import instantiate_from_config
@@ -122,7 +123,7 @@ class SolarCLIPDAE(pl.LightningModule):
         if len(x.shape) == 3:
             x = x[..., None]
         x = x.to(memory_format=torch.contiguous_format).float()
-        x = ''
+        x = transforms.Resize(size=256)(x)
         return x
 
     def loss_function(self, y_hat, y, weights=None):
