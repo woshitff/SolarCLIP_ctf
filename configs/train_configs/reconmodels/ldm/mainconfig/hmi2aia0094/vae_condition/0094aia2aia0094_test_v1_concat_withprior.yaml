@@ -63,7 +63,7 @@ model:
     cond_stage_config: 
       target: models.reconmodels.ldm.modules.priors.vaepriors.ae.vit.vit_regressor
       params:
-        ckpt_path: "checkpoints/reconmodels/ldm/prior/epoch=000079.ckpt"
+        ckpt_path: "checkpoints/reconmodels/ldm/prior/ae/hmi2aia0094_vaelatent_epoch=000079.ckpt"
         inputs_modal: 'magnet_image'
         targets_modal: '0094_image'
         in_channels: 3
