@@ -180,7 +180,6 @@ class SolarCLIPDAE(pl.LightningModule):
         with torch.no_grad():
             inputs = self.get_input(batch, self.decode_modal_key)
             targets = self.get_target(batch, self.decode_modal_key)
-        print(inputs.shape)
         N = min(N, inputs.shape[0])
         log['inputs'] = inputs[:N]
         log['targets'] = targets[:N]
