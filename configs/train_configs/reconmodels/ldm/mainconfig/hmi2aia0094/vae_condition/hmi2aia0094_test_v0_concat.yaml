@@ -15,7 +15,7 @@ model:
     channels: 3
     cond_stage_trainable: false
     conditioning_key: concat
-    scale_factor: 1
+    scale_factor: 0.1825
     monitor: val/loss_simple_ema
     use_ema: False
 
@@ -24,7 +24,7 @@ model:
       params:
         ch: 384
         out_ch: 3
-        ch_mult:
+        ch_mult: # NO NEED TO CHANGE  more mult is useless
           - 1
           - 2
           - 4
@@ -42,7 +42,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
-        ckpt_path: "checkpoints/reconmodels/vae/0094_0094/epoch=000399.ckpt"
+        ckpt_path: "checkpoints/reconmodels/vae/0094_0094/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_epoch_500.pt"
         input_size: 1024
         image_channels: 1
         hidden_dim: 64
@@ -63,7 +63,7 @@ model:
     cond_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE.CNN_VAE
       params:
-        ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_kl_1e-1_epoch_1000.pt"
+        ckpt_path: "checkpoints/reconmodels/vae/magnet_magnet/layers_2_kernel_[7, 7]_strides_[4, 4]_middle_true_hidden_dim_64_kl_1e-4_epoch_1000.pt"
         input_size: 1024
         image_channels: 1
         hidden_dim: 64
@@ -101,7 +101,7 @@ data:
         time_interval: 
           - 0
           - 5346720
-        time_step: 115200
+        time_step: 1800 #115200
     validation:
       target: data.dataset.SolarDataset.multimodal_dataset
       params:

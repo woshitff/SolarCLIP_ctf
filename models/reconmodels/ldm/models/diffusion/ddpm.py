@@ -622,22 +622,22 @@ class LatentDiffusion(DDPM):
         ids = torch.round(torch.linspace(0, self.num_timesteps - 1, self.num_timesteps_cond)).long()
         self.cond_ids[:self.num_timesteps_cond] = ids
 
-    # @rank_zero_only
-    # @torch.no_grad()
-    # def on_train_batch_start(self, batch, batch_idx, dataloader_idx):
-    #     # only for very first batch
-    #     if self.scale_by_std and self.current_epoch == 0 and self.global_step == 0 and batch_idx == 0 and not self.restarted_from_ckpt:
-    #         assert self.scale_factor == 1., 'rather not use custom rescaling and std-rescaling simultaneously'
-    #         # set rescale weight to 1./std of encodings
-    #         print("### USING STD-RESCALING ###")
-    #         x = super().get_input(batch, self.first_stage_key)
-    #         x = x.to(self.device)
-    #         encoder_posterior = self.encode_first_stage(x)
-    #         z = self.get_first_stage_encoding(encoder_posterior).detach()
-    #         del self.scale_factor
-    #         self.register_buffer('scale_factor', 1. / z.flatten().std())
-    #         print(f"setting self.scale_factor to {self.scale_factor}")
-    #         print("### USING STD-RESCALING ###")
+    @rank_zero_only
+    @torch.no_grad()
+    def on_train_batch_start(self, batch, batch_idx):
+        # only for very first batch
+        if self.scale_by_std and self.current_epoch == 0 and self.global_step == 0 and batch_idx == 0 and not self.restarted_from_ckpt:
+            assert self.scale_factor == 1., 'rather not use custom rescaling and std-rescaling simultaneously'
+            # set rescale weight to 1./std of encodings
+            print("### USING STD-RESCALING ###")
+            x = super().get_input(batch, self.first_stage_key)
+            x = x.to(self.device)
+            encoder_posterior = self.encode_first_stage(x)
+            z = self.get_first_stage_encoding(encoder_posterior).detach()
+            del self.scale_factor
+            self.register_buffer('scale_factor', 1. / z.flatten().std())
+            print(f"setting self.scale_factor to {self.scale_factor}")
+            print("### USING STD-RESCALING ###")
 
     def register_schedule(self,
                           given_betas=None, beta_schedule="linear", timesteps=1000,
@@ -893,6 +893,8 @@ class LatentDiffusion(DDPM):
 
     @torch.no_grad()
     def encode_first_stage(self, x):
+        if self.first_stage_key == '0094_image': # TOTEST: this is a hack
+            return self.first_stage_model.encode(x)[0]
         return self.first_stage_model.encode(x)
 
     def shared_step(self, batch, **kwargs):
