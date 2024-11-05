@@ -2,20 +2,20 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.ldm.models.diffusion.ddpm.SolarVAEConditionedLatentDiffusion
+  target: models.reconmodels.ldm.models.diffusion.ddpm.SolarLatentDiffusion
   params:
     parameterization: "eps"
     linear_start: 0.00085
     linear_end: 0.0120
     log_every_t: 200
     timesteps: 1000
-    first_stage_key: "0094_image"
-    cond_stage_key: "magnet_image"
+    first_stage_key: "aia0094_image_vae"
+    cond_stage_key: "hmi_image_vae"
     image_size: 64
     channels: 3
     cond_stage_trainable: false
     conditioning_key: concat
-    scale_factor: 0.1825
+    scale_factor: 1 #0.1825
     monitor: val/loss_simple_ema
     use_ema: False
 

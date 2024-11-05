@@ -301,13 +301,13 @@ class SolarImageLogger(Callback):
         self.log_first_step = log_first_step
 
     def get_cmap_and_limits(self, inputs, mode):
-        cmap = "RdBu_r" if mode == 'magnet_image' else "Reds"
+        cmap = "RdBu_r" if mode == 'hmi_image_vae' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
-        if mode == 'magnet_image':
+        if mode == 'hmi_image_vae':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
-        elif mode == '0094_image' or 'aia0094_image':  # '0094_image'
+        elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae':  # '0094_image'
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = 0
         else:
@@ -315,8 +315,8 @@ class SolarImageLogger(Callback):
         return cmap, vmin, vmax
 
     def get_target_keys(self, pl_module):
-        if pl_module.__class__.__name__ in ["LatentDiffusion", "SolarCLIPConditionedLatentDiffusionV2", "SolarVAEConditionedLatentDiffusion"]:
-            target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent']
+        if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion", "SolarCLIPConditionedLatentDiffusionV2", "SolarVAEConditionedLatentDiffusion"]:
+            target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row']
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
         elif pl_module.__class__.__name__ in ["SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
@@ -338,15 +338,20 @@ class SolarImageLogger(Callback):
             image_array = img_tensor.cpu().numpy()
             modal = modals[k]
 
-            if modal in ['magnet_image', '0094_image', 'aia0094_image']:
+            if modal in ['magnet_image', 'hmi_image_vae', '0094_image', 'aia0094_image', 'aia0094_image_vae']:
                 cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
             else:
                 raise ValueError("Unknown modal type")
 
             plt.figure(figsize=(32, 16))
-            for i in range(2):
+            num_images = image_array.shape[0]
+            num_images = min(num_images, 2)
+            for i in range(num_images):
                 plt.subplot(1, 2, i+1)
-                plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                if len(image_array.shape) == 4:
+                    plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                elif len(image_array.shape) == 3:
+                    plt.imshow(image_array[0,:,:], cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 
@@ -375,15 +380,20 @@ class SolarImageLogger(Callback):
             image_array = img_tensor.cpu().numpy()
             modal = modals[k]
 
-            if modal in ['magnet_image', '0094_image', 'aia0094_image']:
+            if modal in ['magnet_image', 'hmi_image_vae', '0094_image', 'aia0094_image', 'aia0094_image_vae']:
                 cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
             else:
                 raise ValueError("Unknown modal type")
 
             plt.figure(figsize=(32, 16))
-            for i in range(2):
+            num_images = image_array.shape[0]
+            num_images = min(num_images, 2)
+            for i in range(num_images):
                 plt.subplot(1, 2, i+1)
-                plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                if len(image_array.shape) == 4:
+                    plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                elif len(image_array.shape) == 3:
+                    plt.imshow(image_array[0,:,:], cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 

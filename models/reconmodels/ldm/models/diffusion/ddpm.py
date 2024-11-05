@@ -450,9 +450,9 @@ class DDPM(pl.LightningModule):
         return self.p_losses(x, t, *args, **kwargs)
 
     def get_input(self, batch, k):
-        if k == 'magnet_image':
+        if k == 'hmi_image_vae' or k == 'hmi_cliptoken':
             x = batch[:, 0, :, :, :]
-        elif k == '0094_image':
+        elif k == 'aia0094_image_vae' or k == 'aia0094_cliptoken':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
@@ -833,7 +833,6 @@ class LatentDiffusion(DDPM):
             x = x[:bs]
         x = x.to(self.device)
         encoder_posterior = self.encode_first_stage(x)
-        # print("encoder_posterior", encoder_posterior[0][0, 0, 28:36, 28:36])
         z = self.get_first_stage_encoding(encoder_posterior).detach()
 
         if self.model.conditioning_key is not None and not self.force_null_conditioning:
@@ -1387,92 +1386,7 @@ class LatentDiffusion(DDPM):
         return x
     
 
-class SolarCLIPConditionedLatentDiffusion(LatentDiffusion):
-    def __init__(self, embedder_config, embedding_key="magnet_image", embedding_dropout=0.5,
-                 freeze_embedder=True, noise_aug_config=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.embed_key = embedding_key
-        self.embedding_dropout = embedding_dropout
-        self._init_embedder(embedder_config, freeze_embedder)
-        self._init_noise_aug(noise_aug_config)
-
-    def _init_embedder(self, config, freeze=True):
-        embedder = instantiate_from_config(config)
-        if freeze:
-            # self.embedder = embedder.eval()
-            # self.embedder.train = disabled_train
-            # for param in self.embedder.parameters():
-            #     param.requires_grad = False
-            self.embedder = embedder
-            for name, param in self.embedder.solarclip.named_parameters():
-                print(f"{name} requires_grad: {param.requires_grad}")
-            print('before freeze:',sum(p.numel() for p in self.embedder.parameters() if p.requires_grad))
-            self.embedder.solarclip = embedder.solarclip.eval()
-            self.embedder.solarclip.train = disabled_train
-            for param in self.embedder.solarclip.parameters():
-                param.requires_grad = False
-            print('after freeze:',sum(p.numel() for p in self.embedder.parameters() if p.requires_grad))
-            
-    def _init_noise_aug(self, config):
-        if config is not None:
-            # use the KARLO schedule for noise augmentation on CLIP image embeddings
-            noise_augmentor = instantiate_from_config(config)
-            assert isinstance(noise_augmentor, nn.Module)
-            noise_augmentor = noise_augmentor.eval()
-            noise_augmentor.train = disabled_train
-            self.noise_augmentor = noise_augmentor
-        else:
-            self.noise_augmentor = None
-
-    def get_input(self, batch, k, cond_key=None, **kwargs):
-        outputs = LatentDiffusion.get_input(self, batch, k, **kwargs)
-        z, c = outputs[0], outputs[1]
-        if self.embed_key == "magnet_image":
-            img = batch[:, 0, :, :, :]
-        elif self.embed_key == "0094_image":
-            img = batch[:, 1, :, :, :]
-        else:
-            raise NotImplementedError(f"embed_key {self.embed_key} not implemented")
-        c_adm = self.embedder(img)
-        if self.noise_augmentor is not None:
-            c_adm, noise_level_emb = self.noise_augmentor(c_adm)
-            # assume this gives embeddings of noise levels
-            c_adm = torch.cat((c_adm, noise_level_emb), 1)
-        if self.training:
-            c_adm = torch.bernoulli((1. - self.embedding_dropout) * torch.ones(c_adm.shape[0],
-                                                                               device=c_adm.device)[:, None]) * c_adm
-        all_conds = {"c_crossattn": [c], "c_adm": c_adm}
-        noutputs = [z, all_conds]
-        noutputs.extend(outputs[2:])
-        return noutputs
-    
-    @torch.no_grad()
-    def log_images(self, batch, N=8, n_row=4, **kwargs):
-        log = dict()
-        z, c, x, xrec, xc = self.get_input(batch, self.first_stage_key, return_first_stage_outputs=True,
-                                           return_original_cond=True)
-        log["inputs"] = x
-        log["reconstruction"] = xrec
-        assert self.model.conditioning_key is not None
-        assert self.cond_stage_key in ["caption", "txt"]
-        xc = log_txt_as_img((x.shape[2], x.shape[3]), batch[self.cond_stage_key], size=x.shape[2] // 25)
-        log["conditioning"] = xc
-        uc = self.get_unconditional_conditioning(N, kwargs.get('unconditional_guidance_label', ''))
-        unconditional_guidance_scale = kwargs.get('unconditional_guidance_scale', 5.)
-
-        uc_ = {"c_crossattn": [uc], "c_adm": c["c_adm"]}
-        ema_scope = self.ema_scope if kwargs.get('use_ema_scope', True) else nullcontext
-        with ema_scope(f"Sampling"):
-            samples_cfg, _ = self.sample_log(cond=c, batch_size=N, ddim=True,
-                                             ddim_steps=kwargs.get('ddim_steps', 50), eta=kwargs.get('ddim_eta', 0.),
-                                             unconditional_guidance_scale=unconditional_guidance_scale,
-                                             unconditional_conditioning=uc_, )
-            x_samples_cfg = self.decode_first_stage(samples_cfg)
-            log[f"samplescfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
-        return log
-    
-
-class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
+class SolarLatentDiffusion(LatentDiffusion):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -1481,7 +1395,7 @@ class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
                   cond_key=None, return_original_cond=False, bs=None, return_x=False):
         """
         x: input image, shape (B, C, H, W)
-        z: first stage encoding, shape (B, c, h, w)
+        z: first stage encoding, shape (B, c, h, w) or (B, l, d)
         if conditioning_key is None:
             if use_positional_encodings:
                 c: {'pos_x': pos_x, 'pos_y': pos_y}
@@ -1497,27 +1411,21 @@ class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
 
         return z,c(,xrec,x,x,xc)
         """
-        # print(super(LatentDiffusion, self).__class__.__mro__[1].__name__)
         x = super(LatentDiffusion, self).get_input(batch, k)
-        
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
         encoder_posterior = self.encode_first_stage(x)
-        # print("encoder_posterior", encoder_posterior[0][0, 0, 28:36, 28:36])
         z = self.get_first_stage_encoding(encoder_posterior).detach()
 
         if self.model.conditioning_key is not None and not self.force_null_conditioning:
             if cond_key is None:
                 cond_key = self.cond_stage_key
             if cond_key != self.first_stage_key:
-                if cond_key in ['caption', 'coordinates_bbox', "txt"]:
-                    xc = batch[cond_key]
-                elif cond_key in ['class_label', 'cls']:
-                    xc = batch
+                if cond_key in ['hmi_image_vae', 'hmi_cliptoken', 'aia0094_image_vae', 'aia0094_cliptoken']:
+                    xc = super(LatentDiffusion, self).get_input(batch, cond_key).to(self.device)         
                 else:
-                    xc = super(LatentDiffusion, self).get_input(batch, cond_key).to(self.device)
-                    # xc = super().super().get_input(batch, cond_key).to(self.device)
+                    raise NotImplementedError(f"Unsupport cond_stage_key {cond_key}")       
             else:
                 xc = x
             if not self.cond_stage_trainable or force_c_encode:
@@ -1525,17 +1433,6 @@ class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
                     c = self.get_learned_conditioning(xc)
                 else:
                     c = self.get_learned_conditioning(xc.to(self.device))
-                    if self.cond_stage_key == 'magnet_image':
-                        B, C, H, W = c.shape
-                        y_mask, x_mask = torch.meshgrid(torch.arange(H), torch.arange(W))  
-                        center = (H // 2, W // 2)  
-                        radius = 32  
-
-                        mask = (x_mask - center[1])**2 + (y_mask - center[0])**2 <= radius**2  
-                        mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(self.device)
-                        mask = mask.contiguous().expand(B, C, H, W)
-                        c = c * mask
-                    # print("c", c[0, 0, 28:36, 28:36])
             else:
                 c = xc
             if bs is not None:
@@ -1562,39 +1459,67 @@ class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
             out.append(xc)
         return out
 
+    @torch.no_grad()
+    def encode_first_stage(self, x):
+        if self.first_stage_key == 'aia0094_image_vae': # TOTEST: this is a hack
+            return self.first_stage_model.encode(x)[0]
+        return self.first_stage_model.encode(x)
 
-class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-    def instantiate_cond_stage(self, config):
-        if not self.cond_stage_trainable:
-            if config == "__is_first_stage__":
-                print("Using first stage also as cond stage.")
-                self.cond_stage_model = self.first_stage_model
-            elif config == "__is_unconditional__":
-                print(f"Training {self.__class__.__name__} as an unconditional model.")
-                self.cond_stage_model = None
-                # self.be_unconditional = True
-            else:
-                model = instantiate_from_config(config)
-                self.cond_stage_model = model.eval()
-                self.cond_stage_model.train = disabled_train
-                for param in self.cond_stage_model.parameters():
-                    param.requires_grad = False
+    def get_first_stage_encoding(self, encoder_posterior):
+        if isinstance(encoder_posterior, DiagonalGaussianDistribution):
+            z = encoder_posterior.sample()
+        elif isinstance(encoder_posterior, torch.Tensor):
+            z = encoder_posterior
+        elif isinstance(encoder_posterior, tuple):
+            mu, logvar = encoder_posterior
+            z = mu + torch.exp(0.5 * logvar) * torch.randn_like(mu)
         else:
-            assert config != '__is_first_stage__'
-            assert config != '__is_unconditional__'
-            model = instantiate_from_config(config)
-            self.cond_stage_model = model
-            self.cond_stage_model.solarclip = model.solarclip.eval()
-            self.cond_stage_model.solarclip.train = disabled_train
-            for param in self.cond_stage_model.solarclip.parameters():
-                param.requires_grad = False
+            raise NotImplementedError(f"encoder_posterior of type '{type(encoder_posterior)}' not yet implemented")
+        return self.scale_factor * z
+
+    def get_learned_conditioning(self, c):
+        if self.cond_stage_forward is None:
+            if hasattr(self.cond_stage_model, 'encode') and callable(self.cond_stage_model.encode):
+                c = self.cond_stage_model.encode(c)
+                if isinstance(c, DiagonalGaussianDistribution):
+                    c = c.mode()
+                elif isinstance(c, tuple):
+                    mu, logvar = c
+                    c = mu
+            elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
+                c = self.cond_stage_model.prior(c)
+            else:
+                c = self.cond_stage_model(c)
+        else:
+            assert hasattr(self.cond_stage_model, self.cond_stage_forward)
+            c = getattr(self.cond_stage_model, self.cond_stage_forward)(c)
+
+        if self.cond_stage_key == 'hmi_image_vae':
+            B, C, H, W = c.shape
+            y_mask, x_mask = torch.meshgrid(torch.arange(H), torch.arange(W))  
+            center = (H // 2, W // 2)  
+            radius = 32  
+
+            mask = (x_mask - center[1])**2 + (y_mask - center[0])**2 <= radius**2  
+            mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(self.device)
+            mask = mask.contiguous().expand(B, C, H, W)
+            c = c * mask
+        return c
+
+    @torch.no_grad()
+    def decode_first_stage(self, z, predict_cids=False, force_not_quantize=False):
+        if predict_cids:
+            if z.dim() == 4:
+                z = torch.argmax(z.exp(), dim=1).long()
+            z = self.first_stage_model.quantize.get_codebook_entry(z, shape=None)
+            z = rearrange(z, 'b h w c -> b c h w').contiguous()
+
+        z = 1. / self.scale_factor * z
+        return self.first_stage_model.decode(z)
 
     @torch.no_grad()
     def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=50, ddim_eta=0., return_keys=None,
-                   quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=True,
+                   quantize_denoised=True, inpaint=False, plot_denoise_rows=False, plot_progressive_rows=False,
                    plot_diffusion_rows=True, unconditional_guidance_scale=1., unconditional_guidance_label=None,
                    use_ema_scope=True,
                    **kwargs):
@@ -1602,7 +1527,8 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
         use_ddim = ddim_steps is not None
 
         log = dict()
-        modals = dict()
+        modal = dict()
+
         z, c, x, xrec, xc = self.get_input(batch, self.first_stage_key,
                                            return_first_stage_outputs=True,
                                            force_c_encode=True,
@@ -1610,14 +1536,15 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
                                            bs=N)
         N = min(x.shape[0], N)
         n_row = min(x.shape[0], n_row)
-        log["inputs"] = x # input images
-        modals["inputs"] = self.first_stage_key
-        log["reconstruction"] = xrec # reconstructed images by first stage model
-        modals["reconstruction"] = self.first_stage_key
+        log["inputs"] = x 
+        log["inputs_latent"] = z 
+        log["reconstruction"] = xrec 
+
         if self.model.conditioning_key is not None:
             if hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
-                log["conditioning"] = xc # reconstructed images by cond stage model
+                log["conditioning_latent"] = c
+                log["conditioning"] = xc 
             elif self.cond_stage_key in ["caption", "txt"]:
                 xc = log_txt_as_img((x.shape[2], x.shape[3]), batch[self.cond_stage_key], size=x.shape[2] // 25)
                 log["conditioning"] = xc
@@ -1632,24 +1559,25 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
                 log["conditioning"] = xc
             if ismap(xc):
                 log["original_conditioning"] = self.to_rgb(xc)
-        modals["conditioning"] = self.cond_stage_key
-        if plot_diffusion_rows:
-            # get diffusion row
-            diffusion_row = list()
-            z_start = z[:n_row]
-            for t in range(self.num_timesteps):
-                if t % self.log_every_t == 0 or t == self.num_timesteps - 1:
-                    t = repeat(torch.tensor([t]), '1 -> b', b=n_row)
-                    t = t.to(self.device).long()
-                    noise = torch.randn_like(z_start)
-                    z_noisy = self.q_sample(x_start=z_start, t=t, noise=noise)
-                    diffusion_row.append(self.decode_first_stage(z_noisy))
 
-            diffusion_row = torch.stack(diffusion_row)  # n_log_step, n_row, C, H, W
-            diffusion_grid = rearrange(diffusion_row, 'n b c h w -> b n c h w')
-            diffusion_grid = rearrange(diffusion_grid, 'b n c h w -> (b n) c h w')
-            diffusion_grid = make_grid(diffusion_grid, nrow=diffusion_row.shape[0])
-            log["diffusion_row"] = diffusion_grid # diffusion row, get from z_start to add noise
+        if plot_diffusion_rows:
+            if len(z.shape) == 4:
+                # get diffusion row
+                diffusion_row = list()
+                z_start = z[:n_row]
+                for t in range(self.num_timesteps):
+                    if t % self.log_every_t == 0 or t == self.num_timesteps - 1:
+                        t = repeat(torch.tensor([t]), '1 -> b', b=n_row)
+                        t = t.to(self.device).long()
+                        noise = torch.randn_like(z_start)
+                        z_noisy = self.q_sample(x_start=z_start, t=t, noise=noise)
+                        diffusion_row.append(self.decode_first_stage(z_noisy))
+
+                diffusion_row = torch.stack(diffusion_row)  # n_log_step, n_row, C, H, W
+                diffusion_grid = rearrange(diffusion_row, 'n b c h w -> b n c h w')
+                diffusion_grid = rearrange(diffusion_grid, 'b n c h w -> (b n) c h w')
+                diffusion_grid = make_grid(diffusion_grid, nrow=diffusion_row.shape[0])
+                log["diffusion_row"] = diffusion_grid # diffusion row, get from z_start to add noise
 
         if sample:
             # get denoise row
@@ -1658,6 +1586,7 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
                                                          ddim_steps=ddim_steps, eta=ddim_eta)
                 # samples, z_denoise_row = self.sample(cond=c, batch_size=N, return_intermediates=True)
             x_samples = self.decode_first_stage(samples)
+            log["samples_latent"] = samples
             log["samples"] = x_samples # what we want to generate
             if plot_denoise_rows:
                 denoise_grid = self._get_denoise_row_from_list(z_denoise_row)
@@ -1674,7 +1603,7 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
                     #                                      quantize_denoised=True)
                 x_samples = self.decode_first_stage(samples.to(self.device))
                 log["samples_x0_quantized"] = x_samples
-
+        
         if unconditional_guidance_scale > 1.0:
             uc = self.get_unconditional_conditioning(N, unconditional_guidance_label)
             if self.model.conditioning_key == "crossattn-adm":
@@ -1687,7 +1616,7 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
                                                  )
                 x_samples_cfg = self.decode_first_stage(samples_cfg)
                 log[f"samples_cfg_scale_{unconditional_guidance_scale:.2f}"] = x_samples_cfg
-        modals["samples"] = self.first_stage_key
+
         if inpaint:
             # make a simple center square
             b, h, w = z.shape[0], z.shape[2], z.shape[3]
@@ -1723,91 +1652,14 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
                 return log
             else:
                 return {key: log[key] for key in return_keys}
-        return log, modals
-    
 
-class SolarCLIP_LDM(DDPM):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-    def instantiate_cond_stage(self, config):
-        if not self.cond_stage_trainable:
-            if config == "__is_first_stage__":
-                print("Using first stage also as cond stage.")
-                self.cond_stage_model = self.first_stage_model
-            elif config == "__is_unconditional__":
-                print(f"Training {self.__class__.__name__}")
+        modal['inputs'] = self.first_stage_key
+        modal["inputs_latent"] = self.first_stage_key
+        modal['reconstruction'] = self.first_stage_key
+        modal['conditioning'] = self.cond_stage_key
+        modal['conditioning_latent'] = self.cond_stage_key
+        modal['samples_latent'] = self.first_stage_key
+        modal['samples'] = self.first_stage_key
+        modal['diffusion_row'] = self.first_stage_key
 
-    @torch.no_grad()
-    def decode_first_stage(self, z, predict_cids=False, force_not_quantize=False):
-        z = 1. / self.scale_factor * z
-        z = self.first_stage_model.ReshapeProjection(z)
-        z = rearrange(z, 'b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=16, w=16)
-        return z            
-    
-    @torch.no_grad()
-    def encode_first_stage(self, x):
-        if self.first_stage_model.__class__.__name__ == "SolarCLIPDAE":
-            x = self.first_stage_model.solarclip(x)
-            from models.clipmodels.modules.vit import Remove_class_token 
-            x = Remove_class_token()(x) # (B, 257, 768) -> (B, 256, 768)
-            return x
-        
-    def get_learned_conditioning(self, c):
-        if self.cond_stage_forward is None:
-            if hasattr(self.cond_stage_model, 'encode') and callable(self.cond_stage_model.encode):
-                c = self.cond_stage_model.encode(c)
-                if isinstance(c, DiagonalGaussianDistribution):
-                    c = c.mode()
-                elif isinstance(c, tuple):
-                    mu, logvar = c
-                    c = mu
-            elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
-                c = self.cond_stage_model.prior(c)
-            elif self.cond_stage_model.__class__.__name__ == "SolarCLIPDAE":
-                c = self.cond_stage_model.solarclip(c)
-                from models.clipmodels.modules.vit import Remove_class_token 
-                c = Remove_class_token()(c)
-            else:
-                c = self.cond_stage_model(c)
-        else:
-            assert hasattr(self.cond_stage_model, self.cond_stage_forward)
-            c = getattr(self.cond_stage_model, self.cond_stage_forward)(c)
-        return c
-    
-    def p_losses(self, x_start, cond, t, noise=None):
-        noise = default(noise, lambda: torch.randn_like(x_start))
-        x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
-        model_output = self.apply_model(x_noisy, t, cond)
-
-        loss_dict = {}
-        prefix = 'train' if self.training else 'val'
-
-        if self.parameterization == "x0":
-            target = x_start
-        elif self.parameterization == "eps":
-            target = noise
-        elif self.parameterization == "v":
-            target = self.get_v(x_start, noise, t)
-        else:
-            raise NotImplementedError()
-
-        loss_simple = self.get_loss(model_output, target, mean=False).mean(x_start.shape[1:])
-        loss_dict.update({f'{prefix}/loss_simple': loss_simple.mean()})
-        
-        logvar_t = self.logvar.to(self.device)[t]
-        loss = loss_simple / torch.exp(logvar_t) + logvar_t
-        # loss = loss_simple / torch.exp(self.logvar) + self.logvar
-        if self.learn_logvar:
-            loss_dict.update({f'{prefix}/loss_gamma': loss.mean()})
-            loss_dict.update({'logvar': self.logvar.data.mean()})
-
-        loss = self.l_simple_weight * loss.mean()
-
-        loss_vlb = self.get_loss(model_output, target, mean=False).mean(x_start.shape[1:])
-        loss_vlb = (self.lvlb_weights[t] * loss_vlb).mean()
-        loss_dict.update({f'{prefix}/loss_vlb': loss_vlb})
-        loss += (self.original_elbo_weight * loss_vlb)
-        loss_dict.update({f'{prefix}/loss': loss})
-
-        return loss, loss_dict
+        return log, modal
