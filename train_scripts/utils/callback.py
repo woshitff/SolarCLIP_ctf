@@ -316,7 +316,7 @@ class SolarImageLogger(Callback):
 
     def get_target_keys(self, pl_module):
         if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion", "SolarCLIPConditionedLatentDiffusionV2", "SolarVAEConditionedLatentDiffusion"]:
-            target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row']
+            target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row', 'denoise_row']
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
         elif pl_module.__class__.__name__ in ["SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:

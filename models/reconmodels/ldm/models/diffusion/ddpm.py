@@ -1519,7 +1519,7 @@ class SolarLatentDiffusion(LatentDiffusion):
 
     @torch.no_grad()
     def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=50, ddim_eta=0., return_keys=None,
-                   quantize_denoised=True, inpaint=False, plot_denoise_rows=False, plot_progressive_rows=False,
+                   quantize_denoised=False, inpaint=False, plot_denoise_rows=True, plot_progressive_rows=False,
                    plot_diffusion_rows=True, unconditional_guidance_scale=1., unconditional_guidance_label=None,
                    use_ema_scope=True,
                    **kwargs):
@@ -1589,7 +1589,8 @@ class SolarLatentDiffusion(LatentDiffusion):
             log["samples_latent"] = samples
             log["samples"] = x_samples # what we want to generate
             if plot_denoise_rows:
-                denoise_grid = self._get_denoise_row_from_list(z_denoise_row)
+                if use_ddim:
+                    denoise_grid = self._get_denoise_row_from_list(z_denoise_row['x_inter'])
                 log["denoise_row"] = denoise_grid
 
             if quantize_denoised and not isinstance(self.first_stage_model, CNN_VAE) and not isinstance(
@@ -1661,5 +1662,7 @@ class SolarLatentDiffusion(LatentDiffusion):
         modal['samples_latent'] = self.first_stage_key
         modal['samples'] = self.first_stage_key
         modal['diffusion_row'] = self.first_stage_key
+        modal["denoise_row"] = self.first_stage_key
 
+        print('log_iamges ended')
         return log, modal
