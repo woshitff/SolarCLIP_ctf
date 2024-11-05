@@ -8,7 +8,7 @@ model:
     linear_start: 0.00085
     linear_end: 0.0120
     log_every_t: 200
-    timesteps: 100
+    timesteps: 1000
     first_stage_key: "0094_image"
     cond_stage_key: "magnet_image"
     image_size: 64

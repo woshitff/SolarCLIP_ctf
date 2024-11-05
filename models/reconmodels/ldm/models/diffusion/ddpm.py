@@ -967,10 +967,7 @@ class LatentDiffusion(DDPM):
         loss_simple = self.get_loss(model_output, target, mean=False).mean([1, 2, 3])
         loss_dict.update({f'{prefix}/loss_simple': loss_simple.mean()})
         
-        # print(self.logvar.device)
-        # print(t.device)
         logvar_t = self.logvar.to(self.device)[t]
-        # logvar_t = self.logvar[t].to(self.device)
         loss = loss_simple / torch.exp(logvar_t) + logvar_t
         # loss = loss_simple / torch.exp(self.logvar) + self.logvar
         if self.learn_logvar:
@@ -1592,7 +1589,6 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
             for param in self.cond_stage_model.solarclip.parameters():
                 param.requires_grad = False
 
-
     @torch.no_grad()
     def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=50, ddim_eta=0., return_keys=None,
                    quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=True,
@@ -1725,3 +1721,90 @@ class SolarCLIPConditionedLatentDiffusionV2(LatentDiffusion):
             else:
                 return {key: log[key] for key in return_keys}
         return log, modals
+    
+
+class SolarCLIP_LDM(DDPM):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+    def instantiate_cond_stage(self, config):
+        if not self.cond_stage_trainable:
+            if config == "__is_first_stage__":
+                print("Using first stage also as cond stage.")
+                self.cond_stage_model = self.first_stage_model
+            elif config == "__is_unconditional__":
+                print(f"Training {self.__class__.__name__}")
+
+    @torch.no_grad()
+    def decode_first_stage(self, z, predict_cids=False, force_not_quantize=False):
+        z = 1. / self.scale_factor * z
+        z = self.first_stage_model.ReshapeProjection(z)
+        z = rearrange(z, 'b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=16, w=16)
+        return z            
+    
+    @torch.no_grad()
+    def encode_first_stage(self, x):
+        if self.first_stage_model.__class__.__name__ == "SolarCLIPDAE":
+            x = self.first_stage_model.solarclip(x)
+            from models.clipmodels.modules.vit import Remove_class_token 
+            x = Remove_class_token()(x) # (B, 257, 768) -> (B, 256, 768)
+            return x
+        
+    def get_learned_conditioning(self, c):
+        if self.cond_stage_forward is None:
+            if hasattr(self.cond_stage_model, 'encode') and callable(self.cond_stage_model.encode):
+                c = self.cond_stage_model.encode(c)
+                if isinstance(c, DiagonalGaussianDistribution):
+                    c = c.mode()
+                elif isinstance(c, tuple):
+                    mu, logvar = c
+                    c = mu
+            elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
+                c = self.cond_stage_model.prior(c)
+            elif self.cond_stage_model.__class__.__name__ == "SolarCLIPDAE":
+                c = self.cond_stage_model.solarclip(c)
+                from models.clipmodels.modules.vit import Remove_class_token 
+                c = Remove_class_token()(c)
+            else:
+                c = self.cond_stage_model(c)
+        else:
+            assert hasattr(self.cond_stage_model, self.cond_stage_forward)
+            c = getattr(self.cond_stage_model, self.cond_stage_forward)(c)
+        return c
+    
+    def p_losses(self, x_start, cond, t, noise=None):
+        noise = default(noise, lambda: torch.randn_like(x_start))
+        x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
+        model_output = self.apply_model(x_noisy, t, cond)
+
+        loss_dict = {}
+        prefix = 'train' if self.training else 'val'
+
+        if self.parameterization == "x0":
+            target = x_start
+        elif self.parameterization == "eps":
+            target = noise
+        elif self.parameterization == "v":
+            target = self.get_v(x_start, noise, t)
+        else:
+            raise NotImplementedError()
+
+        loss_simple = self.get_loss(model_output, target, mean=False).mean(x_start.shape[1:])
+        loss_dict.update({f'{prefix}/loss_simple': loss_simple.mean()})
+        
+        logvar_t = self.logvar.to(self.device)[t]
+        loss = loss_simple / torch.exp(logvar_t) + logvar_t
+        # loss = loss_simple / torch.exp(self.logvar) + self.logvar
+        if self.learn_logvar:
+            loss_dict.update({f'{prefix}/loss_gamma': loss.mean()})
+            loss_dict.update({'logvar': self.logvar.data.mean()})
+
+        loss = self.l_simple_weight * loss.mean()
+
+        loss_vlb = self.get_loss(model_output, target, mean=False).mean(x_start.shape[1:])
+        loss_vlb = (self.lvlb_weights[t] * loss_vlb).mean()
+        loss_dict.update({f'{prefix}/loss_vlb': loss_vlb})
+        loss += (self.original_elbo_weight * loss_vlb)
+        loss_dict.update({f'{prefix}/loss': loss})
+
+        return loss, loss_dict
