@@ -1212,7 +1212,7 @@ class LatentDiffusion(DDPM):
 
     @torch.no_grad()
     def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=50, ddim_eta=0., return_keys=None,
-                   quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=True,
+                   quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=False,
                    plot_diffusion_rows=True, unconditional_guidance_scale=1., unconditional_guidance_label=None,
                    use_ema_scope=True,
                    **kwargs):
@@ -1497,7 +1497,9 @@ class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
 
         return z,c(,xrec,x,x,xc)
         """
-        x = super().get_input(batch, k)
+        # print(super(LatentDiffusion, self).__class__.__mro__[1].__name__)
+        x = super(LatentDiffusion, self).get_input(batch, k)
+        
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
@@ -1514,7 +1516,8 @@ class SolarVAEConditionedLatentDiffusion(LatentDiffusion):
                 elif cond_key in ['class_label', 'cls']:
                     xc = batch
                 else:
-                    xc = super().get_input(batch, cond_key).to(self.device)
+                    xc = super(LatentDiffusion, self).get_input(batch, cond_key).to(self.device)
+                    # xc = super().super().get_input(batch, cond_key).to(self.device)
             else:
                 xc = x
             if not self.cond_stage_trainable or force_c_encode:
