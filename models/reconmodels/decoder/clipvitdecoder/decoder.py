@@ -14,51 +14,92 @@ def disabled_train(self, mode=True):
     """Overwrite model.train with this function to make sure train/eval mode
     does not change anymore."""
     return self
-
-class ReshapeTo2D(nn.Module):
-    def __init__(self, h=16, w=16):
+    
+class ResidualConvBlock(nn.Module):
+    # see https://github.com/milesial/Pytorch-UNet/blob/master/unet/unet_parts.py
+    """(convolution => [BN] => ReLU) * 2"""
+    def __init__(self, in_channels, out_channels, mid_channels=None):
         super().__init__()
-        self.h = h
-        self.w = w
+        if not mid_channels:
+            mid_channels = out_channels
+        self.res_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0, bias=False)
+        self.double_conv = nn.Sequential(
+            nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(mid_channels),
+            nn.ELU(),
+            nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(out_channels),
+            nn.ELU()
+        )
 
     def forward(self, x):
-        return rearrange(x, 'b (h w) c -> b c h w', h=self.h, w=self.w)
+        res = self.res_conv(x)
+        x = self.double_conv(x)
+        return x + res    
     
-class LinearProjectionToImage(nn.Module):
-    def __init__(self, input_dim=(256, 16, 16), output_dim=(1, 256, 256)):
-        super(LinearProjectionToImage, self).__init__()
-        input_size = input_dim[0] * input_dim[1] * input_dim[2]  # 768 * 16 * 16
-        output_size = output_dim[0] * output_dim[1] * output_dim[2]  # 3 * 64 * 64
-        self.output_dim = output_dim
-        self.fc = nn.Linear(input_size, output_size)
-        self.activation = nn.laynorm(output_size)
+class Upsample(nn.Module):
+    def __init__(self, in_channels, out_channels, bilinear=False):
+        super().__init__()
+        if bilinear:
+            self.up = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+                nn.Conv2d(in_channels, in_channels // 2, kernel_size=3, stride=1, padding=1)
+            )
+        else:
+            self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=3, stride=2, padding=1, output_padding=1)
 
     def forward(self, x):
-        x = x.reshape(x.size(0), -1)  
-        x = self.fc(x)             
-        x = self.activation(x)      
-        return x.reshape(x.size(0), self.output_dim[0], self.output_dim[1], self.output_dim[2])
+        return self.up(x)
     
 
-class ClipVitDecoder(pl.LightningModule):
+class ClipCNNDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
                  solarclip_config,
-                 decode_modal_key='aia0094_image', 
                  out_size=128,
-                 projection_type='Linear', 
+                 decode_modal_key='aia0094_image', 
+                 layer_list=[2, 2, 2],
+                 in_channels=768,
+                 hidden_channels=512,
+                 out_channels=1,
                  loss_type='l2',
                  ):
         super().__init__()
         self.save_hyperparameters()
         self.decode_modal_key = decode_modal_key
         self.out_size = out_size
-        self.projection_type = projection_type
+        self.layer_list = layer_list
+        self.in_channels = in_channels
+        self.hidden_channels = hidden_channels
+        self.out_channels = out_channels
         self.loss_type = loss_type
 
+        in_out = []
+        for i in range(len(layer_list)):
+            in_c = hidden_channels // 2**i
+            out_c = hidden_channels // 2**(i+1)
+            in_out.append((in_c, out_c))
+        self.in_out = in_out
+        assert all(in_c % 2 == 0 and out_c % 2 == 0 for in_c, out_c in in_out), "All channels must be multiples of 2" 
+
         self._init_solarclip(solarclip_config)
-        self.linear_projection = nn.Linear(768, 256)
-        self.ReshapeProjection = self._get_projection(projection_type)
+        self.blocks = nn.ModuleList()
+        for i, num_blocks in enumerate(layer_list):
+            self.blocks.append(nn.Sequential(
+                *nn.ModuleList(
+                [ResidualConvBlock(in_out[i][0], in_out[i][0]) for _ in range(num_blocks)]
+                ),
+                Upsample(in_out[i][0], in_out[i][1]),
+            ))
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(in_channels, hidden_channels, kernel_size=3, stride=1, padding=1),
+            nn.ELU(),
+            nn.GroupNorm(hidden_channels//16, hidden_channels),
+            *self.blocks,
+            nn.GroupNorm(hidden_channels//(2**len(layer_list)*16), hidden_channels//2**(len(layer_list))),
+            nn.ELU(),
+            nn.Conv2d(in_out[len(num_blocks)-1][1], 1, kernel_size=3, padding=1)
+        )
 
     def _init_solarclip(self, solarclip_config, freeze=True):
         solarclip = instantiate_from_config(solarclip_config)
@@ -74,40 +115,19 @@ class ClipVitDecoder(pl.LightningModule):
         else:
             raise ValueError(f"Unknown embedding key {self.decode_modal_key}")
         
-    def _get_projection(self, projection_type):
-        projectin_options = {
-            "ConvTrans": nn.Sequential(
-                ReshapeTo2D(16, 16),
-                nn.ConvTranspose2d(768, 128, kernel_size=3, stride=2, padding=1, output_padding=1),
-                nn.GroupNorm(16, 128),
-                nn.Tanh(),
-                nn.ConvTranspose2d(128, 3, kernel_size=3, stride=2, padding=1, output_padding=1),
-                nn.GroupNorm(1, 3),
-                nn.Tanh()
-                ),
-            "Linear": nn.Sequential(
-                self.linear_projection, # (B, 256, 768) -> (B, 256, 256)
-                )
-        }
-
-        if projection_type in projectin_options:
-            return projectin_options[projection_type]
-        else:
-            raise ValueError(f"Unknown projection type {projection_type}")
-        
-    def encode(self, x):
+    def get_cliptoken(self, x):
         x = self.solarclip(x)
         x = Remove_class_token()(x)
         return x
     
     def decode(self, x):
-        x = self.ReshapeProjection(x) # (B, 256, 768) -> (B, 256, 256)
-        # (B, 256, 768) -> (B, 256, 64)
-        x = rearrange(x, 'b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=8, w=8) # (B, 256, 64) -> (B, 1, 128, 128)
+        # (B, 256, 768) -> (B, 256, 16, 16) -> (B, 1, 128, 128)
+        x = rearrange(x, 'b (h w) c -> b c h w', h=16, w=16)
+        x = self.decoder(x)
         return x
 
     def forward(self, x):
-        x = self.encode(x)
+        x = self.get_cliptoken(x)
         x = self.decode(x)
         return x
     
