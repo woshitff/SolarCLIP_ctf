@@ -19,11 +19,16 @@ class ImageDownsample(nn.Module):
             self.out_size = self.in_size
         assert isinstance(self.out_size, int), "Output size must be an integer"
 
-    def downsample(self, x):
-        return nn.functional.interpolate(x, scale_factor=self.scale_factor, mode='bilinear', align_corners=False)
+    def encode(self, x):
+        x = nn.functional.interpolate(x, scale_factor=self.scale_factor, mode='bilinear', align_corners=False)
+        x = x.to(memory_format=torch.contiguous_format).float()
+        return 
+    
+    def decode(self, x):
+        return nn.functional.interpolate(x, size=self.in_size, mode='bilinear', align_corners=False)
 
     def forward(self, x):
         assert len(x.shape) == 4, "Input tensor must have 4 dimensions, it is an image tensor"
-        x = self.downsample(x)
-        x = x.to(memory_format=torch.contiguous_format).float()
+        x = self.encode(x)
+        x = self.decode(x)
         return x

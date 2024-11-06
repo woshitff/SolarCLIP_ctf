@@ -13,7 +13,7 @@ model:
     cond_stage_key: "aia0094_image_cliptoken_decodelrimage"
     image_size: 128
     channels: 1
-    cond_stage_trainable: false
+    cond_stage_trainable: true
     conditioning_key: concat
     scale_factor: 0.18215 # 1
     monitor: val/loss_simple_ema

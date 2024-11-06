@@ -452,7 +452,7 @@ class DDPM(pl.LightningModule):
     def get_input(self, batch, k):
         if k == 'hmi_image_vae' or k == 'hmi_cliptoken':
             x = batch[:, 0, :, :, :]
-        elif k == 'aia0094_image_vae' or k == 'aia0094_cliptoken':
+        elif k == 'aia0094_image_vae' or k == 'aia0094_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
@@ -1504,6 +1504,7 @@ class SolarLatentDiffusion(LatentDiffusion):
             mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(self.device)
             mask = mask.contiguous().expand(B, C, H, W)
             c = c * mask
+            
         return c
 
     @torch.no_grad()

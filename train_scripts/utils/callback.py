@@ -307,7 +307,7 @@ class SolarImageLogger(Callback):
         if mode == 'hmi_image_vae':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
-        elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae':  # '0094_image'
+        elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage':  # '0094_image'
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = 0
         else:
@@ -338,7 +338,7 @@ class SolarImageLogger(Callback):
             image_array = img_tensor.cpu().numpy()
             modal = modals[k]
 
-            if modal in ['magnet_image', 'hmi_image_vae', '0094_image', 'aia0094_image', 'aia0094_image_vae']:
+            if modal in ['magnet_image', 'hmi_image_vae', '0094_image', 'aia0094_image', 'aia0094_image_vae', 'aia0094_image_cliptoken_decodelrimage']:
                 cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
             else:
                 raise ValueError("Unknown modal type")
