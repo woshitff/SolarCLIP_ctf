@@ -9,10 +9,10 @@ model:
     linear_end: 0.0120
     log_every_t: 200
     timesteps: 1000
-    first_stage_key: "aia0094_image_lr"
-    cond_stage_key: "aia0094_image_cliptoken"
-    image_size: 64
-    channels: 3
+    first_stage_key: "aia0094_image"
+    cond_stage_key: "aia0094_image_cliptoken_decodelrimage"
+    image_size: 128
+    channels: 1
     cond_stage_trainable: false
     conditioning_key: concat
     scale_factor: 0.18215 # 1
@@ -39,10 +39,11 @@ model:
         use_linear_attn: false
         attn_type: "vanilla"
 
-    first_stage_config:
-      target: 
+    first_stage_config: 
+      target: models.reconmodels.decoder.clipvitdecoder.modules.ImageDownsample
       params:
-        
+        in_size: 1024
+        scale_factor: 0.125
       lossconfig:
         target: torch.nn.Identity
     
