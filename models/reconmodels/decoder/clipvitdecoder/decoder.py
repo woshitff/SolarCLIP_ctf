@@ -40,17 +40,19 @@ class LinearProjectionToImage(nn.Module):
         return x.reshape(x.size(0), self.output_dim[0], self.output_dim[1], self.output_dim[2])
     
 
-class SolarCLIPDAE(pl.LightningModule):
+class ClipVitDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
                  solarclip_config,
                  decode_modal_key='aia0094_image', 
+                 out_size=128,
                  projection_type='Linear', 
                  loss_type='l2',
                  ):
         super().__init__()
         self.save_hyperparameters()
         self.decode_modal_key = decode_modal_key
+        self.out_size = out_size
         self.projection_type = projection_type
         self.loss_type = loss_type
 
@@ -92,12 +94,21 @@ class SolarCLIPDAE(pl.LightningModule):
             return projectin_options[projection_type]
         else:
             raise ValueError(f"Unknown projection type {projection_type}")
+        
+    def encode(self, x):
+        x = self.solarclip(x)
+        x = Remove_class_token()(x)
+        return x
+    
+    def decode(self, x):
+        x = self.ReshapeProjection(x) # (B, 256, 768) -> (B, 256, 256)
+        # (B, 256, 768) -> (B, 256, 64)
+        x = rearrange(x, 'b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=8, w=8) # (B, 256, 64) -> (B, 1, 128, 128)
+        return x
 
     def forward(self, x):
-        x = self.solarclip(x)
-        x = Remove_class_token()(x) # (B, 257, 768) -> (B, 256, 768)
-        x = self.ReshapeProjection(x) # (B, 256, 768) -> (B, 256, 256)
-        x = rearrange(x, 'b (n_h n_w) (h w) -> b 1 (n_h h) (n_w w)', n_h=16, n_w=16, h=16, w=16)
+        x = self.encode(x)
+        x = self.decode(x)
         return x
     
     def get_input(self, batch, k):
@@ -121,7 +132,7 @@ class SolarCLIPDAE(pl.LightningModule):
             raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
-        x = transforms.Resize(256)(x)
+        x = transforms.Resize(self.out_size)(x)
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
 
@@ -192,5 +203,5 @@ class SolarCLIPDAE(pl.LightningModule):
         modals['inputs'] = self.decode_modal_key
         modals['targets'] = self.decode_modal_key
         modals['targets_hat'] = self.decode_modal_key
-        print('log done')
+        print('image log done')
         return log, modals
