@@ -23,7 +23,7 @@ model:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
       params:
         ch: 384
-        out_ch: 3
+        out_ch: 1
         ch_mult: # NO NEED TO CHANGE  more mult is useless
           - 1
           - 2
@@ -33,8 +33,8 @@ model:
         attn_resolutions: [ ]
         dropout: 0.0
         resamp_with_conv: true
-        in_channels: 6
-        resolution: 64
+        in_channels: 2
+        resolution: 128
         use_timestep: true
         use_linear_attn: false
         attn_type: "vanilla"
@@ -50,7 +50,6 @@ model:
     cond_stage_config:
       target: models.reconmodels.decoder.clipvitdecoder.decoder.ClipCNNDecoder
       params:
-        out_size: 128
         decode_modal_key: 'aia0094_image'
         layer_list:
           - 2

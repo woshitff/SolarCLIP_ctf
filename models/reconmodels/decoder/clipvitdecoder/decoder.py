@@ -72,6 +72,7 @@ class ClipCNNDecoder(pl.LightningModule):
         self.hidden_channels = hidden_channels
         self.out_channels = out_channels
         self.loss_type = loss_type
+        self.out_size = self.solarclip_config.params.image_resolution_hmi // 2**len(layer_list)
 
         in_out = []
         for i in range(len(layer_list)):
@@ -80,9 +81,9 @@ class ClipCNNDecoder(pl.LightningModule):
             in_out.append((in_c, out_c))
         self.in_out = in_out
         assert all(in_c % 2 == 0 and out_c % 2 == 0 for in_c, out_c in in_out), "All channels must be multiples of 2" 
-        self.out_size = self.solarclip_config['image_resolution_hmi'] // 2**len(layer_list)
 
         self._init_solarclip(solarclip_config)
+
         self.blocks = nn.ModuleList()
         for i, num_blocks in enumerate(layer_list):
             self.blocks.append(nn.Sequential(
@@ -98,7 +99,7 @@ class ClipCNNDecoder(pl.LightningModule):
             *self.blocks,
             nn.GroupNorm(hidden_channels//(2**len(layer_list)*16), hidden_channels//2**(len(layer_list))),
             nn.ELU(),
-            nn.Conv2d(in_out[len(num_blocks)-1][1], 1, kernel_size=3, padding=1)
+            nn.Conv2d(in_out[len(layer_list)-1][1], 1, kernel_size=3, padding=1)
         )
 
     def _init_solarclip(self, solarclip_config, freeze=True):

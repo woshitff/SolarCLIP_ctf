@@ -14,7 +14,7 @@ class ImageDownsample(nn.Module):
         self.in_size = in_size
         self.scale_factor = scale_factor
         if self.scale_factor is not None:
-            self.out_size = tuple(int(dim * self.scale_factor) for dim in self.in_size)
+            self.out_size = int(in_size * self.scale_factor)
         else:
             self.out_size = self.in_size
         assert isinstance(self.out_size, int), "Output size must be an integer"
@@ -22,7 +22,7 @@ class ImageDownsample(nn.Module):
     def encode(self, x):
         x = nn.functional.interpolate(x, scale_factor=self.scale_factor, mode='bilinear', align_corners=False)
         x = x.to(memory_format=torch.contiguous_format).float()
-        return 
+        return x
     
     def decode(self, x):
         return nn.functional.interpolate(x, size=self.in_size, mode='bilinear', align_corners=False)
