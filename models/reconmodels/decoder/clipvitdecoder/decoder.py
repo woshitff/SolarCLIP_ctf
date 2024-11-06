@@ -25,10 +25,10 @@ class ResidualConvBlock(nn.Module):
         self.res_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0, bias=False)
         self.double_conv = nn.Sequential(
             nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(mid_channels),
+            nn.GroupNorm(16, mid_channels),
             nn.ELU(),
             nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(out_channels),
+            nn.GroupNorm(16, out_channels),
             nn.ELU()
         )
 
