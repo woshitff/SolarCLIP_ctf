@@ -1542,7 +1542,11 @@ class SolarLatentDiffusion(LatentDiffusion):
         log["reconstruction"] = xrec 
 
         if self.model.conditioning_key is not None:
-            if hasattr(self.cond_stage_model, "decode"):
+            if self.first_stage_model.__class__.__name__ == "ImageDownsample":
+                xc = self.first_stage_model.decode(c)
+                log["conditioning"] = xc
+                log["conditioning_latent"] = c
+            elif hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
                 log["conditioning_latent"] = c
                 log["conditioning"] = xc 
