@@ -1,0 +1,126 @@
+model:
+  base_learning_rate: 1.0e-04
+  base_learning_optimizer: "Adam"
+  base_learning_schedule: "CosineAnnealingLR"
+  target: models.reconmodels.ldm.models.diffusion.ddpm.SolarLatentDiffusion
+  params:
+    parameterization: "eps"
+    linear_start: 0.00085
+    linear_end: 0.0120
+    log_every_t: 200
+    timesteps: 1000
+    first_stage_key: "aia0094_image_lr"
+    cond_stage_key: "aia0094_image_cliptoken"
+    image_size: 64
+    channels: 3
+    cond_stage_trainable: false
+    conditioning_key: concat
+    scale_factor: 0.18215 # 1
+    monitor: val/loss_simple_ema
+    use_ema: False
+
+    unet_config:
+      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
+      params:
+        ch: 384
+        out_ch: 3
+        ch_mult: # NO NEED TO CHANGE  more mult is useless
+          - 1
+          - 2
+          - 4
+          - 4
+        num_res_blocks: 2
+        attn_resolutions: [ ]
+        dropout: 0.0
+        resamp_with_conv: true
+        in_channels: 6
+        resolution: 64
+        use_timestep: true
+        use_linear_attn: false
+        attn_type: "vanilla"
+
+    first_stage_config:
+      target: 
+      params:
+        
+      lossconfig:
+        target: torch.nn.Identity
+    
+    cond_stage_config:
+      target: models.reconmodels.decoder.clipvitdecoder.decoder.ClipCNNDecoder
+      params:
+        out_size: 128
+        decode_modal_key: 'aia0094_image'
+        layer_list:
+          - 2
+          - 2
+          - 2
+        in_channels: 768
+        hidden_channels: 512
+        out_channels: 1
+        loss_type: l2
+
+        solarclip_config:
+          target: models.clipmodels.solarclip.SolarCLIP
+          params:
+            ckpt_path: "checkpoints/clipmodels/innerloss_0_allembed_epoch_340_model.pt"
+            embed_dim: 768 
+            vision_width: 768
+            image_resolution_hmi: 1024  
+            vision_layers_hmi: 12 
+            vision_patch_size_hmi: 64  
+            image_resolution_aia: 1024  
+            vision_layers_aia: 12
+            vision_patch_size_aia: 64 
+            transformer_token_type: "all embedding"  
+            norm_type: "bn1d"  
+          lossconfig:
+            target: torch.nn.Identity
+
+
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 2
+    num_workers: 9
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 5346720
+        time_step: 1800 #115200
+    validation:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 5346720
+          - 7452000
+        time_step: 115200
+
+
+lightning:
+  trainer:
+    strategy: "ddp"
+    accelerator: "gpu"
+    devices: 4
+    benchmark: True
+
+  

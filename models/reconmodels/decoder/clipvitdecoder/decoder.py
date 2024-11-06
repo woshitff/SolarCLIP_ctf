@@ -56,7 +56,6 @@ class ClipCNNDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
                  solarclip_config,
-                 out_size=128,
                  decode_modal_key='aia0094_image', 
                  layer_list=[2, 2, 2],
                  in_channels=768,
@@ -66,8 +65,8 @@ class ClipCNNDecoder(pl.LightningModule):
                  ):
         super().__init__()
         self.save_hyperparameters()
+        self.solarclip_config = solarclip_config
         self.decode_modal_key = decode_modal_key
-        self.out_size = out_size
         self.layer_list = layer_list
         self.in_channels = in_channels
         self.hidden_channels = hidden_channels
@@ -81,6 +80,7 @@ class ClipCNNDecoder(pl.LightningModule):
             in_out.append((in_c, out_c))
         self.in_out = in_out
         assert all(in_c % 2 == 0 and out_c % 2 == 0 for in_c, out_c in in_out), "All channels must be multiples of 2" 
+        self.out_size = self.solarclip_config['image_resolution_hmi'] // 2**len(layer_list)
 
         self._init_solarclip(solarclip_config)
         self.blocks = nn.ModuleList()
