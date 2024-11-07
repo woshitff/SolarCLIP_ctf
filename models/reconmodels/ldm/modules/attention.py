@@ -287,7 +287,7 @@ class SpatialTransformer(nn.Module):
     def __init__(self, in_channels, n_heads, d_head,
                  depth=1, dropout=0., context_dim=None,
                  disable_self_attn=False, use_linear=False,
-                 use_checkpoint=True):
+                 use_checkpoint=True): # 256, 8, 32, 1, 0.1
         super().__init__()
         if exists(context_dim) and not isinstance(context_dim, list):
             context_dim = [context_dim]
@@ -295,18 +295,18 @@ class SpatialTransformer(nn.Module):
         inner_dim = n_heads * d_head
         self.norm = Normalize(in_channels)
         if not use_linear:
-            self.proj_in = nn.Conv2d(in_channels,
+            self.proj_in = nn.Conv2d(in_channels, 
                                      inner_dim,
                                      kernel_size=1,
                                      stride=1,
-                                     padding=0)
+                                     padding=0) # 256, 256, 1, 1
         else:
             self.proj_in = nn.Linear(in_channels, inner_dim)
 
         self.transformer_blocks = nn.ModuleList(
             [BasicTransformerBlock(inner_dim, n_heads, d_head, dropout=dropout, context_dim=context_dim[d],
                                    disable_self_attn=disable_self_attn, checkpoint=use_checkpoint)
-                for d in range(depth)]
+                for d in range(depth)] # 256, 32,8, 0.1, 768, False, True
         )
         if not use_linear:
             self.proj_out = zero_module(nn.Conv2d(inner_dim,
@@ -326,12 +326,12 @@ class SpatialTransformer(nn.Module):
         x_in = x
         x = self.norm(x)
         if not self.use_linear:
-            x = self.proj_in(x)
-        x = rearrange(x, 'b c h w -> b (h w) c').contiguous()
+            x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 256, 16, 16)
+        x = rearrange(x, 'b c h w -> b (h w) c').contiguous() # (b, 256, 16, 16) -> (b, 256, 256)
         if self.use_linear:
             x = self.proj_in(x)
         for i, block in enumerate(self.transformer_blocks):
-            x = block(x, context=context[i])
+            x = block(x, context=context[i]) #x: (b, 256, 256), context: (b, 256, 768)
         if self.use_linear:
             x = self.proj_out(x)
         x = rearrange(x, 'b (h w) c -> b c h w', h=h, w=w).contiguous()

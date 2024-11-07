@@ -523,9 +523,9 @@ class UNetModel(nn.Module):
         )
         self._feature_size = model_channels
         input_block_chans = [model_channels]
-        ch = model_channels
+        ch = model_channels # ch = 256
         ds = 1
-        for level, mult in enumerate(channel_mult):
+        for level, mult in enumerate(channel_mult): # [(0, 1), (1, 2), (2, 4), (3, 8)]
             for _ in range(num_res_blocks):
                 layers = [
                     ResBlock(
@@ -543,8 +543,8 @@ class UNetModel(nn.Module):
                     if num_head_channels == -1:
                         dim_head = ch // num_heads
                     else:
-                        num_heads = ch // num_head_channels
-                        dim_head = num_head_channels
+                        num_heads = ch // num_head_channels # 256 //32 = 8
+                        dim_head = num_head_channels # 32
                     if legacy:
                         #num_heads = 1
                         dim_head = ch // num_heads if use_spatial_transformer else num_head_channels
