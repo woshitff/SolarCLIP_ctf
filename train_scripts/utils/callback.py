@@ -307,7 +307,7 @@ class SolarImageLogger(Callback):
         if mode == 'hmi_image_vae':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
-        elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage':  # '0094_image'
+        elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage' or mode == 'aia0094_image_cliptoken':  # '0094_image'
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = 0
         else:
@@ -324,19 +324,30 @@ class SolarImageLogger(Callback):
         else:
             raise ValueError("Unsupported model type")
         return target_keys
-
+    
     @rank_zero_only
-    def _log_images_tensorboard(self, pl_module, images, modals, batch_idx, split):
-        pass
+    def _log_images(self, pl_module, images, modals, batch_idx, split, save_dir=None):
+        """
+        Logs images either to TensorBoard or saves them locally based on the provided save_dir.
+        If save_dir is provided, saves images locally. Otherwise, logs them to TensorBoard.
+
+        Args:
+            pl_module: The Lightning module containing the logger.
+            images (dict): Dictionary of image tensors.
+            modals (dict): Dictionary of modal types for each image key.
+            batch_idx (int): Batch index for naming consistency.
+            split (str): Split name (train/val/test).
+            save_dir (str): Directory to save images locally. If None, logs to TensorBoard.
+        """
         target_keys = self.get_target_keys(pl_module)
-        inputs = images['inputs'].cpu().numpy()
 
         for k, img_tensor in images.items():
             if k not in target_keys:
+                print(f"Warning: No modal type provided for {k}. Skipping.")
                 continue
 
             image_array = img_tensor.cpu().numpy()
-            modal = modals[k]
+            modal = modals.get(k, None)
 
             if modal in ['magnet_image', 'hmi_image_vae', '0094_image', 'aia0094_image', 'aia0094_image_vae', 'aia0094_image_cliptoken_decodelrimage']:
                 cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
@@ -344,69 +355,46 @@ class SolarImageLogger(Callback):
                 raise ValueError("Unknown modal type")
 
             plt.figure(figsize=(32, 16))
-            num_images = image_array.shape[0]
-            num_images = min(num_images, 2)
+            num_images = min(image_array.shape[0], 2)
             for i in range(num_images):
                 plt.subplot(1, 2, i+1)
                 if len(image_array.shape) == 4:
                     plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                 elif len(image_array.shape) == 3:
-                    plt.imshow(image_array[0,:,:], cmap=cmap, vmin=vmin, vmax=vmax)
+                    plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png')
-            buf.seek(0)
-            plt.close()
+            if save_dir:
+                # Save locally
+                root = os.path.join(save_dir, "images", split)
+                filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(k, pl_module.global_step, pl_module.current_epoch, batch_idx)
+                path = os.path.join(root, filename)
+                os.makedirs(os.path.split(path)[0], exist_ok=True)
+                plt.savefig(path)
+            else:
+                # Log to TensorBoard
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                plt.close()
 
-            img_rgb = plt.imread(buf)[:, :, :3]
-            tag = f"{split}/{k}"
-            pl_module.logger.experiment.add_image(
-                tag, img_rgb,
-                global_step=pl_module.global_step, dataformats='HWC')
+                img_rgb = plt.imread(buf)[:, :, :3]
+                tag = f"{split}/{k}"
+                pl_module.logger.experiment.add_image(
+                    tag, img_rgb,
+                    global_step=pl_module.global_step, dataformats='HWC'
+                )
+
+            plt.close()
+        
+    @rank_zero_only
+    def _log_images_tensorboard(self, pl_module, images, modals, batch_idx, split):
+        self._log_images(pl_module, images, modals, batch_idx, split, save_dir=False)
 
     @rank_zero_only
-    def log_local(self, save_dir, split, images, modals,
-                  global_step, current_epoch, batch_idx, pl_module):
-        root = os.path.join(save_dir, "images", split)
-
-        target_keys = self.get_target_keys(pl_module)
-
-        for k, img_tensor in images.items():
-            if k not in target_keys:
-                print(f"Warning: No modal type provided for {k}. Skipping.")
-                continue
-            image_array = img_tensor.cpu().numpy()
-            modal = modals[k]
-
-            if modal in ['magnet_image', 'hmi_image_vae', '0094_image', 'aia0094_image', 'aia0094_image_vae', 'aia0094_image_vae', 'aia0094_image_cliptoken_decodelrimage']:
-                cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
-            else:
-                raise ValueError("Unknown modal type")
-
-            plt.figure(figsize=(32, 16))
-            num_images = image_array.shape[0]
-            num_images = min(num_images, 2)
-            for i in range(num_images):
-                plt.subplot(1, 2, i+1)
-                if len(image_array.shape) == 4:
-                    plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                elif len(image_array.shape) == 3:
-                    plt.imshow(image_array[0,:,:], cmap=cmap, vmin=vmin, vmax=vmax)
-                plt.title(f"{k} - Image {i}")
-                plt.subplots_adjust(wspace=0, hspace=0)
-
-            filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(
-            k,
-            global_step,
-            current_epoch,
-            batch_idx)
-            path = os.path.join(root, filename)
-            os.makedirs(os.path.split(path)[0], exist_ok=True)
-
-            plt.savefig(path)
-            plt.close()
+    def log_local(self, save_dir, split, images, modals, batch_idx, pl_module):
+        self._log_images(pl_module, images, modals, batch_idx, split, save_dir=save_dir)
 
     def log_img(self, pl_module, batch, batch_idx, split="train"):
         check_idx = batch_idx if self.log_on_batch_idx else pl_module.global_step
@@ -432,7 +420,7 @@ class SolarImageLogger(Callback):
                         images[k] = torch.clamp(images[k], -1., 1.)
 
             self.log_local(pl_module.logger.save_dir, split, images, modals,
-                           pl_module.global_step, pl_module.current_epoch, batch_idx, pl_module)
+                        batch_idx, pl_module)
 
             logger_log_images = self.logger_log_images.get(logger, lambda *args, **kwargs: None)
             logger_log_images(pl_module, images, modals, pl_module.global_step, split)
