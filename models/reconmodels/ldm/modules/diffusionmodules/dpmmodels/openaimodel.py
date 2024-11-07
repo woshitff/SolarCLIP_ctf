@@ -723,6 +723,7 @@ class UNetModel(nn.Module):
         hs = []
         t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
         emb = self.time_embed(t_emb)
+        print(f"Time embedding shape: {emb.shape}")
 
         if self.num_classes is not None:
             assert y.shape == (x.shape[0],)
@@ -732,15 +733,19 @@ class UNetModel(nn.Module):
         for module in self.input_blocks:
             h = module(h, emb, context)
             hs.append(h)
+        print(f"Input block shape: {h.shape}")
         h = self.middle_block(h, emb, context)
+        print(f"Middle block shape: {h.shape}")
         for module in self.output_blocks:
             h = th.cat([h, hs.pop()], dim=1)
             h = module(h, emb, context)
         h = h.type(x.dtype)
+        print(f"Output block shape: {h.shape}")
         if self.predict_codebook_ids:
             return self.id_predictor(h)
         else:
             return self.out(h)
+            print(f"forward done")
 
 
 class EncoderUNetModel(nn.Module):
