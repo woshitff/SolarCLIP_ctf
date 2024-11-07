@@ -169,4 +169,4 @@ class SolarCLIP_remove_CLS(nn.Module):
 
     def forward(self, x):
         x = self.encode_clip(x)
-        x = Remove_class_token(x)
+        x = Remove_class_token()(x)
