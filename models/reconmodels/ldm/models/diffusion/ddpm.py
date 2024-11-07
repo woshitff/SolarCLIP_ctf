@@ -452,7 +452,7 @@ class DDPM(pl.LightningModule):
     def get_input(self, batch, k):
         if k == 'hmi_image_vae' or k == 'hmi_cliptoken':
             x = batch[:, 0, :, :, :]
-        elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
+        elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
@@ -1422,7 +1422,7 @@ class SolarLatentDiffusion(LatentDiffusion):
             if cond_key is None:
                 cond_key = self.cond_stage_key
             if cond_key != self.first_stage_key:
-                if cond_key in ['hmi_image_vae', 'hmi_cliptoken', 'aia0094_image_vae', 'aia0094_cliptoken', 'aia0094_image_cliptoken_decodelrimage']:
+                if cond_key in ['hmi_image_vae', 'hmi_cliptoken', 'aia0094_image_vae', 'aia0094_cliptoken', 'aia0094_image_cliptoken', 'aia0094_image_cliptoken_decodelrimage']:
                     xc = super(LatentDiffusion, self).get_input(batch, cond_key).to(self.device)         
                 else:
                     raise NotImplementedError(f"Unsupport cond_stage_key {cond_key}")       
@@ -1488,6 +1488,11 @@ class SolarLatentDiffusion(LatentDiffusion):
                     c = mu
             elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
                 c = self.cond_stage_model.prior(c)
+            elif self.cond_stage_model.__class__.__name__ == "SolarCLIP":
+                if self.cond_stage_key == 'aia0094_image_cliptoken' and hasattr(self.cond_stage_model, 'encode_aia') and callable(self.cond_stage_model.encode_aia):
+                    c = self.cond_stage_model.encode_aia(c)
+                else:
+                    raise NotImplementedError(f"cond_stage_key {self.cond_stage_key} not yet implemented")
             else:
                 c = self.cond_stage_model(c)
         else:
@@ -1546,6 +1551,10 @@ class SolarLatentDiffusion(LatentDiffusion):
                 xc = self.first_stage_model.decode(c)
                 log["conditioning"] = xc
                 log["conditioning_latent"] = c
+            elif self.first_stage_model.__class__.__name__ == "SolarCLIP":
+                xc = super(LatentDiffusion, self).get_input(batch, self.cond_stage_key)
+                log["conditioning"] = xc
+                log["conditioning_latent"] = xc
             elif hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
                 log["conditioning_latent"] = c

@@ -4,7 +4,15 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from models.clipmodels.modules.vit import VisionTransformer
+from models.clipmodels.modules.vit import VisionTransformer, Remove_class_token
+from models.reconmodels.ldm.util import instantiate_from_config
+
+
+def disabled_train(self, mode=True):
+    """Overwrite model.train with this function to make sure train/eval mode
+    does not change anymore."""
+    return self
+
 
 class SolarCLIP(nn.Module):
     def __init__(self,
@@ -134,3 +142,31 @@ class SolarCLIP(nn.Module):
             loss_inner = torch.tensor(0, dtype=torch.float32, device=inner_cor_matrix.device)
 
         return loss, loss_inner, acc, logits_per_hmi, inner_cor_matrix
+    
+
+class SolarCLIP_remove_CLS(nn.Module):
+    def __init__(self,
+                 modal_key,
+                 solarclip_config):
+        super().__init__()
+        self.modal_key = modal_key
+        self.instantiate_solarclip(solarclip_config)
+
+    def instantiate_solarclip(self, config):
+        model = instantiate_from_config(config)
+        self.solarclip = model.eval()
+        self.solarclip.train = disabled_train
+        for param in self.solarclip.parameters():
+            param.requires_grad = False
+
+    def encode_clip(self, x):
+        if self.modal_key == 'hmi':
+            return self.solarclip.encode_hmi(x)
+        elif self.modal_key == 'aia0094':
+            return self.solarclip.encode_aia(x)
+        else:
+            raise ValueError('Invalid modal key')
+
+    def forward(self, x):
+        x = self.encode_clip(x)
+        x = Remove_class_token(x)
