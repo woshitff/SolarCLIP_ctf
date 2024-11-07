@@ -670,6 +670,7 @@ class LatentDiffusion(DDPM):
                 self.cond_stage_model.train = disabled_train
                 for param in self.cond_stage_model.parameters():
                     param.requires_grad = False
+                print('cond_stage_model not trainable')
         else:
             assert config != '__is_first_stage__'
             assert config != '__is_unconditional__'
@@ -1411,12 +1412,16 @@ class SolarLatentDiffusion(LatentDiffusion):
 
         return z,c(,xrec,x,x,xc)
         """
+        # print('start get input')
         x = super(LatentDiffusion, self).get_input(batch, k)
+        # print('x:', x.shape)
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
         encoder_posterior = self.encode_first_stage(x)
+        # print('encoder_posterior:', encoder_posterior.shape)
         z = self.get_first_stage_encoding(encoder_posterior).detach()
+        # print('z:', z.shape)
 
         if self.model.conditioning_key is not None and not self.force_null_conditioning:
             if cond_key is None:
@@ -1428,6 +1433,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                     raise NotImplementedError(f"Unsupport cond_stage_key {cond_key}")       
             else:
                 xc = x
+            # print('xc:', xc.shape)
             if not self.cond_stage_trainable or force_c_encode:
                 if isinstance(xc, dict) or isinstance(xc, list):
                     c = self.get_learned_conditioning(xc)
@@ -1435,6 +1441,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                     c = self.get_learned_conditioning(xc.to(self.device))
             else:
                 c = xc
+            # print('c:', c.shape)
             if bs is not None:
                 c = c[:bs]
 
@@ -1488,9 +1495,9 @@ class SolarLatentDiffusion(LatentDiffusion):
                     c = mu
             elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
                 c = self.cond_stage_model.prior(c)
-            elif self.cond_stage_model.__class__.__name__ == "SolarCLIP":
-                if self.cond_stage_key == 'aia0094_image_cliptoken' and hasattr(self.cond_stage_model, 'encode_aia') and callable(self.cond_stage_model.encode_aia):
-                    c = self.cond_stage_model.encode_aia(c)
+            elif self.cond_stage_model.__class__.__name__ == "SolarCLIP_remove_CLS":
+                if self.cond_stage_key == 'aia0094_image_cliptoken' and hasattr(self.cond_stage_model, 'encode_clip') and callable(self.cond_stage_model.encode_clip):
+                    c = self.cond_stage_model.encode_clip(c)
                 else:
                     raise NotImplementedError(f"cond_stage_key {self.cond_stage_key} not yet implemented")
             else:
@@ -1529,6 +1536,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                    plot_diffusion_rows=True, unconditional_guidance_scale=1., unconditional_guidance_label=None,
                    use_ema_scope=True,
                    **kwargs):
+        print('log img begin')
         ema_scope = self.ema_scope if use_ema_scope else nullcontext
         use_ddim = ddim_steps is not None
 
@@ -1540,6 +1548,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                                            force_c_encode=True,
                                            return_original_cond=True,
                                            bs=N)
+        print(1)
         N = min(x.shape[0], N)
         n_row = min(x.shape[0], n_row)
         log["inputs"] = x 
@@ -1547,14 +1556,14 @@ class SolarLatentDiffusion(LatentDiffusion):
         log["reconstruction"] = xrec 
 
         if self.model.conditioning_key is not None:
-            if self.first_stage_model.__class__.__name__ == "ImageDownsample":
-                xc = self.first_stage_model.decode(c)
-                log["conditioning"] = xc
-                log["conditioning_latent"] = c
-            elif self.first_stage_model.__class__.__name__ == "SolarCLIP":
+            if self.cond_stage_model.__class__.__name__ == "SolarCLIP_remove_CLS":
                 xc = super(LatentDiffusion, self).get_input(batch, self.cond_stage_key)
                 log["conditioning"] = xc
                 log["conditioning_latent"] = xc
+            elif self.first_stage_model.__class__.__name__ == "ImageDownsample":
+                xc = self.first_stage_model.decode(c)
+                log["conditioning"] = xc
+                log["conditioning_latent"] = c
             elif hasattr(self.cond_stage_model, "decode"):
                 xc = self.cond_stage_model.decode(c)
                 log["conditioning_latent"] = c
@@ -1595,10 +1604,13 @@ class SolarLatentDiffusion(LatentDiffusion):
 
         if sample:
             # get denoise row
+            print('c:', c.shape)
             with ema_scope("Sampling"):
                 samples, z_denoise_row = self.sample_log(cond=c, batch_size=N, ddim=use_ddim,
                                                          ddim_steps=ddim_steps, eta=ddim_eta)
                 # samples, z_denoise_row = self.sample(cond=c, batch_size=N, return_intermediates=True)
+            print('samples:', samples.shape)
+            # samples = rearrange(samples, 'b l d ->  ')
             x_samples = self.decode_first_stage(samples)
             log["samples_latent"] = samples
             log["samples"] = x_samples # what we want to generate

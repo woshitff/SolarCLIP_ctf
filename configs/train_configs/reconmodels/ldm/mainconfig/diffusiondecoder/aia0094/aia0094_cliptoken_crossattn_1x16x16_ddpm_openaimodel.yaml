@@ -13,7 +13,7 @@ model:
     cond_stage_key: "aia0094_image_cliptoken"
     image_size: 128
     channels: 1
-    cond_stage_trainable: true
+    cond_stage_trainable: false
     conditioning_key: crossattn
     scale_factor: 1 #0.18215 
     monitor: val/loss_simple_ema
@@ -72,7 +72,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 2
+    batch_size: 64
     num_workers: 9
     wrap: false
     train:
@@ -89,7 +89,7 @@ data:
         time_interval: 
           - 0
           - 5346720
-        time_step: 1800 #115200
+        time_step: 600 #115200
     validation:
       target: data.dataset.SolarDataset.multimodal_dataset
       params:

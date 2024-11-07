@@ -291,7 +291,7 @@ class SolarImageLogger(Callback):
         self.logger_log_images = {
             pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
         }
-        self.log_steps = [60 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
+        self.log_steps = [120 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
         if not increase_log_steps:
             self.log_steps = [self.batch_freq]
         self.clamp = clamp
@@ -315,7 +315,7 @@ class SolarImageLogger(Callback):
         return cmap, vmin, vmax
 
     def get_target_keys(self, pl_module):
-        if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion", "SolarCLIPConditionedLatentDiffusionV2", "SolarVAEConditionedLatentDiffusion"]:
+        if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion"]:
             target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row', 'denoise_row']
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
@@ -348,12 +348,8 @@ class SolarImageLogger(Callback):
 
             image_array = img_tensor.cpu().numpy()
             modal = modals.get(k, None)
-
-            if modal in ['magnet_image', 'hmi_image_vae', '0094_image', 'aia0094_image', 'aia0094_image_vae', 'aia0094_image_cliptoken_decodelrimage']:
-                cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
-            else:
-                raise ValueError("Unknown modal type")
-
+            cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+            
             plt.figure(figsize=(32, 16))
             num_images = min(image_array.shape[0], 2)
             for i in range(num_images):

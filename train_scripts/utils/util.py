@@ -138,7 +138,7 @@ class TrainerSetup:
                          "filename": "{epoch:06}-{step:09}",
                          "verbose": True,
                          'save_top_k': -1,
-                         'every_n_epochs': 500,
+                         'every_n_epochs': 50,
                          'save_weights_only': True
                      }
                      }
