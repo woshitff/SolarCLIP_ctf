@@ -1531,7 +1531,7 @@ class SolarLatentDiffusion(LatentDiffusion):
         return self.first_stage_model.decode(z)
 
     @torch.no_grad()
-    def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=100, ddim_eta=0., return_keys=None,
+    def log_images(self, batch, N=4, n_row=4, sample=True, ddim_steps=100, ddim_eta=0., return_keys=None,
                    quantize_denoised=False, inpaint=False, plot_denoise_rows=True, plot_progressive_rows=False,
                    plot_diffusion_rows=True, unconditional_guidance_scale=1., unconditional_guidance_label=None,
                    use_ema_scope=True,
