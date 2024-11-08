@@ -11,7 +11,7 @@ model:
     timesteps: 1000
     first_stage_key: "aia0094_image"
     cond_stage_key: "aia0094_image_cliptoken"
-    image_size: 16
+    image_size: 64
     channels: 1
     cond_stage_trainable: false
     conditioning_key: crossattn
@@ -22,7 +22,7 @@ model:
     unet_config:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.openaimodel.UNetModel 
       params:
-        image_size: 16
+        image_size: 128
         in_channels: 1
         out_channels: 1
         model_channels: 256
@@ -44,7 +44,7 @@ model:
       target: models.reconmodels.decoder.clipvitdecoder.modules.ImageDownsample
       params:
         in_size: 1024
-        scale_factor: 0.015625
+        scale_factor: 0.0625
       lossconfig:
         target: torch.nn.Identity
     

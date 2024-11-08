@@ -1464,6 +1464,7 @@ class SolarLatentDiffusion(LatentDiffusion):
             out.extend([x])
         if return_original_cond:
             out.append(xc)
+        # print('input c:', out[1].shape)
         return out
 
     @torch.no_grad()
@@ -1496,10 +1497,9 @@ class SolarLatentDiffusion(LatentDiffusion):
             elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
                 c = self.cond_stage_model.prior(c)
             elif self.cond_stage_model.__class__.__name__ == "SolarCLIP_remove_CLS":
-                if self.cond_stage_key == 'aia0094_image_cliptoken' and hasattr(self.cond_stage_model, 'encode_clip') and callable(self.cond_stage_model.encode_clip):
-                    c = self.cond_stage_model.encode_clip(c)
-                else:
-                    raise NotImplementedError(f"cond_stage_key {self.cond_stage_key} not yet implemented")
+                c = self.cond_stage_model(c)
+                # print(c)
+                # print('get_learned_conditioning done, c shape:', c.shape)
             else:
                 c = self.cond_stage_model(c)
         else:
