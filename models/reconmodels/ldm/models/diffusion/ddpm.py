@@ -60,6 +60,9 @@ class DiffusionWrapper(pl.LightningModule):
             xc = torch.cat([x] + c_concat, dim=1)
             cc = torch.cat(c_crossattn, 1)
             out = self.diffusion_model(xc, t, context=cc)
+        elif self.conditioning_key == 'adm':
+            cc = c_crossattn[0]
+            out = self.diffusion_model(x, t, y=cc)
         elif self.conditioning_key == 'hybrid-adm':
             assert c_adm is not None
             xc = torch.cat([x] + c_concat, dim=1)
@@ -69,9 +72,7 @@ class DiffusionWrapper(pl.LightningModule):
             assert c_adm is not None
             cc = torch.cat(c_crossattn, 1)
             out = self.diffusion_model(x, t, context=cc, y=c_adm)
-        elif self.conditioning_key == 'adm':
-            cc = c_crossattn[0]
-            out = self.diffusion_model(x, t, y=cc)
+        
         else:
             raise NotImplementedError()
 
@@ -814,17 +815,6 @@ class LatentDiffusion(DDPM):
         """
         x: input image, shape (B, C, H, W)
         z: first stage encoding, shape (B, c, h, w)
-        if conditioning_key is None:
-            if use_positional_encodings:
-                c: {'pos_x': pos_x, 'pos_y': pos_y}
-            else:
-                c: None
-                xc: None
-        else:
-            xc=x: conditioning input, shape (B, C, H, W)
-            if not self.cond_stage_trainable or force_c_encode:
-                c: xc encoded by cond_stage_model  !!!!!!!!!!!!!!!!!!!!
-
         xrec: reconstruction of x, shape (B, C, H, W)
 
         return z,c(,xrec,x,x,xc)
@@ -1444,11 +1434,6 @@ class SolarLatentDiffusion(LatentDiffusion):
             # print('c:', c.shape)
             if bs is not None:
                 c = c[:bs]
-
-            if self.use_positional_encodings:
-                pos_x, pos_y = self.compute_latent_shifts(batch)
-                ckey = __conditioning_keys__[self.model.conditioning_key]
-                c = {ckey: c, 'pos_x': pos_x, 'pos_y': pos_y}
 
         else:
             c = None
