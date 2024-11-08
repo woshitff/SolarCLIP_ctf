@@ -69,6 +69,7 @@ model:
       lossconfig:
         target: torch.nn.Identity
 
+
 data:
   target: data.build.DataModuleFromConfig
   params:
