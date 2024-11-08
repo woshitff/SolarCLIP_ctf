@@ -81,18 +81,21 @@ class ClipVitDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
                  decode_modal_key='aia0094_image', 
-                 width=64,
+                 width=768,
                  layers=12,
                  heads=12,
                  num_upblocks = 3,
                  out_channels = 1,
-                 solarclip_config = None
+                 solarclip_config = None,
+                 loss_type = 'l2'
                  ):
         super().__init__()
         self.save_hyperparameters()
         self.solarclip_config = solarclip_config
         self.decode_modal_key = decode_modal_key
+        self.loss_type = loss_type
 
+        self._instantiate_solarclip_vit(solarclip_config)
         self.transformer = Transformer(width, layers, heads)
         self.decoder = nn.Sequential(*[UpsampleBlock(768 // 2**i) for i in range(num_upblocks)])
         in_channels = 768 // 2**(num_upblocks)
@@ -151,7 +154,7 @@ class ClipVitDecoder(pl.LightningModule):
             raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
-        x = transforms.Resize(self.out_size)(x)
+        x = transforms.Resize(size=128)(x)
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
 

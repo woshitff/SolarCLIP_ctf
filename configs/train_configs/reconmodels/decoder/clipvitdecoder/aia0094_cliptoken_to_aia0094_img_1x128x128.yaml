@@ -6,7 +6,7 @@ model:
   target: models.reconmodels.decoder.clipdecoder.vitdecoder.ClipVitDecoder
   params:
     decode_modal_key: aia0094_image
-    width: 64
+    width: 768
     layers: 12
     heads: 12
     num_upblocks: 3
@@ -32,7 +32,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 256
+    batch_size: 64
     num_workers: 9
     wrap: false
     train:
@@ -49,7 +49,7 @@ data:
         time_interval: 
           - 0
           - 5346720
-        time_step: 1800
+        time_step: 600
     validation:
       target: data.dataset.SolarDataset.multimodal_dataset
       params:
