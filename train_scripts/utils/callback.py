@@ -31,6 +31,7 @@ class SetupCallback(Callback):
                 print("Summoning checkpoint.")
                 ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
                 trainer.save_checkpoint(ckpt_path)
+                print('save ckpt done!')
 
     def on_fit_start(self, trainer, pl_module):
         if trainer.strategy.global_rank == 0:
