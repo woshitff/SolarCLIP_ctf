@@ -38,7 +38,7 @@ class ResidualConvBlock(nn.Module):
         return x + res    
     
 class Upsample(nn.Module):
-    def __init__(self, in_channels, out_channels, bilinear=False):
+    def __init__(self, in_channels, bilinear=False):
         super().__init__()
         if bilinear:
             self.up = nn.Sequential(
@@ -90,7 +90,7 @@ class ClipCNNDecoder(pl.LightningModule):
                 *nn.ModuleList(
                 [ResidualConvBlock(in_out[i][0], in_out[i][0]) for _ in range(num_blocks)]
                 ),
-                Upsample(in_out[i][0], in_out[i][1]),
+                Upsample(in_out[i][0]),
             ))
         self.decoder = nn.Sequential(
             nn.ConvTranspose2d(in_channels, hidden_channels, kernel_size=3, stride=1, padding=1),
