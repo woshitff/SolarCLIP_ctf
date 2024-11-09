@@ -82,7 +82,7 @@ class UpsampleBlock(nn.Module):
 class ClipVitDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
-                 ckpt_path,
+                 ckpt_path=None,
                  decode_modal_key='aia0094_image', 
                  width=768,
                  layers=12,
