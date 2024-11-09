@@ -302,10 +302,10 @@ class SolarImageLogger(Callback):
         self.log_first_step = log_first_step
 
     def get_cmap_and_limits(self, inputs, mode):
-        cmap = "RdBu_r" if mode == 'hmi_image_vae' else "Reds"
+        cmap = "RdBu_r" if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
-        if mode == 'hmi_image_vae':
+        if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
         elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage' or mode == 'aia0094_image_cliptoken':  # '0094_image'

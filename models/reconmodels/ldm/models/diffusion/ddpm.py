@@ -451,7 +451,7 @@ class DDPM(pl.LightningModule):
         return self.p_losses(x, t, *args, **kwargs)
 
     def get_input(self, batch, k):
-        if k == 'hmi_image_vae' or k == 'hmi_cliptoken':
+        if k == 'hmi_image_vae' or k == 'hmi_image_cliptoken':
             x = batch[:, 0, :, :, :]
         elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
             x = batch[:, 1, :, :, :]
@@ -1418,7 +1418,7 @@ class SolarLatentDiffusion(LatentDiffusion):
             if cond_key is None:
                 cond_key = self.cond_stage_key
             if cond_key != self.first_stage_key:
-                if cond_key in ['hmi_image_vae', 'hmi_cliptoken', 'aia0094_image_vae', 'aia0094_cliptoken', 'aia0094_image_cliptoken', 'aia0094_image_cliptoken_decodelrimage']:
+                if cond_key in ['hmi_image_vae', 'hmi_image_cliptoken', 'aia0094_image_vae', 'aia0094_cliptoken', 'aia0094_image_cliptoken', 'aia0094_image_cliptoken_decodelrimage']:
                     xc = super(LatentDiffusion, self).get_input(batch, cond_key).to(self.device)         
                 else:
                     raise NotImplementedError(f"Unsupport cond_stage_key {cond_key}")       
