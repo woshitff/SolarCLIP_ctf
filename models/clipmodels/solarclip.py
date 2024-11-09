@@ -162,7 +162,7 @@ class SolarCLIP_remove_CLS(nn.Module):
     def encode_clip(self, x):
         if self.modal_key == 'hmi':
             return self.solarclip.encode_hmi(x)
-        elif self.modal_key == 'aia0094':
+        elif self.modal_key == 'aia0094_image':
             return self.solarclip.encode_aia(x)
         else:
             raise ValueError('Invalid modal key')

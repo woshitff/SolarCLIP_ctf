@@ -99,6 +99,8 @@ class ClipVitDecoder(pl.LightningModule):
         self.loss_type = loss_type
 
         self.solarclip = SolarCLIP_remove_CLS(self.decode_modal_key, self.solarclip_config)
+        for name, param in self.solarclip.named_parameters():
+            print(f"{name}: requires_grad={param.requires_grad}")
         scale = width ** -0.5
         self.scale = scale
         self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, width))
