@@ -98,9 +98,7 @@ class ClipVitDecoder(pl.LightningModule):
         self.clip_config = clip_config
         self.loss_type = loss_type
 
-        self.solarclip = SolarCLIP_remove_CLS(decode_modal_key, self.clip_config)
-        for name, param in self.solarclip.named_parameters():
-            print(f"{name}: requires_grad={param.requires_grad}")
+        self.instantiate_solarclip_remove_CLS(clip_config)
         scale = width ** -0.5
         self.scale = scale
         self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, width))
@@ -119,9 +117,16 @@ class ClipVitDecoder(pl.LightningModule):
             del checkpoint['state_dict']['loss']
         self.load_state_dict(checkpoint['state_dict'], strict=False)
 
+    def instantiate_solarclip_remove_CLS(self, config):
+        model = instantiate_from_config(config)
+        self.solarclip_remove_cls = model.eval()
+        self.solarclip_remove_cls.train = disabled_train
+        for param in self.solarclip_remove_cls.parameters():
+            param.requires_grad = False
+
     def encode(self, x):
         # (B, 1, 1024, 1024) -> (B, 257, 768) -> (B, 256, 768) -> (B, 768, 256)
-        x = self.solarclip(x)
+        x = self.solarclip_remove_cls(x)
         x = rearrange(x, 'b l d -> b d l')
         return x
     
