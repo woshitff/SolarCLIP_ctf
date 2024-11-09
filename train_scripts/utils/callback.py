@@ -28,7 +28,7 @@ class SetupCallback(Callback):
     def on_exception(self, trainer, pl_module, exception):
         if isinstance(exception, KeyboardInterrupt):
             if trainer.strategy.global_rank == 0:
-                print("Summoning checkpoint.")
+                print(f"Summoning checkpoint saving in {self.ckptdir}")
                 ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
                 trainer.save_checkpoint(ckpt_path)
                 print('save ckpt done!')
