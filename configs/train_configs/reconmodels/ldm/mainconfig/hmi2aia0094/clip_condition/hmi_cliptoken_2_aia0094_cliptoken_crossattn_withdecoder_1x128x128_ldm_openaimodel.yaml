@@ -10,7 +10,7 @@ model:
     log_every_t: 200
     timesteps: 1000
     first_stage_key: "aia0094_image"
-    cond_stage_key: "aia0094_image_cliptoken"
+    cond_stage_key: "hmi_image_cliptoken"
     spatial_size: 
       - 256 # token length
     channels: 768
