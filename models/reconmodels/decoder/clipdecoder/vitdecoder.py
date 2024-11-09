@@ -84,21 +84,21 @@ class ClipVitDecoder(pl.LightningModule):
     def __init__(self, 
                  ckpt_path=None,
                  decode_modal_key='aia0094_image', 
+                 clip_config = None,
                  width=768,
                  layers=12,
                  heads=12,
                  num_upblocks = 3,
                  out_channels = 1,
-                 solarclip_config = None,
                  loss_type = 'l2'
                  ):
         super().__init__()
         self.save_hyperparameters()
-        self.solarclip_config = solarclip_config
         self.decode_modal_key = decode_modal_key
+        self.clip_config = clip_config
         self.loss_type = loss_type
 
-        self.solarclip = SolarCLIP_remove_CLS(self.decode_modal_key, self.solarclip_config)
+        self.solarclip = SolarCLIP_remove_CLS(decode_modal_key, self.clip_config)
         for name, param in self.solarclip.named_parameters():
             print(f"{name}: requires_grad={param.requires_grad}")
         scale = width ** -0.5
@@ -118,7 +118,7 @@ class ClipVitDecoder(pl.LightningModule):
         if 'loss' in checkpoint['state_dict']:
             del checkpoint['state_dict']['loss']
         self.load_state_dict(checkpoint['state_dict'], strict=False)
-            
+
     def encode(self, x):
         # (B, 1, 1024, 1024) -> (B, 257, 768) -> (B, 256, 768) -> (B, 768, 256)
         x = self.solarclip(x)
