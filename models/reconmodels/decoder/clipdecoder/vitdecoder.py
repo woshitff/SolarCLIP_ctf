@@ -7,6 +7,7 @@ from einops import rearrange
 import pytorch_lightning as pl
 from torchvision import transforms
 
+from models.clipmodels.solarclip import SolarCLIP_remove_CLS
 from models.clipmodels.modules.vit import Remove_class_token, Transformer
 from models.reconmodels.ldm.util import instantiate_from_config
 
@@ -77,9 +78,11 @@ class UpsampleBlock(nn.Module):
     def forward(self, x):
         return self.block(x)
 
+
 class ClipVitDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
+                 ckpt_path,
                  decode_modal_key='aia0094_image', 
                  width=768,
                  layers=12,
@@ -95,33 +98,31 @@ class ClipVitDecoder(pl.LightningModule):
         self.decode_modal_key = decode_modal_key
         self.loss_type = loss_type
 
-        self._instantiate_solarclip_vit(solarclip_config)
+        self.solarclip = SolarCLIP_remove_CLS(self.decode_modal_key, self.solarclip_config)
         self.transformer = Transformer(width, layers, heads)
         self.decoder = nn.Sequential(*[UpsampleBlock(768 // 2**i) for i in range(num_upblocks)])
         in_channels = 768 // 2**(num_upblocks)
         self.out = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=3, stride=1, padding=1)
-        
-    def _instantiate_solarclip_vit(self, solarclip_config, freeze=True):
-        solarclip = instantiate_from_config(solarclip_config)
-        if freeze:
-            self.solarclip = solarclip.eval()
-            self.solarclip.train = disabled_train
-            for param in self.solarclip.parameters():
-                param.requires_grad = False
-        if self.decode_modal_key == 'magnet_image':
-            self.solarclip = self.solarclip.visual_hmi
-        elif self.decode_modal_key == 'aia0094_image':
-            self.solarclip = self.solarclip.visual_aia
-        else:
-            raise ValueError(f"Unknown embedding key {self.decode_modal_key}")
-        
-    def get_cliptoken(self, x):
+
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path)
+
+    @torch.no_grad()
+    def init_from_ckpt(self, ckpt_path):
+        checkpoint = torch.load(ckpt_path)
+        if 'loss' in checkpoint['state_dict']:
+            del checkpoint['state_dict']['loss']
+        self.load_state_dict(checkpoint['state_dict'], strict=False)
+            
+    def encode(self, x):
+        # (B, 1, 1024, 1024) -> (B, 257, 768) -> (B, 256, 768) -> (B, 768, 256)
         x = self.solarclip(x)
-        x = Remove_class_token()(x)
+        x = rearrange(x, 'b l d -> b d l')
         return x
     
     def decode(self, x):
-        # (B, 256, 768) -> (B, 256, 16, 16) -> (B, 1, 128, 128)
+        # (B, 768, 256) -> (B, 256, 768) -> (B, 256, 16, 16) -> (B, 1, 128, 128)
+        x = rearrange(x, 'b d l -> b l d')
         x = self.transformer(x) # (B, 256, 768) -> (B, 256, 768)
         x = rearrange(x, 'b (h w) c -> b c h w', h=16, w=16) # (B, 256, 768) -> (B, 768, 16, 16)
         x = self.decoder(x)
@@ -129,7 +130,7 @@ class ClipVitDecoder(pl.LightningModule):
         return x
 
     def forward(self, x):
-        x = self.get_cliptoken(x)
+        x = self.encode(x)
         x = self.decode(x)
         return x
     
@@ -227,3 +228,4 @@ class ClipVitDecoder(pl.LightningModule):
         modals['targets_hat'] = self.decode_modal_key
         print('image log done')
         return log, modals
+    

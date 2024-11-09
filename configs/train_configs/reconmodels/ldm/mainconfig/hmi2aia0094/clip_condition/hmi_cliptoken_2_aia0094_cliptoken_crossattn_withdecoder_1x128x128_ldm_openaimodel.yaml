@@ -43,13 +43,33 @@ model:
         context_dim: 768
 
     first_stage_config: 
-      target: models.reconmodels.decoder.clipvitdecoder.modules.ImageDownsample
+      target: models.reconmodels.decoder.clipdecoder.vitdecoder.ClipVitDecoder
       params:
-        in_size: 1024
-        scale_factor: 0.0625
-      lossconfig:
-        target: torch.nn.Identity
-    
+        ckpt_path: ""
+        decode_modal_key: aia0094_image
+        width: 768
+        layers: 12
+        heads: 12
+        num_upblocks: 3
+        out_channels: 1
+
+        solarclip_config:
+            target: models.clipmodels.solarclip.SolarCLIP
+            params:
+              ckpt_path: "checkpoints/clipmodels/innerloss_0_allembed_epoch_340_model.pt"
+              embed_dim: 768 
+              vision_width: 768
+              image_resolution_hmi: 1024  
+              vision_layers_hmi: 12 
+              vision_patch_size_hmi: 64  
+              image_resolution_aia: 1024  
+              vision_layers_aia: 12
+              vision_patch_size_aia: 64 
+              transformer_token_type: "all embedding"  
+              norm_type: "bn1d"  
+            lossconfig:
+              target: torch.nn.Identity
+
     cond_stage_config:
       target: models.clipmodels.solarclip.SolarCLIP_remove_CLS
       params:
