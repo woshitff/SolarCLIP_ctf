@@ -17,7 +17,7 @@ from models.reconmodels.ldm.modules.diffusionmodules.util import (
     normalization,
     timestep_embedding,
 )
-from models.reconmodels.ldm.modules.attention import SpatialTransformer
+from models.reconmodels.ldm.modules.attention import ContextTransformer
 
 
 # dummy replace
@@ -81,7 +81,7 @@ class TimestepEmbedSequential(nn.Sequential, TimestepBlock):
         for layer in self:
             if isinstance(layer, TimestepBlock):
                 x = layer(x, emb)
-            elif isinstance(layer, SpatialTransformer):
+            elif isinstance(layer, ContextTransformer):
                 x = layer(x, context)
             else:
                 x = layer(x)
@@ -411,7 +411,7 @@ class QKVAttention(nn.Module):
         return count_flops_attn(model, _x, y)
 
 
-class UNetModel(nn.Module):
+class UnetModel(nn.Module):
     """
     The full UNet model with attention and timestep embedding.
     :param in_channels: channels in the input Tensor.
@@ -462,21 +462,25 @@ class UNetModel(nn.Module):
         use_scale_shift_norm=False,
         resblock_updown=False,
         use_new_attention_order=False,
-        use_spatial_transformer=False,    # custom transformer support
+        use_context_transformer=False,    # custom transformer support
         transformer_depth=1,              # custom transformer support
         context_dim=None,                 # custom transformer support
+        use_linear=False,                 # custom transformer support
         n_embed=None,                     # custom support for prediction of discrete ids into codebook of first stage vq model
         legacy=True,
     ):
         super().__init__()
-        if use_spatial_transformer:
+        if use_context_transformer:
             assert context_dim is not None, 'Fool!! You forgot to include the dimension of your cross-attention conditioning...'
 
         if context_dim is not None:
-            assert use_spatial_transformer, 'Fool!! You forgot to use the spatial transformer for your cross-attention conditioning...'
+            assert use_context_transformer, 'Fool!! You forgot to use the spatial transformer for your cross-attention conditioning...'
             from omegaconf.listconfig import ListConfig
             if type(context_dim) == ListConfig:
                 context_dim = list(context_dim)
+
+        if context_dim is not None:
+            assert (dims==1 and use_linear==True) or (dims == 2 and use_linear==False), 'Fool!! You forgot to set the correct dimensions for your transformer...'
 
         if num_heads_upsample == -1:
             num_heads_upsample = num_heads
@@ -503,6 +507,7 @@ class UNetModel(nn.Module):
         self.num_head_channels = num_head_channels
         self.num_heads_upsample = num_heads_upsample
         self.predict_codebook_ids = n_embed is not None
+        self.use_linear = use_linear
 
         time_embed_dim = model_channels * 4
         self.time_embed = nn.Sequential(
@@ -547,7 +552,7 @@ class UNetModel(nn.Module):
                         dim_head = num_head_channels # 32
                     if legacy:
                         #num_heads = 1
-                        dim_head = ch // num_heads if use_spatial_transformer else num_head_channels
+                        dim_head = ch // num_heads if use_context_transformer else num_head_channels
                     layers.append(
                         AttentionBlock(
                             ch,
@@ -555,8 +560,8 @@ class UNetModel(nn.Module):
                             num_heads=num_heads,
                             num_head_channels=dim_head,
                             use_new_attention_order=use_new_attention_order,
-                        ) if not use_spatial_transformer else SpatialTransformer(
-                            ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim
+                        ) if not use_context_transformer else ContextTransformer(
+                            ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim, use_linear=self.use_linear
                         )
                     )
                 self.input_blocks.append(TimestepEmbedSequential(*layers))
@@ -594,7 +599,7 @@ class UNetModel(nn.Module):
             dim_head = num_head_channels
         if legacy:
             #num_heads = 1
-            dim_head = ch // num_heads if use_spatial_transformer else num_head_channels
+            dim_head = ch // num_heads if use_context_transformer else num_head_channels
         self.middle_block = TimestepEmbedSequential(
             ResBlock(
                 ch,
@@ -610,7 +615,7 @@ class UNetModel(nn.Module):
                 num_heads=num_heads,
                 num_head_channels=dim_head,
                 use_new_attention_order=use_new_attention_order,
-            ) if not use_spatial_transformer else SpatialTransformer(
+            ) if not use_context_transformer else ContextTransformer(
                             ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim
                         ),
             ResBlock(
@@ -648,7 +653,7 @@ class UNetModel(nn.Module):
                         dim_head = num_head_channels
                     if legacy:
                         #num_heads = 1
-                        dim_head = ch // num_heads if use_spatial_transformer else num_head_channels
+                        dim_head = ch // num_heads if use_context_transformer else num_head_channels
                     layers.append(
                         AttentionBlock(
                             ch,
@@ -656,7 +661,7 @@ class UNetModel(nn.Module):
                             num_heads=num_heads_upsample,
                             num_head_channels=dim_head,
                             use_new_attention_order=use_new_attention_order,
-                        ) if not use_spatial_transformer else SpatialTransformer(
+                        ) if not use_context_transformer else ContextTransformer(
                             ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim
                         )
                     )
@@ -744,8 +749,9 @@ class UNetModel(nn.Module):
         if self.predict_codebook_ids:
             return self.id_predictor(h)
         else:
-            return self.out(h)
             print(f"forward done")
+            return self.out(h)
+            
 
 
 class EncoderUNetModel(nn.Module):

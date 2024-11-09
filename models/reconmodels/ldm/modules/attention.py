@@ -44,6 +44,9 @@ def init_(tensor):
     tensor.uniform_(-std, std)
     return tensor
 
+def isimage(x):
+    return len(x.shape) == 4 
+
 
 # feedforward
 class GEGLU(nn.Module):
@@ -275,7 +278,7 @@ class BasicTransformerBlock(nn.Module):
         return x
 
 
-class SpatialTransformer(nn.Module):
+class ContextTransformer(nn.Module):
     """
     Transformer block for image-like data.
     First, project the input (aka embedding)
@@ -323,19 +326,35 @@ class SpatialTransformer(nn.Module):
         # note: if no context is given, cross-attention defaults to self-attention
         if not isinstance(context, list):
             context = [context]
-        b, c, h, w = x.shape
-        x_in = x
-        x = self.norm(x)
-        if not self.use_linear:
-            x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 256, 16, 16)
-        x = rearrange(x, 'b c h w -> b (h w) c').contiguous() # (b, 256, 16, 16) -> (b, 256, 256)
-        if self.use_linear:
-            x = self.proj_in(x)
-        for i, block in enumerate(self.transformer_blocks):
-            x = block(x, context=context[i]) #x: (b, 256, 256), context: (b, 256, 768)
-        if self.use_linear:
-            x = self.proj_out(x)
-        x = rearrange(x, 'b (h w) c -> b c h w', h=h, w=w).contiguous()
-        if not self.use_linear:
-            x = self.proj_out(x)
+        if isimage(x):
+            b, c, h, w = x.shape
+            x_in = x
+            x = self.norm(x)
+            if not self.use_linear:
+                x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 256, 16, 16)
+            x = rearrange(x, 'b c h w -> b (h w) c').contiguous() # (b, 256, 16, 16) -> (b, 256, 256)
+            if self.use_linear:
+                x = self.proj_in(x)
+            for i, block in enumerate(self.transformer_blocks):
+                x = block(x, context=context[i]) #x: (b, 256, 256), context: (b, 256, 768)
+            if self.use_linear:
+                x = self.proj_out(x)
+            x = rearrange(x, 'b (h w) c -> b c h w', h=h, w=w).contiguous()
+            if not self.use_linear:
+                x = self.proj_out(x)
+        else:
+            b, d, l = x.shape
+            assert len(x.shape) == 3 and self.use_linear == True, "Input must be an token-like tensor with use_linear=True"
+            x_in = x
+            x = self.norm(x)
+            if self.use_linear:
+                x = rearrange(x, 'b d l -> b l d').contiguous()
+                x = self.proj_in(x)
+            for i, block in enumerate(self.transformer_blocks):
+                x = block(x, context=context[i])
+            if self.use_linear:
+                x = self.proj_out(x)
+                x = rearrange(x, 'b l d -> b d l').contiguous()
+
         return x + x_in
+
