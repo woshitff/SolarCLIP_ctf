@@ -30,9 +30,11 @@ class SetupCallback(Callback):
             if trainer.strategy.global_rank == 0:
                 start_time = datetime.now()
                 print(f"Summoning checkpoint saving in {self.ckptdir}")
-                ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
+                ckpt_path = os.path.join(self.ckptdir, "last_state_dict.ckpt")
                 torch.cuda.empty_cache()
-                trainer.save_checkpoint(ckpt_path)
+                model_state_dict = trainer.model.state_dict()
+                torch.save(model_state_dict, ckpt_path)
+                # trainer.save_checkpoint(ckpt_path)
                 print(f'save ckpt done! use time: {(datetime.now() - start_time).total_seconds() / 60:.2f} minutes')
             print("Exiting program after saving checkpoint.")
             os._exit(0)
