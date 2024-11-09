@@ -28,10 +28,14 @@ class SetupCallback(Callback):
     def on_exception(self, trainer, pl_module, exception):
         if isinstance(exception, KeyboardInterrupt):
             if trainer.strategy.global_rank == 0:
+                start_time = datetime.now()
                 print(f"Summoning checkpoint saving in {self.ckptdir}")
                 ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
+                torch.cuda.empty_cache()
                 trainer.save_checkpoint(ckpt_path)
-                print('save ckpt done!')
+                print(f'save ckpt done! use time: {(datetime.now() - start_time).total_seconds() / 60:.2f} minutes')
+            print("Exiting program after saving checkpoint.")
+            os._exit(0)
 
     def on_fit_start(self, trainer, pl_module):
         if trainer.strategy.global_rank == 0:
