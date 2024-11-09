@@ -443,7 +443,7 @@ class UnetModel(nn.Module):
 
     def __init__(
         self,
-        image_size,
+        spatial_size,
         in_channels,
         model_channels,
         out_channels,
@@ -491,7 +491,7 @@ class UnetModel(nn.Module):
         if num_head_channels == -1:
             assert num_heads != -1, 'Either num_heads or num_head_channels has to be set'
 
-        self.image_size = image_size
+        self.spatial_size = spatial_size
         self.in_channels = in_channels
         self.model_channels = model_channels
         self.out_channels = out_channels
@@ -762,7 +762,7 @@ class EncoderUNetModel(nn.Module):
 
     def __init__(
         self,
-        image_size,
+        spatial_size,
         in_channels,
         model_channels,
         out_channels,
@@ -914,7 +914,7 @@ class EncoderUNetModel(nn.Module):
                 normalization(ch),
                 nn.SiLU(),
                 AttentionPool2d(
-                    (image_size // ds), ch, num_head_channels, out_channels
+                    (spatial_size // ds), ch, num_head_channels, out_channels
                 ),
             )
         elif pool == "spatial":

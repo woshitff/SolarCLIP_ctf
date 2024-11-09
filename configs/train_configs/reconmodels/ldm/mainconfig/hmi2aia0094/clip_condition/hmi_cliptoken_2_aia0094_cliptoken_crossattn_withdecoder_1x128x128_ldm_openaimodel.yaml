@@ -11,8 +11,9 @@ model:
     timesteps: 1000
     first_stage_key: "aia0094_image"
     cond_stage_key: "aia0094_image_cliptoken"
-    image_size: 64
-    channels: 1
+    spatial_size: 
+      - 256 # token length
+    channels: 768
     cond_stage_trainable: false
     conditioning_key: crossattn
     scale_factor: 0.18215 
@@ -22,10 +23,11 @@ model:
     unet_config:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.openaimodel.UNetModel 
       params:
-        image_size: 128
+        spatial_size: 
+          - 256 # token length
         in_channels: 768
         out_channels: 768
-        model_channels: 256
+        model_channels: 256 # 512
         attention_resolutions:
         - 8
         - 4
