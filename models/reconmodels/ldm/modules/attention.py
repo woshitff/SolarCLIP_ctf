@@ -305,6 +305,8 @@ class ContextTransformer(nn.Module):
                                      stride=1,
                                      padding=0) # 256, 256, 1, 1
         else:
+            scale = in_channels ** -0.5
+            self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, in_channels))
             self.proj_in = nn.Linear(in_channels, inner_dim)
 
         self.transformer_blocks = nn.ModuleList(
@@ -349,6 +351,7 @@ class ContextTransformer(nn.Module):
             x = self.norm(x)
             if self.use_linear:
                 x = rearrange(x, 'b d l -> b l d').contiguous()
+                x = x + self.positional_embedding.to(x.device)
                 x = self.proj_in(x)
             for i, block in enumerate(self.transformer_blocks):
                 x = block(x, context=context[i])

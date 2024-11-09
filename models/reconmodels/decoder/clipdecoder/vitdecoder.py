@@ -99,6 +99,9 @@ class ClipVitDecoder(pl.LightningModule):
         self.loss_type = loss_type
 
         self.solarclip = SolarCLIP_remove_CLS(self.decode_modal_key, self.solarclip_config)
+        scale = width ** -0.5
+        self.scale = scale
+        self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, width))
         self.transformer = Transformer(width, layers, heads)
         self.decoder = nn.Sequential(*[UpsampleBlock(768 // 2**i) for i in range(num_upblocks)])
         in_channels = 768 // 2**(num_upblocks)
@@ -123,6 +126,7 @@ class ClipVitDecoder(pl.LightningModule):
     def decode(self, x):
         # (B, 768, 256) -> (B, 256, 768) -> (B, 256, 16, 16) -> (B, 1, 128, 128)
         x = rearrange(x, 'b d l -> b l d')
+        x = x + self.positional_embedding.to(x.dtype)
         x = self.transformer(x) # (B, 256, 768) -> (B, 256, 768)
         x = rearrange(x, 'b (h w) c -> b c h w', h=16, w=16) # (B, 256, 768) -> (B, 768, 16, 16)
         x = self.decoder(x)
