@@ -298,7 +298,7 @@ class SolarImageLogger(Callback):
         self.logger_log_images = {
             pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
         }
-        self.log_steps = [120 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
+        self.log_steps = [40 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
         if not increase_log_steps:
             self.log_steps = [self.batch_freq]
         self.clamp = clamp
@@ -311,7 +311,7 @@ class SolarImageLogger(Callback):
         cmap = "RdBu_r" if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
-        if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken':
+        if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'hmi_image':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
         elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage' or mode == 'aia0094_image_cliptoken':  # '0094_image'
