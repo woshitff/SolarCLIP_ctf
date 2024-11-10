@@ -1427,7 +1427,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                     raise NotImplementedError(f"Unsupport cond_stage_key {cond_key}")       
             else:
                 xc = x
-            print('xc:', xc.shape)
+            # print('xc:', xc.shape)
             if not self.cond_stage_trainable or force_c_encode:
                 if isinstance(xc, dict) or isinstance(xc, list):
                     c = self.get_learned_conditioning(xc)
@@ -1435,7 +1435,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                     c = self.get_learned_conditioning(xc.to(self.device))
             else:
                 c = xc
-            print('c:', c.shape)
+            # print('c:', c.shape)
             if bs is not None:
                 c = c[:bs]
 

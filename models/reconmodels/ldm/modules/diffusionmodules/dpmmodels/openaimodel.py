@@ -765,7 +765,7 @@ class UNetModel(nn.Module):
             return self.id_predictor(h)
         else:
             h = self.out(h)
-            print(f"forward done")
+            # print(f"forward done")
             # return self.out(h)
             return h
 

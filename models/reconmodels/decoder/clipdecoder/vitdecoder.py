@@ -134,7 +134,7 @@ class ClipVitDecoder(pl.LightningModule):
     def decode(self, x):
         # (B, 768, 256) -> (B, 256, 768) -> (B, 256, 16, 16) -> (B, 1, 128, 128)
         x = rearrange(x, 'b d l -> b l d')
-        x = x + self.positional_embedding.to(x.dtype)
+        # x = x + self.positional_embedding.to(x.dtype)
         x = self.transformer(x) # (B, 256, 768) -> (B, 256, 768)
         x = rearrange(x, 'b (h w) c -> b c h w', h=16, w=16) # (B, 256, 768) -> (B, 768, 16, 16)
         x = self.decoder(x)
