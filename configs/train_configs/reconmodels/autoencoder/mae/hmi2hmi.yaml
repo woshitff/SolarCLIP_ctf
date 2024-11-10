@@ -1,6 +1,6 @@
 model:
   base_learning_rate: 1.0e-04
-  base_learning_optimizer: "Adam"
+  base_learning_optimizer: "SGD"
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.autoencoder.models.mae.vit_mae.ViTMAE
   params:
