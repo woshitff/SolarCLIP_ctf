@@ -153,6 +153,7 @@ class ViTMAE(pl.LightningModule):
 
     def forward_decoder(self, x, ids_restore):
         x = self.decoder_embed(x)
+        print(f'x shape after decoder embed: {x.shape}')
 
         mask_tokens = self.mask_token.repeat(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
         x_ = torch.cat([x[:, 1:, :], mask_tokens], dim=1)  # no cls token
@@ -171,6 +172,12 @@ class ViTMAE(pl.LightningModule):
 
         return x
 
+    def forward(self, imgs, mask_ratio=0.):
+        latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
+        print(f'latent shape: {latent.shape}')
+        pred = self.forward_decoder(latent, ids_restore)  
+        return pred, mask
+    
     def encode(self, x):
         x = self.patch_embed(x)
         x = x + self.pos_embed[:, 1:, :]
@@ -196,11 +203,6 @@ class ViTMAE(pl.LightningModule):
         x = self.encode(x)
         x = self.decode(x)
         return x
-
-    def forward(self, imgs, mask_ratio=0.75):
-        latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
-        pred = self.forward_decoder(latent, ids_restore)  
-        return pred, mask
 
     def get_input(self, batch, k):
         if k == 'magnet_image':
@@ -283,17 +285,21 @@ class ViTMAE(pl.LightningModule):
         log['targets'] = targets[:N]
         self.eval()
         with torch.no_grad():
-            targets_token_hat = self(inputs)[0]
-            targets_hat = self.unpatchify(targets_token_hat)
+            targets_token_hat_mask_ratio_set = self(inputs, mask_ratio=self.mask_ratio)[0]
+            targets_hat_mask_ratio_set = self.unpatchify(targets_token_hat_mask_ratio_set)
+            targets_token_hat_mask_ratio_0 = self(inputs, mask_ratio=0.)[0]
+            targets_hat_mask_ratio_0 = self.unpatchify(targets_token_hat_mask_ratio_0)
             targets_token_hat_inference = self.forward_inference(inputs)
             targets_hat_inference = self.unpatchify(targets_token_hat_inference)
-        log['targets_hat'] = targets_hat[:N]
+        log['targets_hat_mask_ratio_set'] = targets_hat_mask_ratio_set[:N]
+        log['targets_hat_mask_ratio_0'] = targets_hat_mask_ratio_0[:N]
         log['targets_hat_inference'] = targets_hat_inference[:N]
         self.train()
 
         modals['inputs'] = self.input_modal_key
         modals['targets'] = self.input_modal_key
-        modals['targets_hat'] = self.input_modal_key
+        modals['targets_hat_mask_ratio_set'] = self.input_modal_key
+        modals['targets_hat_mask_ratio_0'] = self.input_modal_key
         modals['targets_hat_inference'] = self.input_modal_key
         print('image log done')
         return log, modals
