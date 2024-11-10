@@ -1405,14 +1405,14 @@ class SolarLatentDiffusion(LatentDiffusion):
         """
         # print('start get input')
         x = super(LatentDiffusion, self).get_input(batch, k)
-        # print('x:', x.shape)
+        print('x:', x.shape)
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
         encoder_posterior = self.encode_first_stage(x)
-        # print('encoder_posterior:', encoder_posterior.shape)
+        print('encoder_posterior:', encoder_posterior.shape)
         z = self.get_first_stage_encoding(encoder_posterior).detach()
-        # print('z:', z.shape)
+        print('z:', z.shape)
 
         if self.model.conditioning_key is not None and not self.force_null_conditioning:
             if cond_key is None:
@@ -1424,7 +1424,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                     raise NotImplementedError(f"Unsupport cond_stage_key {cond_key}")       
             else:
                 xc = x
-            # print('xc:', xc.shape)
+            print('xc:', xc.shape)
             if not self.cond_stage_trainable or force_c_encode:
                 if isinstance(xc, dict) or isinstance(xc, list):
                     c = self.get_learned_conditioning(xc)
@@ -1432,7 +1432,7 @@ class SolarLatentDiffusion(LatentDiffusion):
                     c = self.get_learned_conditioning(xc.to(self.device))
             else:
                 c = xc
-            # print('c:', c.shape)
+            print('c:', c.shape)
             if bs is not None:
                 c = c[:bs]
 

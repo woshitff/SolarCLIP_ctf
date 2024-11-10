@@ -411,7 +411,7 @@ class QKVAttention(nn.Module):
         return count_flops_attn(model, _x, y)
 
 
-class UnetModel(nn.Module):
+class UNetModel(nn.Module):
     """
     The full UNet model with attention and timestep embedding.
     :param in_channels: channels in the input Tensor.
@@ -734,6 +734,8 @@ class UnetModel(nn.Module):
             assert y.shape == (x.shape[0],)
             emb = emb + self.label_emb(y)
 
+        print(x.shape)
+        print('temb:', emb.shape)
         h = x.type(self.dtype)
         for module in self.input_blocks:
             h = module(h, emb, context)
