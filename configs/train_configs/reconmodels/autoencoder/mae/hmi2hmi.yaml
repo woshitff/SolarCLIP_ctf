@@ -21,7 +21,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 64
+    batch_size: 32
     num_workers: 9
     wrap: false
     train:
