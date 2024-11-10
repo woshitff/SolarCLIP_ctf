@@ -328,6 +328,8 @@ class SolarImageLogger(Callback):
             target_keys = ['inputs', 'recon', 'mu', 'samples']
         elif pl_module.__class__.__name__ in ["ClipVitDecoder", "SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
             target_keys = ['inputs', 'targets', 'targets_hat']
+        elif pl_module.__class__.__name__ in ["ViTMAE"]:
+            target_keys = ['inputs', 'targets', 'targets_hat_mask_ratio_set', 'targets_hat_mask_ratio_0', 'targets_hat_inference']
         else:
             raise ValueError("Unsupported model type")
         return target_keys
