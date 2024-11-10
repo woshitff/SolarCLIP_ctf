@@ -585,7 +585,7 @@ class UNetModel(nn.Module):
                             # down=True,
                             down=False
                         )
-                        if not resblock_updown
+                        if resblock_updown
                         else Downsample(
                             ch, conv_resample, dims=dims, out_channels=out_ch
                         )
@@ -683,7 +683,7 @@ class UNetModel(nn.Module):
                             # up=True,
                             up = False
                         )
-                        if not resblock_updown
+                        if resblock_updown
                         else Upsample(ch, conv_resample, dims=dims, out_channels=out_ch)
                     )
                     ds //= 2

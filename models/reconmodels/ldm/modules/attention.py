@@ -1,5 +1,6 @@
 from inspect import isfunction
 import math
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn, einsum
@@ -91,6 +92,58 @@ def zero_module(module):
 def Normalize(in_channels):
     return torch.nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True)
 
+
+def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False, extra_tokens=0):
+    # see https://github.com/facebookresearch/mae/blob/main/util/pos_embed.py
+    """
+    grid_size: int of the grid height and width
+    return:
+    pos_embed: [grid_size*grid_size, embed_dim] or [1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+    """
+    grid_h = np.arange(grid_size, dtype=np.float32)
+    grid_w = np.arange(grid_size, dtype=np.float32)
+    grid = np.meshgrid(grid_w, grid_h)  # here w goes first
+    grid = np.stack(grid, axis=0)
+
+    grid = grid.reshape([2, 1, grid_size, grid_size])
+    pos_embed = get_2d_sincos_pos_embed_from_grid(embed_dim, grid)
+    if cls_token and extra_tokens > 0:
+        pos_embed = np.concatenate([np.zeros([extra_tokens, embed_dim]), pos_embed], axis=0)
+    return pos_embed
+
+
+def get_2d_sincos_pos_embed_from_grid(embed_dim, grid):
+    # see https://github.com/facebookresearch/DiT/blob/main/models.py
+    assert embed_dim % 2 == 0
+
+    # use half of dimensions to encode grid_h
+    emb_h = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[0])  # (H*W, D/2)
+    emb_w = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[1])  # (H*W, D/2)
+
+    emb = np.concatenate([emb_h, emb_w], axis=1) # (H*W, D)
+    return emb
+
+
+def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
+    # see https://github.com/facebookresearch/DiT/blob/main/models.py
+    """
+    embed_dim: output dimension for each position
+    pos: a list of positions to be encoded: size (M,)
+    out: (M, D)
+    """
+    assert embed_dim % 2 == 0
+    omega = np.arange(embed_dim // 2, dtype=np.float64)
+    omega /= embed_dim / 2.
+    omega = 1. / 10000**omega  # (D/2,)
+
+    pos = pos.reshape(-1)  # (M,)
+    out = np.einsum('m,d->md', pos, omega)  # (M, D/2), outer product
+
+    emb_sin = np.sin(out) # (M, D/2)
+    emb_cos = np.cos(out) # (M, D/2)
+
+    emb = np.concatenate([emb_sin, emb_cos], axis=1)  # (M, D)
+    return emb
 
 class SpatialSelfAttention(nn.Module):
     def __init__(self, in_channels):
@@ -298,6 +351,7 @@ class ContextTransformer(nn.Module):
         self.in_channels = in_channels
         inner_dim = n_heads * d_head
         self.norm = Normalize(in_channels)
+        self.positional_embedding = get_1d_sincos_pos_embed_from_grid(inner_dim, np.arange(256))
         if not use_linear:
             self.proj_in = nn.Conv2d(in_channels, 
                                      inner_dim,
@@ -335,6 +389,7 @@ class ContextTransformer(nn.Module):
             if not self.use_linear:
                 x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 256, 16, 16)
             x = rearrange(x, 'b c h w -> b (h w) c').contiguous() # (b, 256, 16, 16) -> (b, 256, 256)
+            x = x + self.positional_embedding
             if self.use_linear:
                 x = self.proj_in(x)
             for i, block in enumerate(self.transformer_blocks):

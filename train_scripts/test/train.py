@@ -47,7 +47,7 @@ def get_parser(**parser_kwargs):
         metavar="/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=['configs/train_configs/reconmodels/ldm/mainconfig/hmi2aia0094/clip_condition/hmi_cliptoken_2_aia0094_cliptoken_crossattn_withdecoder_1x128x128_ldm_openaimodel.yaml']
+        default=['configs/train_configs/reconmodels/ldm/mainconfig/diffusiondecoder/aia0094/aia0094_cliptoken_crossattn_1x128x128_ddpm_openaimodel.yaml']
     )
     parser.add_argument(
         "-f",
