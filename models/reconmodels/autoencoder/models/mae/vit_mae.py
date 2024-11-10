@@ -23,6 +23,7 @@ from models.reconmodels.autoencoder.models.mae.util.pos_embed import get_2d_sinc
 
 
 class ViTMAE(pl.LightningModule):
+    """Vision Transformer with Masked Autoencoder (ViTMAE) get encode of shape (B, L+1, D)"""
     def __init__(self,
                  ckpt_path=None,
                  input_modal_key='magnet_image',
