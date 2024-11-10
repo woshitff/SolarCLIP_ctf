@@ -5,6 +5,7 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.decoder.clipdecoder.vitdecoder.ClipVitDecoder
   params:
+    ckpt_path: 'checkpoints/reconmodels/decoder/vitdecoder/last_state_dict.ckpt'
     decode_modal_key: aia0094_image
     width: 768
     layers: 12

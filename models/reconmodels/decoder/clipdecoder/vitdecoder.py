@@ -113,9 +113,10 @@ class ClipVitDecoder(pl.LightningModule):
     @torch.no_grad()
     def init_from_ckpt(self, ckpt_path):
         checkpoint = torch.load(ckpt_path)
-        if 'loss' in checkpoint['state_dict']:
-            del checkpoint['state_dict']['loss']
-        self.load_state_dict(checkpoint['state_dict'], strict=False)
+        # if 'loss' in checkpoint['state_dict']:
+        #     del checkpoint['state_dict']['loss']
+        # self.load_state_dict(checkpoint['state_dict'], strict=False)
+        self.load_state_dict(checkpoint, strict=False)
 
     def instantiate_solarclip_remove_CLS(self, config):
         model = instantiate_from_config(config)
