@@ -1,12 +1,12 @@
 model:
-  base_learning_rate: 1.0e-04
+  base_learning_rate: 1.0e-01
   base_learning_optimizer: "SGD"
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.autoencoder.models.mae.vit_mae.ViTMAE
   params:
     ckpt_path: null
     input_modal_key: 'hmi_image'
-    mask_ratio: 0.
+    mask_ratio: 0.01
     img_size: 1024
     patch_size: 64
     in_chans: 1
