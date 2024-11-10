@@ -47,7 +47,7 @@ model:
     first_stage_config: 
       target: models.reconmodels.decoder.clipdecoder.vitdecoder.ClipVitDecoder
       params:
-        ckpt_path: ""
+        ckpt_path: 'checkpoints/reconmodels/decoder/vitdecoder/last_state_dict.ckpt'
         decode_modal_key: aia0094_image
         width: 768
         layers: 12
@@ -55,22 +55,24 @@ model:
         num_upblocks: 3
         out_channels: 1
 
-        solarclip_config:
-            target: models.clipmodels.solarclip.SolarCLIP
-            params:
-              ckpt_path: "checkpoints/clipmodels/innerloss_0_allembed_epoch_340_model.pt"
-              embed_dim: 768 
-              vision_width: 768
-              image_resolution_hmi: 1024  
-              vision_layers_hmi: 12 
-              vision_patch_size_hmi: 64  
-              image_resolution_aia: 1024  
-              vision_layers_aia: 12
-              vision_patch_size_aia: 64 
-              transformer_token_type: "all embedding"  
-              norm_type: "bn1d"  
-            lossconfig:
-              target: torch.nn.Identity
+        clip_config:
+          target: models.clipmodels.solarclip.SolarCLIP_remove_CLS
+          params:
+            modal_key: aia0094_image
+            solarclip_config:
+              target: models.clipmodels.solarclip.SolarCLIP
+              params:
+                ckpt_path: "checkpoints/clipmodels/innerloss_0_allembed_epoch_340_model.pt"
+                embed_dim: 768 
+                vision_width: 768
+                image_resolution_hmi: 1024  
+                vision_layers_hmi: 12 
+                vision_patch_size_hmi: 64  
+                image_resolution_aia: 1024  
+                vision_layers_aia: 12
+                vision_patch_size_aia: 64 
+                transformer_token_type: "all embedding"  
+                norm_type: "bn1d"  
 
     cond_stage_config:
       target: models.clipmodels.solarclip.SolarCLIP_remove_CLS
@@ -97,7 +99,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 32
+    batch_size: 4
     num_workers: 9
     wrap: false
     train:
