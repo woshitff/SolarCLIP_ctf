@@ -26,7 +26,7 @@ class ViTMAE(pl.LightningModule):
     """Vision Transformer with Masked Autoencoder (ViTMAE) get encode of shape (B, L+1, D)"""
     def __init__(self,
                  ckpt_path=None,
-                 input_modal_key='magnet_image',
+                 input_modal_key='hmi_image',
                  mask_ratio=0.5,
                  img_size=1024, patch_size=64, in_chans=1,
                  embed_dim=1024, depth=24, num_heads=16,
@@ -154,7 +154,7 @@ class ViTMAE(pl.LightningModule):
 
     def forward_decoder(self, x, ids_restore):
         x = self.decoder_embed(x)
-        print(f'x shape after decoder embed: {x.shape}')
+        # print(f'x shape after decoder embed: {x.shape}')
 
         mask_tokens = self.mask_token.repeat(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
         x_ = torch.cat([x[:, 1:, :], mask_tokens], dim=1)  # no cls token
@@ -175,7 +175,7 @@ class ViTMAE(pl.LightningModule):
 
     def forward(self, imgs, mask_ratio=0.):
         latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
-        print(f'latent shape: {latent.shape}')
+        # print(f'latent shape: {latent.shape}')
         pred = self.forward_decoder(latent, ids_restore)  
         return pred, mask
     
@@ -206,9 +206,9 @@ class ViTMAE(pl.LightningModule):
         return x
 
     def get_input(self, batch, k):
-        if k == 'magnet_image':
+        if k == 'hmi_image':
             x = batch[:, 0, :, :, :]
-        elif k == '0094_image':
+        elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
