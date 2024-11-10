@@ -298,7 +298,7 @@ class SolarImageLogger(Callback):
         self.logger_log_images = {
             pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
         }
-        self.log_steps = [120 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
+        self.log_steps = [20 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
         if not increase_log_steps:
             self.log_steps = [self.batch_freq]
         self.clamp = clamp

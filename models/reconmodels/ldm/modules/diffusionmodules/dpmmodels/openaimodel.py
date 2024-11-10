@@ -254,7 +254,7 @@ class ResBlock(TimestepBlock):
 
 
     def _forward(self, x, emb):
-        print('resblock input x:', x.shape)
+        # print('resblock input x:', x.shape)
         if self.updown:
             in_rest, in_conv = self.in_layers[:-1], self.in_layers[-1]
             h = in_rest(x)
@@ -274,7 +274,7 @@ class ResBlock(TimestepBlock):
         else:
             h = h + emb_out
             h = self.out_layers(h)
-        print('resblock output shape:', h.shape)
+        # print('resblock output shape:', h.shape)
         return self.skip_connection(x) + h
 
 
@@ -482,6 +482,7 @@ class UNetModel(nn.Module):
                 context_dim = list(context_dim)
 
         if context_dim is not None:
+            self.dims = dims
             assert (dims==1 and use_linear==True) or (dims == 2 and use_linear==False), 'Fool!! You forgot to set the correct dimensions for your transformer...'
 
         if num_heads_upsample == -1:
@@ -738,28 +739,28 @@ class UNetModel(nn.Module):
             assert y.shape == (x.shape[0],)
             emb = emb + self.label_emb(y)
 
-        print("before Input block shape:", x.shape)
+        # print("before Input block shape:", x.shape)
         h = x.type(self.dtype)
         for i, module in enumerate(self.input_blocks):
-            print(f'h_in {h.shape}')
+            # print(f'h_in {h.shape}')
             h = module(h, emb, context)
-            print(f'h_out {h.shape}')
+            # print(f'h_out {h.shape}')
 
             hs.append(h)
-            print(i)
-        print(f"Input block shape: {h.shape}")
+            # print(i)
+        # print(f"Input block shape: {h.shape}")
         h = self.middle_block(h, emb, context)
-        print(f"Middle block shape: {h.shape}")
+        # print(f"Middle block shape: {h.shape}")
         for i, module in enumerate(self.output_blocks):
             h = th.cat([h, hs.pop()], dim=1)
-            print(f'output block h_in {h.shape}')
+            # print(f'output block h_in {h.shape}')
 
             h = module(h, emb, context)
-            print(f'output block h_out {h.shape}')
+            # print(f'output block h_out {h.shape}')
 
-            print(i)
+            # print(i)
         h = h.type(x.dtype)
-        print(f"Output block shape: {h.shape}")
+        # print(f"Output block shape: {h.shape}")
         if self.predict_codebook_ids:
             return self.id_predictor(h)
         else:

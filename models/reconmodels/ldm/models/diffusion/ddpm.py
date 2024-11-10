@@ -1408,14 +1408,14 @@ class SolarLatentDiffusion(LatentDiffusion):
         """
         # print('start get input')
         x = super(LatentDiffusion, self).get_input(batch, k)
-        print('x:', x.shape)
+        # print('x:', x.shape)
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
         encoder_posterior = self.encode_first_stage(x)
-        print('encoder_posterior:', encoder_posterior.shape)
+        # print('encoder_posterior:', encoder_posterior.shape)
         z = self.get_first_stage_encoding(encoder_posterior).detach()
-        print('z:', z.shape)
+        # print('z:', z.shape)
 
         if self.model.conditioning_key is not None and not self.force_null_conditioning:
             if cond_key is None:

@@ -346,7 +346,7 @@ class ContextTransformer(nn.Module):
                 x = self.proj_out(x)
         else:
             b, d, l = x.shape
-            print("context transformer Input:", x.shape)
+            # print("context transformer Input:", x.shape)
             assert len(x.shape) == 3 and self.use_linear == True, "Input must be an token-like tensor with use_linear=True"
             x_in = x
             x = self.norm(x)
@@ -359,7 +359,7 @@ class ContextTransformer(nn.Module):
             if self.use_linear:
                 x = self.proj_out(x)
                 x = rearrange(x, 'b l d -> b d l').contiguous()
-            print("context transformer Output:", x.shape)
+            # print("context transformer Output:", x.shape)
 
         return x + x_in
 
