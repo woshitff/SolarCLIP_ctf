@@ -740,14 +740,14 @@ class UNetModel(nn.Module):
         for module in self.input_blocks:
             h = module(h, emb, context)
             hs.append(h)
-        # print(f"Input block shape: {h.shape}")
+        print(f"Input block shape: {h.shape}")
         h = self.middle_block(h, emb, context)
-        # print(f"Middle block shape: {h.shape}")
+        print(f"Middle block shape: {h.shape}")
         for module in self.output_blocks:
             h = th.cat([h, hs.pop()], dim=1)
             h = module(h, emb, context)
         h = h.type(x.dtype)
-        # print(f"Output block shape: {h.shape}")
+        print(f"Output block shape: {h.shape}")
         if self.predict_codebook_ids:
             return self.id_predictor(h)
         else:
