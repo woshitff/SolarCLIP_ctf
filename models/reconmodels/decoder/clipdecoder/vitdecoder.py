@@ -83,6 +83,7 @@ class ClipVitDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
                  ckpt_path=None,
+                 input_modal_key= 'hmi_image',
                  decode_modal_key='aia0094_image', 
                  clip_config = None,
                  width=768,
@@ -94,6 +95,7 @@ class ClipVitDecoder(pl.LightningModule):
                  ):
         super().__init__()
         self.save_hyperparameters()
+        self.input_modal_key = input_modal_key
         self.decode_modal_key = decode_modal_key
         self.clip_config = clip_config
         self.loss_type = loss_type
@@ -101,7 +103,7 @@ class ClipVitDecoder(pl.LightningModule):
         self.instantiate_solarclip_remove_CLS(clip_config)
         scale = width ** -0.5
         self.scale = scale
-        self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, width))
+        # self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, width))
         self.transformer = Transformer(width, layers, heads)
         self.decoder = nn.Sequential(*[UpsampleBlock(768 // 2**i) for i in range(num_upblocks)])
         in_channels = 768 // 2**(num_upblocks)
@@ -147,7 +149,7 @@ class ClipVitDecoder(pl.LightningModule):
         return x
     
     def get_input(self, batch, k):
-        if k == 'magnet_image':
+        if k == 'hmi_image':
             x = batch[:, 0, :, :, :]
         elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
@@ -159,7 +161,7 @@ class ClipVitDecoder(pl.LightningModule):
         return x
 
     def get_target(self, batch, k):
-        if k == 'magnet_image':
+        if k == 'hmi_image':
             x = batch[:, 0, :, :, :]
         elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
@@ -192,7 +194,7 @@ class ClipVitDecoder(pl.LightningModule):
 
     def shared_step(self, batch, batch_idx):
         x = self.get_input(batch, self.decode_modal_key) 
-        y = self.get_target(batch, self.decode_modal_key)
+        y = self.get_target(batch, self.input_modal_key)
         y_hat = self(x)
         loss, loss_dict = self.get_loss(y_hat, y)
 
@@ -224,7 +226,7 @@ class ClipVitDecoder(pl.LightningModule):
         modals = dict()
 
         with torch.no_grad():
-            inputs = self.get_input(batch, self.decode_modal_key)
+            inputs = self.get_input(batch, self.input_modal_key)
             targets = self.get_target(batch, self.decode_modal_key)
         N = min(N, inputs.shape[0])
         log['inputs'] = inputs[:N]
@@ -235,7 +237,7 @@ class ClipVitDecoder(pl.LightningModule):
         log['targets_hat'] = targets_hat[:N]
         self.train()
 
-        modals['inputs'] = self.decode_modal_key
+        modals['inputs'] = self.input_modal_key
         modals['targets'] = self.decode_modal_key
         modals['targets_hat'] = self.decode_modal_key
         print('image log done')
