@@ -254,6 +254,7 @@ class ResBlock(TimestepBlock):
 
 
     def _forward(self, x, emb):
+        print('resblock input x:', x.shape)
         if self.updown:
             in_rest, in_conv = self.in_layers[:-1], self.in_layers[-1]
             h = in_rest(x)
@@ -273,6 +274,7 @@ class ResBlock(TimestepBlock):
         else:
             h = h + emb_out
             h = self.out_layers(h)
+        print('resblock output shape:', h.shape)
         return self.skip_connection(x) + h
 
 
@@ -579,9 +581,10 @@ class UNetModel(nn.Module):
                             dims=dims,
                             use_checkpoint=use_checkpoint,
                             use_scale_shift_norm=use_scale_shift_norm,
-                            down=True,
+                            # down=True,
+                            down=False
                         )
-                        if resblock_updown
+                        if not resblock_updown
                         else Downsample(
                             ch, conv_resample, dims=dims, out_channels=out_ch
                         )
@@ -616,7 +619,7 @@ class UNetModel(nn.Module):
                 num_head_channels=dim_head,
                 use_new_attention_order=use_new_attention_order,
             ) if not use_context_transformer else ContextTransformer(
-                            ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim
+                            ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim, use_linear=self.use_linear
                         ),
             ResBlock(
                 ch,
@@ -662,7 +665,7 @@ class UNetModel(nn.Module):
                             num_head_channels=dim_head,
                             use_new_attention_order=use_new_attention_order,
                         ) if not use_context_transformer else ContextTransformer(
-                            ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim
+                            ch, num_heads, dim_head, depth=transformer_depth, context_dim=context_dim, use_linear=self.use_linear
                         )
                     )
                 if level and i == num_res_blocks:
@@ -676,9 +679,10 @@ class UNetModel(nn.Module):
                             dims=dims,
                             use_checkpoint=use_checkpoint,
                             use_scale_shift_norm=use_scale_shift_norm,
-                            up=True,
+                            # up=True,
+                            up = False
                         )
-                        if resblock_updown
+                        if not resblock_updown
                         else Upsample(ch, conv_resample, dims=dims, out_channels=out_ch)
                     )
                     ds //= 2
@@ -734,26 +738,36 @@ class UNetModel(nn.Module):
             assert y.shape == (x.shape[0],)
             emb = emb + self.label_emb(y)
 
-        print(x.shape)
-        print('temb:', emb.shape)
+        print("before Input block shape:", x.shape)
         h = x.type(self.dtype)
-        for module in self.input_blocks:
+        for i, module in enumerate(self.input_blocks):
+            print(f'h_in {h.shape}')
             h = module(h, emb, context)
+            print(f'h_out {h.shape}')
+
             hs.append(h)
+            print(i)
         print(f"Input block shape: {h.shape}")
         h = self.middle_block(h, emb, context)
         print(f"Middle block shape: {h.shape}")
-        for module in self.output_blocks:
+        for i, module in enumerate(self.output_blocks):
             h = th.cat([h, hs.pop()], dim=1)
+            print(f'output block h_in {h.shape}')
+
             h = module(h, emb, context)
+            print(f'output block h_out {h.shape}')
+
+            print(i)
         h = h.type(x.dtype)
         print(f"Output block shape: {h.shape}")
         if self.predict_codebook_ids:
             return self.id_predictor(h)
         else:
+            h = self.out(h)
             print(f"forward done")
-            return self.out(h)
-            
+            # return self.out(h)
+            return h
+
 
 
 class EncoderUNetModel(nn.Module):

@@ -1,5 +1,7 @@
 import argparse
 import datetime, os, sys, glob
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from omegaconf import OmegaConf
 

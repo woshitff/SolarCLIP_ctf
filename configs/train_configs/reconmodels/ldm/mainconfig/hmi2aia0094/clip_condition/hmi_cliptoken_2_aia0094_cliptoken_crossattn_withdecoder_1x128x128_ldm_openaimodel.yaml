@@ -32,7 +32,7 @@ model:
         - 8
         - 4
         - 2
-        #- 1
+        - 1
         num_res_blocks: 2
         channel_mult:
         - 1
