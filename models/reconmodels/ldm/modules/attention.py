@@ -350,8 +350,8 @@ class ContextTransformer(nn.Module):
         print('context_dim:' , context_dim)
         self.in_channels = in_channels
         inner_dim = n_heads * d_head
+        self.inner_dim = inner_dim
         self.norm = Normalize(in_channels)
-        self.positional_embedding = get_1d_sincos_pos_embed_from_grid(inner_dim, np.arange(256))
         if not use_linear:
             self.proj_in = nn.Conv2d(in_channels, 
                                      inner_dim,
@@ -380,6 +380,7 @@ class ContextTransformer(nn.Module):
 
     def forward(self, x, context=None):
         # note: if no context is given, cross-attention defaults to self-attention
+        # print(f'ContextTransformer Input: {x.shape}')
         if not isinstance(context, list):
             context = [context]
         if isimage(x):
@@ -387,9 +388,14 @@ class ContextTransformer(nn.Module):
             x_in = x
             x = self.norm(x)
             if not self.use_linear:
-                x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 256, 16, 16)
+                x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 768, 16, 16)
             x = rearrange(x, 'b c h w -> b (h w) c').contiguous() # (b, 256, 16, 16) -> (b, 256, 256)
-            x = x + self.positional_embedding
+            pos_embed = get_1d_sincos_pos_embed_from_grid(self.inner_dim, np.arange(x.shape[1]))
+            positional_embedding = torch.tensor(pos_embed, dtype=torch.float32).to(x.device)
+            # print(f'0: {x.shape}')
+            # print(f'pos: {positional_embedding.shape}')
+            x = x + positional_embedding
+            # print(f'1: {x.shape}')
             if self.use_linear:
                 x = self.proj_in(x)
             for i, block in enumerate(self.transformer_blocks):
@@ -415,6 +421,8 @@ class ContextTransformer(nn.Module):
                 x = self.proj_out(x)
                 x = rearrange(x, 'b l d -> b d l').contiguous()
             # print("context transformer Output:", x.shape)
+
+        # print(f'ContextTransformer Output: {x.shape}')
 
         return x + x_in
 
