@@ -10,7 +10,7 @@ model:
     img_size: 1024
     patch_size: 64
     in_chans: 1
-    embed_dim: 1024
+    embed_dim: 768
     depth: 24
     num_heads: 16
     decoder_embed_dim: 512
