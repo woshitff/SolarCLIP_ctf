@@ -15,7 +15,7 @@ This model use VAE architecture like autoencoderKL in LDM to reconstruct the sol
 see https://github.com/CompVis/stable-diffusion/blob/main/ldm/modules/diffusionmodules/model.py
 """
     
-def Normalize(in_channels, num_groups=32):
+def Normalize(in_channels, num_groups=16):
     return torch.nn.GroupNorm(num_groups=num_groups, num_channels=in_channels, eps=1e-6, affine=True)
 
 def nonlinearity(x):
@@ -71,7 +71,6 @@ class ResnetBlock(nn.Module):
         self.use_conv_shortcut = conv_shortcut
 
         self.nonlinear = nonlinearity
-
         self.norm1 = Normalize(in_channels)
         self.conv1 = torch.nn.Conv2d(in_channels,
                                      out_channels,
@@ -102,9 +101,8 @@ class ResnetBlock(nn.Module):
 
     def forward(self, x):
         h = x
-
         h = self.conv1(self.nonlinear(self.norm1(h)))
-        h = self.conv2(self.dropout(self.nonlinear(self.norm2)))
+        h = self.conv2(self.dropout(self.nonlinear(self.norm2(h))))
 
         if self.in_channels != self.out_channels:
             if self.use_conv_shortcut:
@@ -228,12 +226,10 @@ class Encoder(nn.Module):
         self.mid = nn.Module()
         self.mid.block_1 = ResnetBlock(in_channels=block_in,
                                        out_channels=block_in,
-                                       temb_channels=self.temb_ch,
                                        dropout=dropout)
-        self.mid.attn_1 = make_attn(block_in, attn_type=attn_type)
+        # self.mid.attn_1 = make_attn(block_in, attn_type=attn_type)
         self.mid.block_2 = ResnetBlock(in_channels=block_in,
                                        out_channels=block_in,
-                                       temb_channels=self.temb_ch,
                                        dropout=dropout)
 
         # end
@@ -259,7 +255,7 @@ class Encoder(nn.Module):
         # middle
         h = hs[-1]
         h = self.mid.block_1(h)
-        h = self.mid.attn_1(h)
+        # h = self.mid.attn_1(h)
         h = self.mid.block_2(h)
 
         # end
@@ -287,7 +283,8 @@ class Decoder(nn.Module):
         # compute in_ch_mult, block_in and curr_res at lowest res
         in_ch_mult = (1,)+tuple(ch_mult)
         block_in = ch*ch_mult[self.num_resolutions-1]
-        curr_res = resolution // 2**(self.num_resolutions-1)
+        # curr_res = resolution // 2**(self.num_resolutions-1)
+        curr_res = 1
         self.z_shape = (1,z_channels,curr_res,curr_res)
         print("Working with z of shape {} = {} dimensions.".format(
             self.z_shape, np.prod(self.z_shape)))
@@ -303,12 +300,10 @@ class Decoder(nn.Module):
         self.mid = nn.Module()
         self.mid.block_1 = ResnetBlock(in_channels=block_in,
                                        out_channels=block_in,
-                                       temb_channels=self.temb_ch,
                                        dropout=dropout)
-        self.mid.attn_1 = make_attn(block_in, attn_type=attn_type)
+        # self.mid.attn_1 = make_attn(block_in, attn_type=attn_type)
         self.mid.block_2 = ResnetBlock(in_channels=block_in,
                                        out_channels=block_in,
-                                       temb_channels=self.temb_ch,
                                        dropout=dropout)
 
         # upsampling
@@ -320,7 +315,6 @@ class Decoder(nn.Module):
             for i_block in range(self.num_res_blocks+1):
                 block.append(ResnetBlock(in_channels=block_in,
                                          out_channels=block_out,
-                                         temb_channels=self.temb_ch,
                                          dropout=dropout))
                 block_in = block_out
                 if curr_res in attn_resolutions:
@@ -350,7 +344,7 @@ class Decoder(nn.Module):
 
         # middle
         h = self.mid.block_1(h)
-        h = self.mid.attn_1(h)
+        # h = self.mid.attn_1(h)
         h = self.mid.block_2(h)
 
         # upsampling
@@ -379,12 +373,14 @@ class CNN_VAE(pl.LightningModule):
                  ckpt_path: str = None,
                  vae_modal: str = 'magnet_image',
                  kl_weight: float = 1.0,
+                 loss_type: str = 'MSE',
                  dd_config: dict = None):
         super().__init__()
         self.save_hyperparameters()
 
         self.vae_modal = vae_modal
         self.lambda_kl = kl_weight
+        self.loss_type = loss_type
 
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
@@ -513,7 +509,9 @@ class CNN_VAE(pl.LightningModule):
         return (opt, scheduler)
 
     def log_images(self, batch, N=2):
+        print('Begin to log images')
         log = dict()
+        modals = dict()
 
         x = self.get_input(batch, self.vae_modal)
         N = min(N, x.shape[0])
@@ -527,18 +525,32 @@ class CNN_VAE(pl.LightningModule):
         log['mu'] = mu[:N]
         log['samples'] = samples[:N]
         self.train()
+        modals['inputs'] = self.vae_modal
+        modals['recon'] = self.vae_modal
+        modals['mu'] = self.vae_modal
+        modals['samples'] = self.vae_modal
 
-        return log
+        print('Log images down')
+        return log, modals
     
 
 class hmi_CNN_VAE(CNN_VAE):
     pass
 
+def disabled_train(self, mode=True):
+    """Overwrite model.train with this function to make sure train/eval mode
+    does not change anymore."""
+    return self
+
 class aia0094_CNN_VAE(CNN_VAE):
     def __init__(self, loss_config, **kwargs):
         super().__init__(**kwargs)
 
-        self.loss = instantiate_from_config(loss_config)
+        loss_model = instantiate_from_config(loss_config)
+        self.loss = loss_model.eval()
+        self.loss.train = disabled_train
+        for param in self.loss.parameters():
+            param.requires_grad = False
 
     def shared_step(self, batch, batch_idx):
         x = self.get_input(batch, '0094_image')
@@ -552,12 +564,12 @@ class aia0094_CNN_VAE(CNN_VAE):
     
     def training_step(self, batch, batch_idx):
         loss, loss_dict = self.shared_step(batch, batch_idx)
-        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         return loss
     
     def validation_step(self, batch, batch_idx):
         loss, loss_dict = self.shared_step(batch, batch_idx)
-        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         return loss
 
 

@@ -47,7 +47,7 @@ def get_parser(**parser_kwargs):
         metavar="/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=['configs/train_configs/reconmodels/autoencoder/mae/hmi2hmi.yaml']
+        default=['configs/train_configs/reconmodels/autoencoder/vae/aia0094Taia0094_cnnvae_v2.yaml']
     )
     parser.add_argument(
         "-f",
