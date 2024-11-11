@@ -7,3 +7,4 @@
 /test.py
 /try.py
 /models/reconmodels/DiT/**
+__pycache__/
