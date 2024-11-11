@@ -7,7 +7,8 @@ from einops import rearrange
 import pytorch_lightning as pl
 from torchvision import transforms
 
-from models.clipmodels.modules.vit import Remove_class_token
+from models.clipmodels.solarclip import SolarCLIP_remove_CLS
+from models.clipmodels.modules.vit import Remove_class_token, Transformer
 from models.reconmodels.ldm.util import instantiate_from_config
 
 def disabled_train(self, mode=True):
@@ -38,7 +39,7 @@ class ResidualConvBlock(nn.Module):
         return x + res    
     
 class Upsample(nn.Module):
-    def __init__(self, in_channels, out_channels, bilinear=False):
+    def __init__(self, in_channels, bilinear=False):
         super().__init__()
         if bilinear:
             self.up = nn.Sequential(
@@ -51,89 +52,104 @@ class Upsample(nn.Module):
     def forward(self, x):
         return self.up(x)
     
+class UpsampleBlock(nn.Module):
+    def __init__(self, in_channels, bilinear=False, num_groups=16):
+        super().__init__()
+        self.in_channels = in_channels
+        assert in_channels % 2 == 0, 'in_channels must be even'
+        self.out_channels = in_channels // 2
+        self.num_groups = num_groups
 
-class ClipCNNDecoder(pl.LightningModule):
+        if bilinear:
+            self.up = nn.Sequential(
+                nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+                nn.Conv2d(in_channels, in_channels // 2, kernel_size=3, stride=1, padding=1)
+            )
+        else:
+            self.up = nn.ConvTranspose2d(in_channels, in_channels // 2, kernel_size=3, stride=2, padding=1, output_padding=1)
+
+        self.up = Upsample(in_channels, bilinear=bilinear)
+        self.block = nn.Sequential(
+            self.up,
+            nn.ELU(),
+            nn.GroupNorm(num_groups, self.out_channels)
+        )
+
+    def forward(self, x):
+        return self.block(x)
+
+
+class ClipVitDecoder(pl.LightningModule):
     """Get image embedding from SolarCLIP and project it to image space."""
     def __init__(self, 
-                 solarclip_config,
+                 ckpt_path=None,
+                 input_modal_key= 'hmi_image',
                  decode_modal_key='aia0094_image', 
-                 layer_list=[2, 2, 2],
-                 in_channels=768,
-                 hidden_channels=512,
-                 out_channels=1,
-                 loss_type='l2',
+                 clip_config = None,
+                 width=768,
+                 layers=12,
+                 heads=12,
+                 num_upblocks = 3,
+                 out_channels = 1,
+                 loss_type = 'l2'
                  ):
         super().__init__()
         self.save_hyperparameters()
-        self.solarclip_config = solarclip_config
+        self.input_modal_key = input_modal_key
         self.decode_modal_key = decode_modal_key
-        self.layer_list = layer_list
-        self.in_channels = in_channels
-        self.hidden_channels = hidden_channels
-        self.out_channels = out_channels
+        self.clip_config = clip_config
         self.loss_type = loss_type
-        self.out_size = self.solarclip_config.params.image_resolution_hmi // 2**len(layer_list)
 
-        in_out = []
-        for i in range(len(layer_list)):
-            in_c = hidden_channels // 2**i
-            out_c = hidden_channels // 2**(i+1)
-            in_out.append((in_c, out_c))
-        self.in_out = in_out
-        assert all(in_c % 2 == 0 and out_c % 2 == 0 for in_c, out_c in in_out), "All channels must be multiples of 2" 
+        self.instantiate_solarclip_remove_CLS(clip_config)
+        scale = width ** -0.5
+        self.scale = scale
+        # self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, width))
+        self.transformer = Transformer(width, layers, heads)
+        self.decoder = nn.Sequential(*[UpsampleBlock(768 // 2**i) for i in range(num_upblocks)])
+        in_channels = 768 // 2**(num_upblocks)
+        self.out = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=3, stride=1, padding=1)
 
-        self._init_solarclip(solarclip_config)
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path)
 
-        self.blocks = nn.ModuleList()
-        for i, num_blocks in enumerate(layer_list):
-            self.blocks.append(nn.Sequential(
-                *nn.ModuleList(
-                [ResidualConvBlock(in_out[i][0], in_out[i][0]) for _ in range(num_blocks)]
-                ),
-                Upsample(in_out[i][0], in_out[i][1]),
-            ))
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(in_channels, hidden_channels, kernel_size=3, stride=1, padding=1),
-            nn.ELU(),
-            nn.GroupNorm(hidden_channels//16, hidden_channels),
-            *self.blocks,
-            nn.GroupNorm(hidden_channels//(2**len(layer_list)*16), hidden_channels//2**(len(layer_list))),
-            nn.ELU(),
-            nn.Conv2d(in_out[len(layer_list)-1][1], 1, kernel_size=3, padding=1)
-        )
+    @torch.no_grad()
+    def init_from_ckpt(self, ckpt_path):
+        checkpoint = torch.load(ckpt_path)
+        # if 'loss' in checkpoint['state_dict']:
+        #     del checkpoint['state_dict']['loss']
+        # self.load_state_dict(checkpoint['state_dict'], strict=False)
+        self.load_state_dict(checkpoint, strict=False)
 
-    def _init_solarclip(self, solarclip_config, freeze=True):
-        solarclip = instantiate_from_config(solarclip_config)
-        if freeze:
-            self.solarclip = solarclip.eval()
-            self.solarclip.train = disabled_train
-            for param in self.solarclip.parameters():
-                param.requires_grad = False
-        if self.decode_modal_key == 'magnet_image':
-            self.solarclip = self.solarclip.visual_hmi
-        elif self.decode_modal_key == 'aia0094_image':
-            self.solarclip = self.solarclip.visual_aia
-        else:
-            raise ValueError(f"Unknown embedding key {self.decode_modal_key}")
-        
-    def get_cliptoken(self, x):
-        x = self.solarclip(x)
-        x = Remove_class_token()(x)
+    def instantiate_solarclip_remove_CLS(self, config):
+        model = instantiate_from_config(config)
+        self.solarclip_remove_cls = model.eval()
+        self.solarclip_remove_cls.train = disabled_train
+        for param in self.solarclip_remove_cls.parameters():
+            param.requires_grad = False
+
+    def encode(self, x):
+        # (B, 1, 1024, 1024) -> (B, 257, 768) -> (B, 256, 768) -> (B, 768, 256)
+        x = self.solarclip_remove_cls(x)
+        x = rearrange(x, 'b l d -> b d l')
         return x
     
     def decode(self, x):
-        # (B, 256, 768) -> (B, 256, 16, 16) -> (B, 1, 128, 128)
-        x = rearrange(x, 'b (h w) c -> b c h w', h=16, w=16)
+        # (B, 768, 256) -> (B, 256, 768) -> (B, 256, 16, 16) -> (B, 1, 128, 128)
+        x = rearrange(x, 'b d l -> b l d')
+        # x = x + self.positional_embedding.to(x.dtype)
+        x = self.transformer(x) # (B, 256, 768) -> (B, 256, 768)
+        x = rearrange(x, 'b (h w) c -> b c h w', h=16, w=16) # (B, 256, 768) -> (B, 768, 16, 16)
         x = self.decoder(x)
+        x = self.out(x)
         return x
 
     def forward(self, x):
-        x = self.get_cliptoken(x)
+        x = self.encode(x)
         x = self.decode(x)
         return x
     
     def get_input(self, batch, k):
-        if k == 'magnet_image':
+        if k == 'hmi_image':
             x = batch[:, 0, :, :, :]
         elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
@@ -145,7 +161,7 @@ class ClipCNNDecoder(pl.LightningModule):
         return x
 
     def get_target(self, batch, k):
-        if k == 'magnet_image':
+        if k == 'hmi_image':
             x = batch[:, 0, :, :, :]
         elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
@@ -153,7 +169,7 @@ class ClipCNNDecoder(pl.LightningModule):
             raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
-        x = transforms.Resize(self.out_size)(x)
+        x = transforms.Resize(size=128)(x)
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
 
@@ -178,7 +194,7 @@ class ClipCNNDecoder(pl.LightningModule):
 
     def shared_step(self, batch, batch_idx):
         x = self.get_input(batch, self.decode_modal_key) 
-        y = self.get_target(batch, self.decode_modal_key)
+        y = self.get_target(batch, self.input_modal_key)
         y_hat = self(x)
         loss, loss_dict = self.get_loss(y_hat, y)
 
@@ -210,7 +226,7 @@ class ClipCNNDecoder(pl.LightningModule):
         modals = dict()
 
         with torch.no_grad():
-            inputs = self.get_input(batch, self.decode_modal_key)
+            inputs = self.get_input(batch, self.input_modal_key)
             targets = self.get_target(batch, self.decode_modal_key)
         N = min(N, inputs.shape[0])
         log['inputs'] = inputs[:N]
@@ -221,8 +237,9 @@ class ClipCNNDecoder(pl.LightningModule):
         log['targets_hat'] = targets_hat[:N]
         self.train()
 
-        modals['inputs'] = self.decode_modal_key
+        modals['inputs'] = self.input_modal_key
         modals['targets'] = self.decode_modal_key
         modals['targets_hat'] = self.decode_modal_key
         print('image log done')
         return log, modals
+    

@@ -96,8 +96,7 @@ class DDIMSampler(object):
 
         self.make_schedule(ddim_num_steps=S, ddim_eta=eta, verbose=verbose)
         # sampling
-        C, H, W = shape
-        size = (batch_size, C, H, W)
+        size = (batch_size, *shape)
         print(f'Data shape for DDIM sampling is {size}, eta {eta}')
 
         samples, intermediates = self.ddim_sampling(conditioning, size,
@@ -182,7 +181,7 @@ class DDIMSampler(object):
                       temperature=1., noise_dropout=0., score_corrector=None, corrector_kwargs=None,
                       unconditional_guidance_scale=1., unconditional_conditioning=None,
                       dynamic_threshold=None):
-        b, *_, device = *x.shape, x.device
+        b, *feature_shape, device = *x.shape, x.device
 
         if unconditional_conditioning is None or unconditional_guidance_scale == 1.:
             model_output = self.model.apply_model(x, t, c)
@@ -225,10 +224,10 @@ class DDIMSampler(object):
         sqrt_one_minus_alphas = self.model.sqrt_one_minus_alphas_cumprod if use_original_steps else self.ddim_sqrt_one_minus_alphas
         sigmas = self.model.ddim_sigmas_for_original_num_steps if use_original_steps else self.ddim_sigmas
         # select parameters corresponding to the currently considered timestep
-        a_t = torch.full((b, 1, 1, 1), alphas[index], device=device)
-        a_prev = torch.full((b, 1, 1, 1), alphas_prev[index], device=device)
-        sigma_t = torch.full((b, 1, 1, 1), sigmas[index], device=device)
-        sqrt_one_minus_at = torch.full((b, 1, 1, 1), sqrt_one_minus_alphas[index],device=device)
+        a_t = torch.full((b, *[1]*len(feature_shape)), alphas[index], device=device)
+        a_prev = torch.full((b, *[1]*len(feature_shape)), alphas_prev[index], device=device)
+        sigma_t = torch.full((b, *[1]*len(feature_shape)), sigmas[index], device=device)
+        sqrt_one_minus_at = torch.full((b, *[1]*len(feature_shape)), sqrt_one_minus_alphas[index],device=device)
 
         # current prediction for x_0
         if self.model.parameterization != "v":

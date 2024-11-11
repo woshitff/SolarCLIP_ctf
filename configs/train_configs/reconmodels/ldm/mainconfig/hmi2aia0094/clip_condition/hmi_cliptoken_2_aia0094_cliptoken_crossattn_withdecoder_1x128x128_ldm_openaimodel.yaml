@@ -10,48 +10,75 @@ model:
     log_every_t: 200
     timesteps: 1000
     first_stage_key: "aia0094_image"
-    cond_stage_key: "aia0094_image_cliptoken"
-    image_size: 16
-    channels: 1
+    cond_stage_key: "hmi_image_cliptoken"
+    spatial_size: 
+      - 256 # token length
+    channels: 768
     cond_stage_trainable: false
     conditioning_key: crossattn
-    scale_factor: 1 #0.18215 
+    scale_factor: 0.18215 
     monitor: val/loss_simple_ema
     use_ema: False
 
     unet_config:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.openaimodel.UNetModel 
       params:
-        image_size: 16
-        in_channels: 1
-        out_channels: 1
-        model_channels: 256
+        spatial_size: 
+          - 256 # token length
+        in_channels: 768
+        out_channels: 768
+        model_channels: 256 # 512
         attention_resolutions:
         - 8
         - 4
         - 2
+        - 1
         num_res_blocks: 2
         channel_mult:
         - 1
         - 2
         - 3
         - 4
+        dims: 1
         num_head_channels: 32
-        use_spatial_transformer: true
+        use_context_transformer: true
         context_dim: 768
+        use_linear: true
 
     first_stage_config: 
-      target: models.reconmodels.decoder.clipvitdecoder.modules.ImageDownsample
+      target: models.reconmodels.decoder.clipdecoder.vitdecoder.ClipVitDecoder
       params:
-        in_size: 1024
-        scale_factor: 0.015625
-      lossconfig:
-        target: torch.nn.Identity
-    
+        ckpt_path: 'checkpoints/reconmodels/decoder/vitdecoder/last_state_dict_2.ckpt'
+        decode_modal_key: aia0094_image
+        width: 768
+        layers: 12
+        heads: 12
+        num_upblocks: 3
+        out_channels: 1
+
+        clip_config:
+          target: models.clipmodels.solarclip.SolarCLIP_remove_CLS
+          params:
+            modal_key: aia0094_image
+            solarclip_config:
+              target: models.clipmodels.solarclip.SolarCLIP
+              params:
+                ckpt_path: "checkpoints/clipmodels/innerloss_0_allembed_epoch_340_model.pt"
+                embed_dim: 768 
+                vision_width: 768
+                image_resolution_hmi: 1024  
+                vision_layers_hmi: 12 
+                vision_patch_size_hmi: 64  
+                image_resolution_aia: 1024  
+                vision_layers_aia: 12
+                vision_patch_size_aia: 64 
+                transformer_token_type: "all embedding"  
+                norm_type: "bn1d"  
+
     cond_stage_config:
       target: models.clipmodels.solarclip.SolarCLIP_remove_CLS
       params:
-        modal_key: "aia0094"
+        modal_key: "hmi"
         solarclip_config:
           target: models.clipmodels.solarclip.SolarCLIP
           params:
@@ -73,7 +100,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 32
+    batch_size: 128
     num_workers: 9
     wrap: false
     train:
@@ -90,7 +117,7 @@ data:
         time_interval: 
           - 0
           - 5346720
-        time_step: 600 #115200
+        time_step: 600 #600 #115200
     validation:
       target: data.dataset.SolarDataset.multimodal_dataset
       params:

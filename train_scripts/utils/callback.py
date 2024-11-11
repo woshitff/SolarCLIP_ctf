@@ -28,9 +28,16 @@ class SetupCallback(Callback):
     def on_exception(self, trainer, pl_module, exception):
         if isinstance(exception, KeyboardInterrupt):
             if trainer.strategy.global_rank == 0:
-                print("Summoning checkpoint.")
-                ckpt_path = os.path.join(self.ckptdir, "last.ckpt")
-                trainer.save_checkpoint(ckpt_path)
+                start_time = datetime.now()
+                print(f"Summoning checkpoint saving in {self.ckptdir}")
+                ckpt_path = os.path.join(self.ckptdir, "last_state_dict.ckpt")
+                torch.cuda.empty_cache()
+                model_state_dict = trainer.model.state_dict()
+                torch.save(model_state_dict, ckpt_path)
+                # trainer.save_checkpoint(ckpt_path)
+                print(f'save ckpt done! use time: {(datetime.now() - start_time).total_seconds() / 60:.2f} minutes')
+            print("Exiting program after saving checkpoint.")
+            os._exit(0)
 
     def on_fit_start(self, trainer, pl_module):
         if trainer.strategy.global_rank == 0:
@@ -291,7 +298,7 @@ class SolarImageLogger(Callback):
         self.logger_log_images = {
             pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
         }
-        self.log_steps = [120 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
+        self.log_steps = [40 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
         if not increase_log_steps:
             self.log_steps = [self.batch_freq]
         self.clamp = clamp
@@ -301,10 +308,10 @@ class SolarImageLogger(Callback):
         self.log_first_step = log_first_step
 
     def get_cmap_and_limits(self, inputs, mode):
-        cmap = "RdBu_r" if mode == 'hmi_image_vae' else "Reds"
+        cmap = "RdBu_r" if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'hmi_image' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
-        if mode == 'hmi_image_vae':
+        if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'hmi_image':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
         elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage' or mode == 'aia0094_image_cliptoken':  # '0094_image'
@@ -319,8 +326,10 @@ class SolarImageLogger(Callback):
             target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row', 'denoise_row']
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
-        elif pl_module.__class__.__name__ in ["SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
+        elif pl_module.__class__.__name__ in ["ClipVitDecoder", "SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
             target_keys = ['inputs', 'targets', 'targets_hat']
+        elif pl_module.__class__.__name__ in ["ViTMAE"]:
+            target_keys = ['inputs', 'targets', 'targets_hat_mask_ratio_set', 'targets_hat_mask_ratio_0', 'targets_hat_inference']
         else:
             raise ValueError("Unsupported model type")
         return target_keys

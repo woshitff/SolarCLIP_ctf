@@ -60,6 +60,9 @@ class DiffusionWrapper(pl.LightningModule):
             xc = torch.cat([x] + c_concat, dim=1)
             cc = torch.cat(c_crossattn, 1)
             out = self.diffusion_model(xc, t, context=cc)
+        elif self.conditioning_key == 'adm':
+            cc = c_crossattn[0]
+            out = self.diffusion_model(x, t, y=cc)
         elif self.conditioning_key == 'hybrid-adm':
             assert c_adm is not None
             xc = torch.cat([x] + c_concat, dim=1)
@@ -69,9 +72,7 @@ class DiffusionWrapper(pl.LightningModule):
             assert c_adm is not None
             cc = torch.cat(c_crossattn, 1)
             out = self.diffusion_model(x, t, context=cc, y=c_adm)
-        elif self.conditioning_key == 'adm':
-            cc = c_crossattn[0]
-            out = self.diffusion_model(x, t, y=cc)
+        
         else:
             raise NotImplementedError()
 
@@ -91,7 +92,7 @@ class DDPM(pl.LightningModule):
                  monitor="val/loss",
                  use_ema=True,
                  first_stage_key="image",
-                 image_size=256,
+                 spatial_size=[256, 256],
                  channels=3,
                  log_every_t=100,
                  clip_denoised=True,
@@ -121,7 +122,7 @@ class DDPM(pl.LightningModule):
         self.clip_denoised = clip_denoised
         self.log_every_t = log_every_t
         self.first_stage_key = first_stage_key
-        self.image_size = image_size  # try conv?
+        self.spatial_size = spatial_size  # try conv?
         self.channels = channels
         self.use_positional_encodings = use_positional_encodings
         self.model = DiffusionWrapper(unet_config, conditioning_key)
@@ -381,9 +382,9 @@ class DDPM(pl.LightningModule):
 
     @torch.no_grad()
     def sample(self, batch_size=16, return_intermediates=False):
-        image_size = self.image_size
+        spatial_size = self.spatial_size
         channels = self.channels
-        return self.p_sample_loop((batch_size, channels, image_size, image_size),
+        return self.p_sample_loop((batch_size, channels, *spatial_size),
                                   return_intermediates=return_intermediates)
 
     def q_sample(self, x_start, t, noise=None):
@@ -414,9 +415,11 @@ class DDPM(pl.LightningModule):
 
     def p_losses(self, x_start, t, noise=None):
         noise = default(noise, lambda: torch.randn_like(x_start))
+        print(f'noise: {noise.shape}')
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
+        print(f'x_nosiy {x_noisy.shape}')
         model_out = self.model(x_noisy, t)
-
+        print(f'model_out: {model_out.shape}')
         loss_dict = {}
         if self.parameterization == "eps":
             target = noise
@@ -427,7 +430,7 @@ class DDPM(pl.LightningModule):
         else:
             raise NotImplementedError(f"Parameterization {self.parameterization} not yet supported")
 
-        loss = self.get_loss(model_out, target, mean=False).mean(dim=[1, 2, 3])
+        loss = self.get_loss(model_out, target, mean=False).mean(dim=tuple(range(1, model_out.dim())))
 
         log_prefix = 'train' if self.training else 'val'
 
@@ -440,17 +443,18 @@ class DDPM(pl.LightningModule):
         loss = loss_simple + self.original_elbo_weight * loss_vlb
 
         loss_dict.update({f'{log_prefix}/loss': loss})
-
+        print(f'loss: {loss}')
         return loss, loss_dict
 
     def forward(self, x, *args, **kwargs):
-        # b, c, h, w, device, img_size, = *x.shape, x.device, self.image_size
+        # b, c, h, w, device, img_size, = *x.shape, x.device, self.spatial_size
         # assert h == img_size and w == img_size, f'height and width of image must be {img_size}'
+        
         t = torch.randint(0, self.num_timesteps, (x.shape[0],), device=self.device).long()
         return self.p_losses(x, t, *args, **kwargs)
 
     def get_input(self, batch, k):
-        if k == 'hmi_image_vae' or k == 'hmi_cliptoken':
+        if k == 'hmi_image_vae' or k == 'hmi_image_cliptoken':
             x = batch[:, 0, :, :, :]
         elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
             x = batch[:, 1, :, :, :]
@@ -814,17 +818,6 @@ class LatentDiffusion(DDPM):
         """
         x: input image, shape (B, C, H, W)
         z: first stage encoding, shape (B, c, h, w)
-        if conditioning_key is None:
-            if use_positional_encodings:
-                c: {'pos_x': pos_x, 'pos_y': pos_y}
-            else:
-                c: None
-                xc: None
-        else:
-            xc=x: conditioning input, shape (B, C, H, W)
-            if not self.cond_stage_trainable or force_c_encode:
-                c: xc encoded by cond_stage_model  !!!!!!!!!!!!!!!!!!!!
-
         xrec: reconstruction of x, shape (B, C, H, W)
 
         return z,c(,xrec,x,x,xc)
@@ -964,7 +957,7 @@ class LatentDiffusion(DDPM):
         else:
             raise NotImplementedError()
 
-        loss_simple = self.get_loss(model_output, target, mean=False).mean([1, 2, 3])
+        loss_simple = self.get_loss(model_output, target, mean=False).mean(dim=tuple(range(1,model_output.dim())))
         loss_dict.update({f'{prefix}/loss_simple': loss_simple.mean()})
         
         logvar_t = self.logvar.to(self.device)[t]
@@ -976,7 +969,7 @@ class LatentDiffusion(DDPM):
 
         loss = self.l_simple_weight * loss.mean()
 
-        loss_vlb = self.get_loss(model_output, target, mean=False).mean(dim=(1, 2, 3))
+        loss_vlb = self.get_loss(model_output, target, mean=False).mean(dim=tuple(range(1,model_output.dim())))
         loss_vlb = (self.lvlb_weights[t] * loss_vlb).mean()
         loss_dict.update({f'{prefix}/loss_vlb': loss_vlb})
         loss += (self.original_elbo_weight * loss_vlb)
@@ -1159,7 +1152,7 @@ class LatentDiffusion(DDPM):
                verbose=True, timesteps=None, quantize_denoised=False,
                mask=None, x0=None, shape=None, **kwargs):
         if shape is None:
-            shape = (batch_size, self.channels, self.image_size, self.image_size)
+            shape = (batch_size, self.channels, *self.spatial_size)
         if cond is not None:
             if isinstance(cond, dict):
                 cond = {key: cond[key][:batch_size] if not isinstance(cond[key], list) else
@@ -1176,7 +1169,8 @@ class LatentDiffusion(DDPM):
     def sample_log(self, cond, batch_size, ddim, ddim_steps, **kwargs):
         if ddim:
             ddim_sampler = DDIMSampler(self)
-            shape = (self.channels, self.image_size, self.image_size)
+            shape = (self.channels, *self.spatial_size)
+            # shape = (self.channels, self.spatial_size, self.spatial_size)
             samples, intermediates = ddim_sampler.sample(ddim_steps, batch_size,
                                                          shape, cond, verbose=False, **kwargs)
         else:
@@ -1332,7 +1326,7 @@ class LatentDiffusion(DDPM):
         if plot_progressive_rows:
             with ema_scope("Plotting Progressives"):
                 img, progressives = self.progressive_denoising(c,
-                                                               shape=(self.channels, self.image_size, self.image_size),
+                                                               shape=(self.channels, *self.spatial_size),
                                                                batch_size=N)
             prog_row = self._get_denoise_row_from_list(progressives, desc="Progressive Generation")
             log["progressive_row"] = prog_row # progressive denoising
@@ -1427,7 +1421,7 @@ class SolarLatentDiffusion(LatentDiffusion):
             if cond_key is None:
                 cond_key = self.cond_stage_key
             if cond_key != self.first_stage_key:
-                if cond_key in ['hmi_image_vae', 'hmi_cliptoken', 'aia0094_image_vae', 'aia0094_cliptoken', 'aia0094_image_cliptoken', 'aia0094_image_cliptoken_decodelrimage']:
+                if cond_key in ['hmi_image_vae', 'hmi_image_cliptoken', 'aia0094_image_vae', 'aia0094_cliptoken', 'aia0094_image_cliptoken', 'aia0094_image_cliptoken_decodelrimage']:
                     xc = super(LatentDiffusion, self).get_input(batch, cond_key).to(self.device)         
                 else:
                     raise NotImplementedError(f"Unsupport cond_stage_key {cond_key}")       
@@ -1445,11 +1439,6 @@ class SolarLatentDiffusion(LatentDiffusion):
             if bs is not None:
                 c = c[:bs]
 
-            if self.use_positional_encodings:
-                pos_x, pos_y = self.compute_latent_shifts(batch)
-                ckey = __conditioning_keys__[self.model.conditioning_key]
-                c = {ckey: c, 'pos_x': pos_x, 'pos_y': pos_y}
-
         else:
             c = None
             xc = None
@@ -1464,6 +1453,7 @@ class SolarLatentDiffusion(LatentDiffusion):
             out.extend([x])
         if return_original_cond:
             out.append(xc)
+        # print('input c:', out[1].shape)
         return out
 
     @torch.no_grad()
@@ -1496,10 +1486,9 @@ class SolarLatentDiffusion(LatentDiffusion):
             elif hasattr(self.cond_stage_model, 'prior') and callable(self.cond_stage_model.prior):
                 c = self.cond_stage_model.prior(c)
             elif self.cond_stage_model.__class__.__name__ == "SolarCLIP_remove_CLS":
-                if self.cond_stage_key == 'aia0094_image_cliptoken' and hasattr(self.cond_stage_model, 'encode_clip') and callable(self.cond_stage_model.encode_clip):
-                    c = self.cond_stage_model.encode_clip(c)
-                else:
-                    raise NotImplementedError(f"cond_stage_key {self.cond_stage_key} not yet implemented")
+                c = self.cond_stage_model(c)
+                # print(c)
+                # print('get_learned_conditioning done, c shape:', c.shape)
             else:
                 c = self.cond_stage_model(c)
         else:
@@ -1531,7 +1520,7 @@ class SolarLatentDiffusion(LatentDiffusion):
         return self.first_stage_model.decode(z)
 
     @torch.no_grad()
-    def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=100, ddim_eta=0., return_keys=None,
+    def log_images(self, batch, N=4, n_row=4, sample=True, ddim_steps=100, ddim_eta=0., return_keys=None,
                    quantize_denoised=False, inpaint=False, plot_denoise_rows=True, plot_progressive_rows=False,
                    plot_diffusion_rows=True, unconditional_guidance_scale=1., unconditional_guidance_label=None,
                    use_ema_scope=True,
@@ -1669,7 +1658,7 @@ class SolarLatentDiffusion(LatentDiffusion):
         if plot_progressive_rows:
             with ema_scope("Plotting Progressives"):
                 img, progressives = self.progressive_denoising(c,
-                                                               shape=(self.channels, self.image_size, self.image_size),
+                                                               shape=(self.channels, *self.spatial_size),
                                                                batch_size=N)
             prog_row = self._get_denoise_row_from_list(progressives, desc="Progressive Generation")
             log["progressive_row"] = prog_row # progressive denoising

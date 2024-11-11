@@ -1,0 +1,62 @@
+model:
+  base_learning_rate: 1.0e-01
+  base_learning_optimizer: "SGD"
+  base_learning_schedule: "CosineAnnealingLR"
+  target: models.reconmodels.autoencoder.models.mae.vit_mae.ViTMAE
+  params:
+    ckpt_path: null
+    input_modal_key: 'hmi_image'
+    mask_ratio: 0.01
+    img_size: 1024
+    patch_size: 64
+    in_chans: 1
+    embed_dim: 768
+    depth: 24
+    num_heads: 16
+    decoder_embed_dim: 512
+    decoder_depth: 8
+    decoder_num_heads: 16
+    mlp_ratio: 4
+
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 32
+    num_workers: 9
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 5346720
+        time_step: 600
+    validation:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 5346720
+          - 7452000
+        time_step: 115200
+
+lighting:
+  trainer:
+    accelerator: "gpu"
+    devices: 1
+    max_epochs: 1000

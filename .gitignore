@@ -4,3 +4,5 @@
 **.pyc
 /checkpoints
 /test.py
+/try.py
+/models/reconmodels/DiT/**

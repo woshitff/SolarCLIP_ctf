@@ -1,57 +1,22 @@
+# (B, 256, 768) -> (B, 1, 64, 64)
 model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.ldm.models.diffusion.ddpm.SolarLatentDiffusion
+  target: models.reconmodels.decoder.clipdecoder.vitdecoder.ClipVitDecoder
   params:
-    parameterization: "eps"
-    linear_start: 0.00085
-    linear_end: 0.0120
-    log_every_t: 200
-    timesteps: 1000
-    first_stage_key: "aia0094_image"
-    cond_stage_key: "aia0094_image_cliptoken"
-    image_size: 16
-    channels: 1
-    cond_stage_trainable: false
-    conditioning_key: crossattn
-    scale_factor: 1 #0.18215 
-    monitor: val/loss_simple_ema
-    use_ema: False
+    ckpt_path: 'checkpoints/reconmodels/decoder/vitdecoder/last_state_dict.ckpt'
+    decode_modal_key: aia0094_image
+    width: 768
+    layers: 12
+    heads: 12
+    num_upblocks: 3
+    out_channels: 1
 
-    unet_config:
-      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.openaimodel.UNetModel 
-      params:
-        image_size: 16
-        in_channels: 1
-        out_channels: 1
-        model_channels: 256
-        attention_resolutions:
-        - 8
-        - 4
-        - 2
-        num_res_blocks: 2
-        channel_mult:
-        - 1
-        - 2
-        - 3
-        - 4
-        num_head_channels: 32
-        use_spatial_transformer: true
-        context_dim: 768
-
-    first_stage_config: 
-      target: models.reconmodels.decoder.clipvitdecoder.modules.ImageDownsample
-      params:
-        in_size: 1024
-        scale_factor: 0.015625
-      lossconfig:
-        target: torch.nn.Identity
-    
-    cond_stage_config:
+    clip_config:
       target: models.clipmodels.solarclip.SolarCLIP_remove_CLS
       params:
-        modal_key: "aia0094"
+        modal_key: aia0094_image
         solarclip_config:
           target: models.clipmodels.solarclip.SolarCLIP
           params:
@@ -69,11 +34,10 @@ model:
       lossconfig:
         target: torch.nn.Identity
 
-
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 32
+    batch_size: 128
     num_workers: 9
     wrap: false
     train:
@@ -90,7 +54,7 @@ data:
         time_interval: 
           - 0
           - 5346720
-        time_step: 600 #115200
+        time_step: 115200
     validation:
       target: data.dataset.SolarDataset.multimodal_dataset
       params:
@@ -107,7 +71,6 @@ data:
           - 7452000
         time_step: 115200
 
-
 lightning:
   trainer:
     strategy: "ddp"
@@ -115,4 +78,4 @@ lightning:
     devices: 4
     benchmark: True
 
-  
+ 

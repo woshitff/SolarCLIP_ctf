@@ -78,12 +78,12 @@ class TrainerSetup:
 
     def _init_callbacks(self):
         default_callbacks_cfg = {
-            "global_logging": {
-                "target": "train_scripts.utils.callback.GlobalLoggingCallback",
-                "params": {
-                    "logdir": self.logdir,
-                }
-            },
+            # "global_logging": {
+            #     "target": "train_scripts.utils.callback.GlobalLoggingCallback",
+            #     "params": {
+            #         "logdir": self.logdir,
+            #     }
+            # },
             "setup_callback": {
                 "target": "train_scripts.utils.callback.SetupCallback",
                 "params": {

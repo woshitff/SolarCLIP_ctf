@@ -1,5 +1,7 @@
 import argparse
 import datetime, os, sys, glob
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 from omegaconf import OmegaConf
 
@@ -45,7 +47,7 @@ def get_parser(**parser_kwargs):
         metavar="/home/chaitf/桌面/SolarCLIP/SolarCLIP_v2/configs/train_configs/reconmodels/ldm/test.yaml",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=["configs/train_configs/reconmodels/ldm/mainconfig/diffusiondecoder/aia0094/aia0094_cliptoken_crossattn_1x16x16_ddpm_openaimodel.yaml"],
+        default=['configs/train_configs/reconmodels/autoencoder/mae/hmi2hmi.yaml']
     )
     parser.add_argument(
         "-f",

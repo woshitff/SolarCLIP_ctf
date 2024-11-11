@@ -1,5 +1,6 @@
 from inspect import isfunction
 import math
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn, einsum
@@ -43,6 +44,9 @@ def init_(tensor):
     std = 1 / math.sqrt(dim)
     tensor.uniform_(-std, std)
     return tensor
+
+def isimage(x):
+    return len(x.shape) == 4 
 
 
 # feedforward
@@ -88,6 +92,58 @@ def zero_module(module):
 def Normalize(in_channels):
     return torch.nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True)
 
+
+def get_2d_sincos_pos_embed(embed_dim, grid_size, cls_token=False, extra_tokens=0):
+    # see https://github.com/facebookresearch/mae/blob/main/util/pos_embed.py
+    """
+    grid_size: int of the grid height and width
+    return:
+    pos_embed: [grid_size*grid_size, embed_dim] or [1+grid_size*grid_size, embed_dim] (w/ or w/o cls_token)
+    """
+    grid_h = np.arange(grid_size, dtype=np.float32)
+    grid_w = np.arange(grid_size, dtype=np.float32)
+    grid = np.meshgrid(grid_w, grid_h)  # here w goes first
+    grid = np.stack(grid, axis=0)
+
+    grid = grid.reshape([2, 1, grid_size, grid_size])
+    pos_embed = get_2d_sincos_pos_embed_from_grid(embed_dim, grid)
+    if cls_token and extra_tokens > 0:
+        pos_embed = np.concatenate([np.zeros([extra_tokens, embed_dim]), pos_embed], axis=0)
+    return pos_embed
+
+
+def get_2d_sincos_pos_embed_from_grid(embed_dim, grid):
+    # see https://github.com/facebookresearch/DiT/blob/main/models.py
+    assert embed_dim % 2 == 0
+
+    # use half of dimensions to encode grid_h
+    emb_h = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[0])  # (H*W, D/2)
+    emb_w = get_1d_sincos_pos_embed_from_grid(embed_dim // 2, grid[1])  # (H*W, D/2)
+
+    emb = np.concatenate([emb_h, emb_w], axis=1) # (H*W, D)
+    return emb
+
+
+def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
+    # see https://github.com/facebookresearch/DiT/blob/main/models.py
+    """
+    embed_dim: output dimension for each position
+    pos: a list of positions to be encoded: size (M,)
+    out: (M, D)
+    """
+    assert embed_dim % 2 == 0
+    omega = np.arange(embed_dim // 2, dtype=np.float64)
+    omega /= embed_dim / 2.
+    omega = 1. / 10000**omega  # (D/2,)
+
+    pos = pos.reshape(-1)  # (M,)
+    out = np.einsum('m,d->md', pos, omega)  # (M, D/2), outer product
+
+    emb_sin = np.sin(out) # (M, D/2)
+    emb_cos = np.cos(out) # (M, D/2)
+
+    emb = np.concatenate([emb_sin, emb_cos], axis=1)  # (M, D)
+    return emb
 
 class SpatialSelfAttention(nn.Module):
     def __init__(self, in_channels):
@@ -275,7 +331,7 @@ class BasicTransformerBlock(nn.Module):
         return x
 
 
-class SpatialTransformer(nn.Module):
+class ContextTransformer(nn.Module):
     """
     Transformer block for image-like data.
     First, project the input (aka embedding)
@@ -294,6 +350,7 @@ class SpatialTransformer(nn.Module):
         print('context_dim:' , context_dim)
         self.in_channels = in_channels
         inner_dim = n_heads * d_head
+        self.inner_dim = inner_dim
         self.norm = Normalize(in_channels)
         if not use_linear:
             self.proj_in = nn.Conv2d(in_channels, 
@@ -302,6 +359,8 @@ class SpatialTransformer(nn.Module):
                                      stride=1,
                                      padding=0) # 256, 256, 1, 1
         else:
+            scale = in_channels ** -0.5
+            # self.positional_embedding = nn.Parameter(scale * torch.randn((16) ** 2, in_channels))
             self.proj_in = nn.Linear(in_channels, inner_dim)
 
         self.transformer_blocks = nn.ModuleList(
@@ -321,21 +380,49 @@ class SpatialTransformer(nn.Module):
 
     def forward(self, x, context=None):
         # note: if no context is given, cross-attention defaults to self-attention
+        # print(f'ContextTransformer Input: {x.shape}')
         if not isinstance(context, list):
             context = [context]
-        b, c, h, w = x.shape
-        x_in = x
-        x = self.norm(x)
-        if not self.use_linear:
-            x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 256, 16, 16)
-        x = rearrange(x, 'b c h w -> b (h w) c').contiguous() # (b, 256, 16, 16) -> (b, 256, 256)
-        if self.use_linear:
-            x = self.proj_in(x)
-        for i, block in enumerate(self.transformer_blocks):
-            x = block(x, context=context[i]) #x: (b, 256, 256), context: (b, 256, 768)
-        if self.use_linear:
-            x = self.proj_out(x)
-        x = rearrange(x, 'b (h w) c -> b c h w', h=h, w=w).contiguous()
-        if not self.use_linear:
-            x = self.proj_out(x)
+        if isimage(x):
+            b, c, h, w = x.shape
+            x_in = x
+            x = self.norm(x)
+            if not self.use_linear:
+                x = self.proj_in(x) # (b, 256, 16, 16) -> (b, 768, 16, 16)
+            x = rearrange(x, 'b c h w -> b (h w) c').contiguous() # (b, 256, 16, 16) -> (b, 256, 256)
+            pos_embed = get_1d_sincos_pos_embed_from_grid(self.inner_dim, np.arange(x.shape[1]))
+            positional_embedding = torch.tensor(pos_embed, dtype=torch.float32).to(x.device)
+            # print(f'0: {x.shape}')
+            # print(f'pos: {positional_embedding.shape}')
+            x = x + positional_embedding
+            # print(f'1: {x.shape}')
+            if self.use_linear:
+                x = self.proj_in(x)
+            for i, block in enumerate(self.transformer_blocks):
+                x = block(x, context=context[i]) #x: (b, 256, 256), context: (b, 256, 768)
+            if self.use_linear:
+                x = self.proj_out(x)
+            x = rearrange(x, 'b (h w) c -> b c h w', h=h, w=w).contiguous()
+            if not self.use_linear:
+                x = self.proj_out(x)
+        else:
+            b, d, l = x.shape
+            # print("context transformer Input:", x.shape)
+            assert len(x.shape) == 3 and self.use_linear == True, "Input must be an token-like tensor with use_linear=True"
+            x_in = x
+            x = self.norm(x)
+            if self.use_linear:
+                x = rearrange(x, 'b d l -> b l d').contiguous()
+                # x = x + self.positional_embedding.to(x.device)
+                x = self.proj_in(x)
+            for i, block in enumerate(self.transformer_blocks):
+                x = block(x, context=context[i])
+            if self.use_linear:
+                x = self.proj_out(x)
+                x = rearrange(x, 'b l d -> b d l').contiguous()
+            # print("context transformer Output:", x.shape)
+
+        # print(f'ContextTransformer Output: {x.shape}')
+
         return x + x_in
+
