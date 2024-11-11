@@ -9,3 +9,4 @@
 /models/reconmodels/DiT/**
 __pycache__/
 **.sh
+*.ipynb
