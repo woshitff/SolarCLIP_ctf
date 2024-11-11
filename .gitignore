@@ -8,3 +8,4 @@
 /try.py
 /models/reconmodels/DiT/**
 __pycache__/
+**.sh
