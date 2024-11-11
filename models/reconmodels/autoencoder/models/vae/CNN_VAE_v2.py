@@ -10,7 +10,7 @@ from models.reconmodels.autoencoder.util import config_optimizers
 from models.reconmodels.autoencoder.util import instantiate_from_config
 """
 SolarReconModel_VAE_v2 Model.
-This model use VAE architecture to reconstruct the solar image without clip model.
+This model use VAE architecture like autoencoderKL in LDM to reconstruct the solar image without clip model.
 """
 
     
