@@ -1,6 +1,7 @@
-import math
 import os
 
+import math
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,98 +12,382 @@ from models.reconmodels.autoencoder.util import instantiate_from_config
 """
 SolarReconModel_VAE_v2 Model.
 This model use VAE architecture like autoencoderKL in LDM to reconstruct the solar image without clip model.
+see https://github.com/CompVis/stable-diffusion/blob/main/ldm/modules/diffusionmodules/model.py
 """
-
     
-class VAE_ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, num_groups: int = 16,
-                 kernel_size: int = 3, stride: int = 1, padding: int = 1):
+def Normalize(in_channels, num_groups=32):
+    return torch.nn.GroupNorm(num_groups=num_groups, num_channels=in_channels, eps=1e-6, affine=True)
+
+def nonlinearity(x):
+    # swish
+    return x*torch.sigmoid(x)
+
+class Upsample(nn.Module):
+    def __init__(self, in_channels, with_conv):
         super().__init__()
-        self.num_groups = num_groups
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
+        self.with_conv = with_conv
+        if self.with_conv:
+            self.conv = torch.nn.Conv2d(in_channels,
+                                        in_channels,
+                                        kernel_size=3,
+                                        stride=1,
+                                        padding=1)
 
-        self.groupnorm_pre = nn.GroupNorm(num_groups, out_channels//2)
-        self.conv1 = nn.Conv2d(in_channels, out_channels//2, kernel_size, stride, padding)
-        self.conv2 = nn.Conv2d(in_channels=out_channels//2, out_channels=out_channels, kernel_size=3, stride=1, padding=1)
-        self.groupnorm_post = nn.GroupNorm(num_groups, out_channels)
-        if in_channels == out_channels:
-            self.residual_layer = nn.Identity()
+    def forward(self, x):
+        x = torch.nn.functional.interpolate(x, scale_factor=2.0, mode="nearest")
+        if self.with_conv:
+            x = self.conv(x)
+        return x
+
+class Downsample(nn.Module):
+    def __init__(self, in_channels, with_conv):
+        super().__init__()
+        self.with_conv = with_conv
+        if self.with_conv:
+            # no asymmetric padding in torch conv, must do it ourselves
+            self.conv = torch.nn.Conv2d(in_channels,
+                                        in_channels,
+                                        kernel_size=3,
+                                        stride=2,
+                                        padding=0)
+
+    def forward(self, x):
+        if self.with_conv:
+            pad = (0,1,0,1)
+            x = torch.nn.functional.pad(x, pad, mode="constant", value=0)
+            x = self.conv(x)
         else:
-            self.residual_layer = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
-        self.nonlinear = nn.ELU()
-            
-    def forward(self,x):
-        residue = self.residual_layer(x)
-        x = self.nonlinear(self.groupnorm_pre(self.conv1(x)))
-        x = self.conv2(x)
-        return self.nonlinear(self.groupnorm_post(x + residue))
-    
-    
+            x = torch.nn.functional.avg_pool2d(x, kernel_size=2, stride=2)
+        return x
+
+class ResnetBlock(nn.Module):
+    def __init__(self, *, 
+                 in_channels, out_channels=None, 
+                 conv_shortcut=False,dropout,):
+        super().__init__()
+        self.in_channels = in_channels
+        out_channels = in_channels if out_channels is None else out_channels
+        self.out_channels = out_channels
+        self.use_conv_shortcut = conv_shortcut
+
+        self.nonlinear = nonlinearity
+
+        self.norm1 = Normalize(in_channels)
+        self.conv1 = torch.nn.Conv2d(in_channels,
+                                     out_channels,
+                                     kernel_size=3,
+                                     stride=1,
+                                     padding=1)
+        
+        self.norm2 = Normalize(out_channels)
+        self.dropout = torch.nn.Dropout(dropout)
+        self.conv2 = torch.nn.Conv2d(out_channels,
+                                     out_channels,
+                                     kernel_size=3,
+                                     stride=1,
+                                     padding=1)
+        if self.in_channels != self.out_channels:
+            if self.use_conv_shortcut:
+                self.conv_shortcut = torch.nn.Conv2d(in_channels,
+                                                     out_channels,
+                                                     kernel_size=3,
+                                                     stride=1,
+                                                     padding=1)
+            else:
+                self.nin_shortcut = torch.nn.Conv2d(in_channels,
+                                                    out_channels,
+                                                    kernel_size=1,
+                                                    stride=1,
+                                                    padding=0)
+
+    def forward(self, x):
+        h = x
+
+        h = self.conv1(self.nonlinear(self.norm1(h)))
+        h = self.conv2(self.dropout(self.nonlinear(self.norm2)))
+
+        if self.in_channels != self.out_channels:
+            if self.use_conv_shortcut:
+                x = self.conv_shortcut(x)
+            else:
+                x = self.nin_shortcut(x)
+
+        return x+h
+
+class AttnBlock(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.in_channels = in_channels
+
+        self.norm = Normalize(in_channels)
+        self.q = torch.nn.Conv2d(in_channels,
+                                 in_channels,
+                                 kernel_size=1,
+                                 stride=1,
+                                 padding=0)
+        self.k = torch.nn.Conv2d(in_channels,
+                                 in_channels,
+                                 kernel_size=1,
+                                 stride=1,
+                                 padding=0)
+        self.v = torch.nn.Conv2d(in_channels,
+                                 in_channels,
+                                 kernel_size=1,
+                                 stride=1,
+                                 padding=0)
+        self.proj_out = torch.nn.Conv2d(in_channels,
+                                        in_channels,
+                                        kernel_size=1,
+                                        stride=1,
+                                        padding=0)
+
+
+    def forward(self, x):
+        h_ = x
+        h_ = self.norm(h_)
+        q = self.q(h_)
+        k = self.k(h_)
+        v = self.v(h_)
+
+        # compute attention
+        b,c,h,w = q.shape
+        q = q.reshape(b,c,h*w)
+        q = q.permute(0,2,1)   # b,hw,c
+        k = k.reshape(b,c,h*w) # b,c,hw
+        w_ = torch.bmm(q,k)     # b,hw,hw    w[b,i,j]=sum_c q[b,i,c]k[b,c,j]
+        w_ = w_ * (int(c)**(-0.5))
+        w_ = torch.nn.functional.softmax(w_, dim=2)
+
+        # attend to values
+        v = v.reshape(b,c,h*w)
+        w_ = w_.permute(0,2,1)   # b,hw,hw (first hw of k, second of q)
+        h_ = torch.bmm(v,w_)     # b, c,hw (hw of q) h_[b,c,j] = sum_i v[b,c,i] w_[b,i,j]
+        h_ = h_.reshape(b,c,h,w)
+
+        h_ = self.proj_out(h_)
+
+        return x+h_
+
+def make_attn(in_channels, attn_type="vanilla"):
+    assert attn_type in ["vanilla", "linear", "none"], f'attn_type {attn_type} unknown'
+    print(f"making attention of type '{attn_type}' with {in_channels} in_channels")
+    if attn_type == "vanilla":
+        return AttnBlock(in_channels)
+    elif attn_type == "none":
+        return nn.Identity(in_channels)
+    else:
+        # return LinAttnBlock(in_channels)
+        raise NotImplementedError('linear is not support now')
+
+class Encoder(nn.Module):
+    def __init__(self, *, ch, out_ch, ch_mult=(1,2,4,8), num_res_blocks,
+                 attn_resolutions, dropout=0.0, resamp_with_conv=True, in_channels,
+                 resolution, z_channels, double_z=True, use_linear_attn=False, attn_type="vanilla",
+                 **ignore_kwargs):
+        super().__init__()
+        if use_linear_attn: attn_type = "linear"
+        self.ch = ch
+        self.temb_ch = 0
+        self.num_resolutions = len(ch_mult)
+        self.num_res_blocks = num_res_blocks
+        self.resolution = resolution
+        self.in_channels = in_channels
+
+        # downsampling
+        self.conv_in = torch.nn.Conv2d(in_channels,
+                                       self.ch,
+                                       kernel_size=3,
+                                       stride=1,
+                                       padding=1)
+
+        curr_res = resolution
+        in_ch_mult = (1,)+tuple(ch_mult)
+        self.in_ch_mult = in_ch_mult
+        self.down = nn.ModuleList()
+        for i_level in range(self.num_resolutions):
+            block = nn.ModuleList()
+            attn = nn.ModuleList()
+            block_in = ch*in_ch_mult[i_level]
+            block_out = ch*ch_mult[i_level]
+            for i_block in range(self.num_res_blocks):
+                block.append(ResnetBlock(in_channels=block_in,
+                                         out_channels=block_out,
+                                         dropout=dropout))
+                block_in = block_out
+                if curr_res in attn_resolutions:
+                    attn.append(make_attn(block_in, attn_type=attn_type))
+            down = nn.Module()
+            down.block = block
+            down.attn = attn
+            if i_level != self.num_resolutions-1:
+                down.downsample = Downsample(block_in, resamp_with_conv)
+                curr_res = curr_res // 2
+            self.down.append(down)
+
+        # middle
+        self.mid = nn.Module()
+        self.mid.block_1 = ResnetBlock(in_channels=block_in,
+                                       out_channels=block_in,
+                                       temb_channels=self.temb_ch,
+                                       dropout=dropout)
+        self.mid.attn_1 = make_attn(block_in, attn_type=attn_type)
+        self.mid.block_2 = ResnetBlock(in_channels=block_in,
+                                       out_channels=block_in,
+                                       temb_channels=self.temb_ch,
+                                       dropout=dropout)
+
+        # end
+        self.norm_out = Normalize(block_in)
+        self.conv_out = torch.nn.Conv2d(block_in,
+                                        2*z_channels if double_z else z_channels,
+                                        kernel_size=3,
+                                        stride=1,
+                                        padding=1)
+
+    def forward(self, x):
+        # downsampling
+        hs = [self.conv_in(x)]
+        for i_level in range(self.num_resolutions):
+            for i_block in range(self.num_res_blocks):
+                h = self.down[i_level].block[i_block](hs[-1])
+                if len(self.down[i_level].attn) > 0:
+                    h = self.down[i_level].attn[i_block](h)
+                hs.append(h)
+            if i_level != self.num_resolutions-1:
+                hs.append(self.down[i_level].downsample(hs[-1]))
+
+        # middle
+        h = hs[-1]
+        h = self.mid.block_1(h)
+        h = self.mid.attn_1(h)
+        h = self.mid.block_2(h)
+
+        # end
+        h = self.norm_out(h)
+        h = nonlinearity(h)
+        h = self.conv_out(h)
+        return h
+
+class Decoder(nn.Module):
+    def __init__(self, *, ch, out_ch, ch_mult=(1,2,4,8), num_res_blocks,
+                 attn_resolutions, dropout=0.0, resamp_with_conv=True, in_channels,
+                 resolution, z_channels, give_pre_end=False, tanh_out=False, use_linear_attn=False,
+                 attn_type="vanilla", **ignorekwargs):
+        super().__init__()
+        if use_linear_attn: attn_type = "linear"
+        self.ch = ch
+        self.temb_ch = 0
+        self.num_resolutions = len(ch_mult)
+        self.num_res_blocks = num_res_blocks
+        self.resolution = resolution
+        self.in_channels = in_channels
+        self.give_pre_end = give_pre_end
+        self.tanh_out = tanh_out
+
+        # compute in_ch_mult, block_in and curr_res at lowest res
+        in_ch_mult = (1,)+tuple(ch_mult)
+        block_in = ch*ch_mult[self.num_resolutions-1]
+        curr_res = resolution // 2**(self.num_resolutions-1)
+        self.z_shape = (1,z_channels,curr_res,curr_res)
+        print("Working with z of shape {} = {} dimensions.".format(
+            self.z_shape, np.prod(self.z_shape)))
+
+        # z to block_in
+        self.conv_in = torch.nn.Conv2d(z_channels,
+                                       block_in,
+                                       kernel_size=3,
+                                       stride=1,
+                                       padding=1)
+
+        # middle
+        self.mid = nn.Module()
+        self.mid.block_1 = ResnetBlock(in_channels=block_in,
+                                       out_channels=block_in,
+                                       temb_channels=self.temb_ch,
+                                       dropout=dropout)
+        self.mid.attn_1 = make_attn(block_in, attn_type=attn_type)
+        self.mid.block_2 = ResnetBlock(in_channels=block_in,
+                                       out_channels=block_in,
+                                       temb_channels=self.temb_ch,
+                                       dropout=dropout)
+
+        # upsampling
+        self.up = nn.ModuleList()
+        for i_level in reversed(range(self.num_resolutions)):
+            block = nn.ModuleList()
+            attn = nn.ModuleList()
+            block_out = ch*ch_mult[i_level]
+            for i_block in range(self.num_res_blocks+1):
+                block.append(ResnetBlock(in_channels=block_in,
+                                         out_channels=block_out,
+                                         temb_channels=self.temb_ch,
+                                         dropout=dropout))
+                block_in = block_out
+                if curr_res in attn_resolutions:
+                    attn.append(make_attn(block_in, attn_type=attn_type))
+            up = nn.Module()
+            up.block = block
+            up.attn = attn
+            if i_level != 0:
+                up.upsample = Upsample(block_in, resamp_with_conv)
+                curr_res = curr_res * 2
+            self.up.insert(0, up) # prepend to get consistent order
+
+        # end
+        self.norm_out = Normalize(block_in)
+        self.conv_out = torch.nn.Conv2d(block_in,
+                                        out_ch,
+                                        kernel_size=3,
+                                        stride=1,
+                                        padding=1)
+
+    def forward(self, z):
+        #assert z.shape[1:] == self.z_shape[1:]
+        self.last_z_shape = z.shape
+
+        # z to block_in
+        h = self.conv_in(z)
+
+        # middle
+        h = self.mid.block_1(h)
+        h = self.mid.attn_1(h)
+        h = self.mid.block_2(h)
+
+        # upsampling
+        for i_level in reversed(range(self.num_resolutions)):
+            for i_block in range(self.num_res_blocks+1):
+                h = self.up[i_level].block[i_block](h)
+                if len(self.up[i_level].attn) > 0:
+                    h = self.up[i_level].attn[i_block](h)
+            if i_level != 0:
+                h = self.up[i_level].upsample(h)
+
+        # end
+        if self.give_pre_end:
+            return h
+
+        h = self.norm_out(h)
+        h = nonlinearity(h)
+        h = self.conv_out(h)
+        if self.tanh_out:
+            h = torch.tanh(h)
+        return h
+
+
 class CNN_VAE(pl.LightningModule):
     def __init__(self,
                  ckpt_path: str = None,
                  vae_modal: str = 'magnet_image',
-                 input_size: int = 1024,
-                 image_channels: int = 1,
-                 hidden_dim: int = 64,
-                 layers: int = 3,
-                 kernel_sizes: list = [7, 7, 7],
-                 strides: list = [4, 4, 4],
-                 group_nums: int = 16,
-                 latent_dim: int = 3,
-                 loss_type: str = 'MSE',
-                 lambda_kl: float = 1.0,
-                 ):
+                 kl_weight: float = 1.0,
+                 dd_config: dict = None):
         super().__init__()
         self.save_hyperparameters()
 
         self.vae_modal = vae_modal
-        self.input_size = input_size
-        self.image_channels = image_channels
-        self.hidden_dim = hidden_dim
-        self.layers = layers
-        self.kernel_sizes = kernel_sizes
-        self.strides = strides
-        self.group_nums = group_nums
-        self.latent_dim = latent_dim
-        self.loss_type = loss_type
-        self.lambda_kl = lambda_kl
+        self.lambda_kl = kl_weight
 
-        self.encoder_list = nn.ModuleList([
-            nn.Conv2d(image_channels, hidden_dim, kernel_size=3, stride=1, padding=1),  # B, 1, 1024, 1024 -> B, 128, 1024, 1024
-            nn.ELU()
-        ])
-        for i, kernel_size, stride in zip(range(self.layers), self.kernel_sizes, self.strides):
-            self.encoder_list.append(VAE_ResidualBlock(hidden_dim*(2**i), hidden_dim*(2**(i+1)), kernel_size=kernel_size, stride=stride, padding=kernel_size//2))
-        self.encoder_list.extend([
-            VAE_ResidualBlock(hidden_dim*(2**self.layers), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
-            VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
-            nn.GroupNorm(group_nums, hidden_dim*(2**self.layers)), # B, 1024, 16, 16 -> B, 1024, 16, 16
-            nn.ELU(),   
-            nn.Conv2d(hidden_dim*(2**self.layers), self.latent_dim*2, kernel_size=1, stride=1, padding=0), # B, 1024, 16, 16 -> B, 6, 16, 16
-        ])
-        self.encoder = nn.Sequential(*self.encoder_list)
-
-        self.decoder_list = nn.ModuleList([
-            nn.ConvTranspose2d(self.latent_dim, hidden_dim*(2**self.layers), kernel_size=3, stride=1, padding=1), # B, 3, 16, 16 -> B, 1024, 16, 16
-            nn.ELU(),
-            nn.GroupNorm(group_nums, hidden_dim*(2**self.layers)), # B, 1024, 16, 16 -> B, 1024, 16, 16
-            VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
-            VAE_ResidualBlock(hidden_dim*(2**(self.layers)), hidden_dim*(2**(self.layers)), kernel_size=3, stride=1, padding=1),  # B, 1024, 16, 16 -> B, 1024, 16, 16
-        ])
-        for i, kernel_size, stride in zip(range(self.layers-1, -1, -1), self.kernel_sizes[::-1], self.strides[::-1]):
-            self.decoder_list.extend([
-                nn.Upsample(scale_factor=stride, mode='nearest'), # B, 1024, 16, 16 -> B, 1024, 64, 64
-                VAE_ResidualBlock(hidden_dim*(2**(i+1)), hidden_dim*(2**i), kernel_size=kernel_size, stride=1, padding=kernel_size//2) # B, 1024, 64, 64 -> B, 512, 64, 64
-            ])
-        self.decoder_list.extend([
-            nn.GroupNorm(group_nums, hidden_dim), # B, 512, 64, 64 -> B, 512, 64, 64
-            nn.ELU(),
-            nn.Conv2d(hidden_dim, image_channels, kernel_size=3, stride=1, padding=1), # B, 512, 64, 64 -> B, 1, 64, 64
-        ])
-        self.decoder = nn.Sequential(*self.decoder_list)
+        self.encoder = Encoder(**dd_config)
+        self.decoder = Decoder(**dd_config)
 
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path)
@@ -245,6 +530,9 @@ class CNN_VAE(pl.LightningModule):
 
         return log
     
+
+class hmi_CNN_VAE(CNN_VAE):
+    pass
 
 class aia0094_CNN_VAE(CNN_VAE):
     def __init__(self, loss_config, **kwargs):
