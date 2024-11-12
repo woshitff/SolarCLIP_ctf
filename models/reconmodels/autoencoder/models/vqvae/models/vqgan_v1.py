@@ -124,21 +124,15 @@ class VQModel(pl.LightningModule):
         return dec, diff
 
     def get_input(self, batch, k):
-        x = batch[k]
+        if k == 'hmi_image':
+            x = batch[:, 0, :, :, :]
+        elif k == 'aia0094_image':
+            x = batch[:, 1, :, :, :]
+        else:
+            raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
-        x = x.permute(0, 3, 1, 2).to(memory_format=torch.contiguous_format).float()
-        if self.batch_resize_range is not None:
-            lower_size = self.batch_resize_range[0]
-            upper_size = self.batch_resize_range[1]
-            if self.global_step <= 4:
-                # do the first few batches with max size to avoid later oom
-                new_resize = upper_size
-            else:
-                new_resize = np.random.choice(np.arange(lower_size, upper_size+16, 16))
-            if new_resize != x.shape[2]:
-                x = F.interpolate(x, size=new_resize, mode="bicubic")
-            x = x.detach()
+        x = x.to(memory_format=torch.contiguous_format).float()
         return x
 
     def training_step(self, batch, batch_idx, optimizer_idx):

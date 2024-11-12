@@ -442,9 +442,9 @@ class CNN_VAE(pl.LightningModule):
         return recon_x, mu, logvar
 
     def get_input(self, batch, k):
-        if k == 'magnet_image':
+        if k == 'hmi_image':
             x = batch[:, 0, :, :, :]
-        elif k == '0094_image':
+        elif k == 'aia0094_image':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
@@ -547,7 +547,7 @@ class aia0094_CNN_VAE(CNN_VAE):
             param.requires_grad = False
 
     def shared_step(self, batch, batch_idx):
-        x = self.get_input(batch, '0094_image')
+        x = self.get_input(batch, 'aia0094_image')
         recon_x, mu, logvar = self(x)
         posteriors = (mu, logvar)
         weights = torch.ones_like(x)
