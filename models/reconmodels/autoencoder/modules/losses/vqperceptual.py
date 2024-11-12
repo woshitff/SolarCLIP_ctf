@@ -101,13 +101,12 @@ class VQLPIPSWithDiscriminator(nn.Module):
                 global_step, last_layer=None, cond=None, split="train", predicted_indices=None):
         if not exists(codebook_loss):
             codebook_loss = torch.tensor([0.]).to(inputs.device)
-        #rec_loss = torch.abs(inputs.contiguous() - reconstructions.contiguous())
         rec_loss = self.pixel_loss(inputs.contiguous(), reconstructions.contiguous())
         if self.perceptual_weight > 0:
-            if inputs.shape[1] == 3:
-                p_loss = self.perceptual_loss(inputs.contiguous(), reconstructions.contiguous())
-            elif inputs.shape[1] == 1:
+            if inputs.shape[1] == 1:
                 p_loss = self.perceptual_loss(inputs.repeat(1, 3, 1, 1).contiguous(), reconstructions.repeat(1, 3, 1, 1).contiguous())
+            elif inputs.shape[1] == 3:
+                p_loss = self.perceptual_loss(inputs.contiguous(), reconstructions.contiguous())
             else:
                 raise NotImplementedError('check the input channel, need to be 1 or 3.')
             rec_loss = rec_loss + self.perceptual_weight * p_loss
@@ -137,7 +136,6 @@ class VQLPIPSWithDiscriminator(nn.Module):
 
             disc_factor = adopt_weight(self.disc_factor, global_step, threshold=self.discriminator_iter_start)
             loss = nll_loss + d_weight * disc_factor * g_loss + self.codebook_weight * codebook_loss.mean()
-
             log = {"{}/total_loss".format(split): loss.clone().detach().mean(),
                    "{}/quant_loss".format(split): codebook_loss.detach().mean(),
                    "{}/nll_loss".format(split): nll_loss.detach().mean(),

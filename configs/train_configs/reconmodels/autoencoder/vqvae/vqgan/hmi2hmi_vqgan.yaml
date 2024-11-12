@@ -10,7 +10,7 @@ model:
     n_embed: 16384
 
     ddconfig:
-      double_z: True
+      double_z: false
       z_channels: 32
       resolution: 1024
       in_channels: 1
@@ -25,11 +25,12 @@ model:
       target: models.reconmodels.autoencoder.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
       params:
         disc_conditional: false
-        disc_in_channels: 3
+        disc_in_channels: 1
         disc_start: 250001
         disc_weight: 0.75
         disc_num_layers: 2
         codebook_weight: 1.0
+        n_classes: 16384
 
 
 data:

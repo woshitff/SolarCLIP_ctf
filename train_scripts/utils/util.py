@@ -52,7 +52,7 @@ class TrainerSetup:
             trainer_config['accelerator'] = 'gpu'
             if (isinstance(trainer_config.devices, int) and trainer_config.devices > 1) or \
                 (isinstance(trainer_config['devices'], list) and len(trainer_config['devices']) > 1): # use ddp as default
-                trainer_config['strategy'] = 'ddp' if not trainer_config.get('strategy', None) else trainer_config['strategy']
+                trainer_config['strategy'] = 'ddp_find_unused_parameters_true' if not trainer_config.get('strategy', None) else trainer_config['strategy']
         
     def init_trainer_kwargs(self):
         self._init_logger()
