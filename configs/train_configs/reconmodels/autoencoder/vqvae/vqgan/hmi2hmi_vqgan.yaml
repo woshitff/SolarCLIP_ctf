@@ -6,12 +6,12 @@ model:
   params:
     ckpt_path: null
     vq_modal: 'hmi_image'
-    embed_dim: 8
+    embed_dim: 32
     n_embed: 16384
 
     dd_config:
       double_z: True
-      z_channels: 8
+      z_channels: 32
       resolution: 1024
       in_channels: 1
       out_ch: 1
