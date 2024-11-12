@@ -50,7 +50,7 @@ class TrainerSetup:
             trainer_config['accelerator'] = 'cpu'
             trainer_config['devices'] = "auto"
         else:
-            cpu = False
+            cpu = True
             trainer_config['accelerator'] = 'gpu'
             if (isinstance(trainer_config.devices, int) and trainer_config.devices > 1) or \
                 (isinstance(trainer_config['devices'], list) and len(trainer_config['devices']) > 1): # use ddp as default
