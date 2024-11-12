@@ -53,7 +53,7 @@ data:
         time_interval: 
           - 0
           - 5346720
-        time_step: 115200
+        time_step: 600
     validation:
       target: data.dataset.SolarDataset.multimodal_dataset
       params:
