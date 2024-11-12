@@ -6,7 +6,7 @@ model:
   params:
     ckpt_path: null
     vae_modal: '0094_image'
-    kl_weight: 0.000001
+    kl_weight: 0.1
     loss_type: 'MSE'
 
     dd_config:
