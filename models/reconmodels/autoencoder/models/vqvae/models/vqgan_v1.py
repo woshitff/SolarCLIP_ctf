@@ -261,3 +261,24 @@ class VQModel(pl.LightningModule):
         x = F.conv2d(x, weight=self.colorize)
         x = 2.*(x-x.min())/(x.max()-x.min()) - 1.
         return x
+    
+
+class VQModelInterface(VQModel):
+    def __init__(self, embed_dim, *args, **kwargs):
+        super().__init__(embed_dim=embed_dim, *args, **kwargs)
+        self.embed_dim = embed_dim
+
+    def encode(self, x):
+        h = self.encoder(x)
+        h = self.quant_conv(h)
+        return h
+
+    def decode(self, h, force_not_quantize=False):
+        # also go through quantization layer
+        if not force_not_quantize:
+            quant, emb_loss, info = self.quantize(h)
+        else:
+            quant = h
+        quant = self.post_quant_conv(quant)
+        dec = self.decoder(quant)
+        return dec
