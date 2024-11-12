@@ -141,7 +141,10 @@ class VQModel(pl.LightningModule):
         # try not to fool the heuristics
         x = self.get_input(batch, self.vq_modal)
         xrec, qloss, ind = self(x, return_pred_indices=True)
+        unique_indices, _ = torch.unique(ind, return_counts=True)
+        codebook_usage = unique_indices.numel()/batch.size(0)
 
+        self.log("train/codebook_usage", codebook_usage, prog_bar=True, logger=True, on_step=False, on_epoch=True)
         opt_g, opt_d = self.optimizers()
 
         # autoencode
