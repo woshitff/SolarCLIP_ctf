@@ -9,7 +9,7 @@ model:
     embed_dim: 32
     n_embed: 16384
 
-    dd_config:
+    ddconfig:
       double_z: True
       z_channels: 32
       resolution: 1024
