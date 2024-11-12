@@ -70,8 +70,8 @@ data:
           - 7452000
         time_step: 115200
 
-lighting:
+lightning:
   trainer:
     accelerator: "gpu"
-    devices: 1
+    devices: 4
     max_epochs: 1000
