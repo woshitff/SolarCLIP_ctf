@@ -5,7 +5,7 @@ model:
   target: models.reconmodels.autoencoder.models.vqvae.models.vqgan_v1.VQModel
   params:
     ckpt_path: null
-    vae_modal: 'hmi_image'
+    vq_modal: 'hmi_image'
     embed_dim: 8
     n_embed: 16384
 
