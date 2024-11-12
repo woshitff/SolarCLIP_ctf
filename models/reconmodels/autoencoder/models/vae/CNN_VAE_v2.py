@@ -489,18 +489,12 @@ class CNN_VAE(pl.LightningModule):
     
     def training_step(self, batch, batch_idx):
         loss, loss_dict = self.shared_step(batch, batch_idx)
-        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_loss_recon', loss_dict['train/recon_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_loss_recon_weighted', loss_dict['train/recon_loss_weighted'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_loss_kl', loss_dict['train/kl_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         return loss
     
     def validation_step(self, batch, batch_idx):
         loss, loss_dict = self.shared_step(batch, batch_idx)
-        self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('val_loss_recon', loss_dict['val/recon_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('val_loss_recon_weighted', loss_dict['val/recon_loss_weighted'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('val_loss_kl', loss_dict['val/kl_loss'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         return loss
     
     def configure_optimizers(self):
