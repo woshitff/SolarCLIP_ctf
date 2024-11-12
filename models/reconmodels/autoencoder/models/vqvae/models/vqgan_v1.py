@@ -21,7 +21,7 @@ class VQModel(pl.LightningModule):
                  embed_dim,
                  ckpt_path=None,
                  ignore_keys=[],
-                 image_key="image",
+                 vq_modal="hmi_image",
                  colorize_nlabels=None,
                  monitor=None,
                  batch_resize_range=None,
@@ -34,7 +34,7 @@ class VQModel(pl.LightningModule):
         super().__init__()
         self.embed_dim = embed_dim
         self.n_embed = n_embed
-        self.image_key = image_key
+        self.vq_modal = vq_modal
         self.encoder = Encoder(**ddconfig)
         self.decoder = Decoder(**ddconfig)
         self.loss = instantiate_from_config(lossconfig)
@@ -138,7 +138,7 @@ class VQModel(pl.LightningModule):
     def training_step(self, batch, batch_idx, optimizer_idx):
         # https://github.com/pytorch/pytorch/issues/37142
         # try not to fool the heuristics
-        x = self.get_input(batch, self.image_key)
+        x = self.get_input(batch, self.vq_modal)
         xrec, qloss, ind = self(x, return_pred_indices=True)
 
         if optimizer_idx == 0:
@@ -164,7 +164,7 @@ class VQModel(pl.LightningModule):
         return log_dict
 
     def _validation_step(self, batch, batch_idx, suffix=""):
-        x = self.get_input(batch, self.image_key)
+        x = self.get_input(batch, self.vq_modal)
         xrec, qloss, ind = self(x, return_pred_indices=True)
         aeloss, log_dict_ae = self.loss(qloss, x, xrec, 0,
                                         self.global_step,
@@ -228,7 +228,7 @@ class VQModel(pl.LightningModule):
 
     def log_images(self, batch, only_inputs=False, plot_ema=False, **kwargs):
         log = dict()
-        x = self.get_input(batch, self.image_key)
+        x = self.get_input(batch, self.vq_modal)
         x = x.to(self.device)
         if only_inputs:
             log["inputs"] = x
@@ -249,7 +249,7 @@ class VQModel(pl.LightningModule):
         return log
 
     def to_rgb(self, x):
-        assert self.image_key == "segmentation"
+        assert self.vq_modal == "segmentation"
         if not hasattr(self, "colorize"):
             self.register_buffer("colorize", torch.randn(3, x.shape[1], 1, 1).to(x))
         x = F.conv2d(x, weight=self.colorize)
