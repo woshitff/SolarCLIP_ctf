@@ -104,7 +104,12 @@ class VQLPIPSWithDiscriminator(nn.Module):
         #rec_loss = torch.abs(inputs.contiguous() - reconstructions.contiguous())
         rec_loss = self.pixel_loss(inputs.contiguous(), reconstructions.contiguous())
         if self.perceptual_weight > 0:
-            p_loss = self.perceptual_loss(inputs.contiguous(), reconstructions.contiguous())
+            if inputs.shape[1] == 3:
+                p_loss = self.perceptual_loss(inputs.contiguous(), reconstructions.contiguous())
+            elif inputs.shape[1] == 1:
+                p_loss = self.perceptual_loss(inputs.repeat(1, 3, 1, 1).contiguous(), reconstructions.repeat(1, 3, 1, 1).contiguous())
+            else:
+                raise NotImplementedError('check the input channel, need to be 1 or 3.')
             rec_loss = rec_loss + self.perceptual_weight * p_loss
         else:
             p_loss = torch.tensor([0.0])
