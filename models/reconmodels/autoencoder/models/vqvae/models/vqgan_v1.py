@@ -228,6 +228,7 @@ class VQModel(pl.LightningModule):
 
     def log_images(self, batch, only_inputs=False, plot_ema=False, **kwargs):
         log = dict()
+        modals = dict()
         x = self.get_input(batch, self.vq_modal)
         x = x.to(self.device)
         if only_inputs:
@@ -240,13 +241,16 @@ class VQModel(pl.LightningModule):
             x = self.to_rgb(x)
             xrec = self.to_rgb(xrec)
         log["inputs"] = x
-        log["reconstructions"] = xrec
+        log["recon"] = xrec
         if plot_ema:
             with self.ema_scope():
                 xrec_ema, _ = self(x)
                 if x.shape[1] > 3: xrec_ema = self.to_rgb(xrec_ema)
                 log["reconstructions_ema"] = xrec_ema
-        return log
+        modals["inputs"] = self.vq_modal
+        modals["recon"] = self.vq_modal
+
+        return log, modals
 
     def to_rgb(self, x):
         assert self.vq_modal == "segmentation"
