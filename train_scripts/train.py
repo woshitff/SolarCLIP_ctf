@@ -197,8 +197,8 @@ if __name__ == "__main__":
         
         trainer_setup = TrainerSetup(config, lightning_config, trainer_config, opt, now, logdir, cfgdir, ckptdir, model)
         trainer_config, trainer_kwargs = trainer_setup.trainer_config, trainer_setup.trainer_kwargs
-        
-        trainer = Trainer(**trainer_config, logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
+        print(f'before trainer init {trainer_config}')
+        trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
 
         # Step 4: 运行训练
         try:
