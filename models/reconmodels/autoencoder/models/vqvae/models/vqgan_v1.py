@@ -151,7 +151,7 @@ class VQModel(pl.LightningModule):
         opt_g.zero_grad()
         self.manual_backward(aeloss)
         opt_g.step()
-        self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True)
+        self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True, sync_dist=True)
 
         # discriminator
         discloss, log_dict_disc = self.loss(qloss, x, xrec, 1, self.global_step,
@@ -159,7 +159,7 @@ class VQModel(pl.LightningModule):
         opt_d.zero_grad()
         self.manual_backward(discloss)
         opt_d.step()
-        self.log_dict(log_dict_disc, prog_bar=False, logger=True, on_step=True, on_epoch=True)
+        self.log_dict(log_dict_disc, prog_bar=False, logger=True, on_step=True, on_epoch=True, sync_dist=True)
 
     def validation_step(self, batch, batch_idx):
         log_dict = self._validation_step(batch, batch_idx)
