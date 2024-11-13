@@ -22,7 +22,7 @@ from models.reconmodels.autoencoder.util import instantiate_from_config
 from models.reconmodels.autoencoder.models.mae.util.pos_embed import get_2d_sincos_pos_embed
 
 
-class SolarMAGE(pl.LightningModule):
+class SolarMAE_Bert(pl.LightningModule):
     """Vision Transformer with Masked Autoencoder (ViTMAE) on discrete latent space of VQ-GAN, get encode of shape (B, L+1, D)"""
     def __init__(self,
                  ckpt_path=None,
@@ -135,11 +135,11 @@ class SolarMAGE(pl.LightningModule):
         return x_masked, mask, ids_restore
 
     def forward_encoder(self, x, mask_ratio):
-        # tokenization
+        # vq tokenization
         with torch.no_grad():
             z_q, _, token_tuple = self.vqgan.encode(x)
-        _, _, token_indices = token_tuple
-        token_indices = token_indices.reshape(z_q.size(0), -1)
+        _, _, token_indices = token_tuple #（B*H*W, )
+        token_indices = token_indices.reshape(z_q.size(0), -1) # (B*H*W, ) -> (B, H*W)
         gt_indices = token_indices.clone().detach().long()
 
         # add pos embeding
@@ -286,7 +286,7 @@ class SolarMAGE(pl.LightningModule):
         return log, modals
     
 
-class SolarMAGE_Tokenizer(SolarMAGE):
+class SolarMAE_Tokenizer(SolarMAE_Bert):
     # def encode(self, x):
     #     x = self.patch_embed(x)
     #     x = x + self.pos_embed[:, 1:, :]
