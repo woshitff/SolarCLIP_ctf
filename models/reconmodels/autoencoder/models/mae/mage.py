@@ -77,36 +77,6 @@ class SolarMAE_Bert(pl.LightningModule):
         decoder_pos_embed = get_2d_sincos_pos_embed(self.decoder_pos_embed.shape[-1], int(self.patch_embed.num_patches**.5), cls_token=True)
         self.decoder_pos_embed.data.copy_(torch.from_numpy(decoder_pos_embed).float().unsqueeze(0))
 
-    def patchify(self, imgs):
-        """
-        imgs: (N, C, H, W)
-        x: (N, L, patch_size**2 *C)
-        """
-        p = self.patch_size
-        assert imgs.shape[2] == imgs.shape[3] and imgs.shape[2] % p == 0
-
-        c = imgs.shape[1]
-        h = w = imgs.shape[2] // p
-        x = imgs.reshape(shape=(imgs.shape[0], c, h, p, w, p))
-        x = torch.einsum('nchpwq->nhwpqc', x)
-        x = x.reshape(shape=(imgs.shape[0], h * w, p**2 * c))
-        return x
-    
-    def unpatchify(self, x):
-        """
-        x: (N, L, patch_size**2 *c)
-        imgs: (N, c, H, W)
-        """
-        p = self.patch_size
-        c = self.in_chans
-        h = w = int(x.shape[1]**.5)
-        assert h * w == x.shape[1]
-        
-        x = x.reshape(shape=(x.shape[0], h, w, p, p, c))
-        x = torch.einsum('nhwpqc->nchpwq', x)
-        imgs = x.reshape(shape=(x.shape[0], c, h * p, h * p))
-        return imgs
-
     def random_masking(self, x, mask_ratio):
         """
         Perform per-sample random masking by per-sample shuffling.
@@ -142,43 +112,29 @@ class SolarMAE_Bert(pl.LightningModule):
         token_indices = token_indices.reshape(z_q.size(0), -1) # (B*H*W, ) -> (B, H*W)
         gt_indices = token_indices.clone().detach().long()
 
-        # add pos embeding
-        x = x + self.pos_embed[:, 1:, :]
-        
-        x, mask, ids_restore = self.random_masking(x, mask_ratio)
+        # random masking
 
-        # append cls token
-        cls_token = self.cls_token + self.pos_embed[:, :1, :]
-        cls_tokens = cls_token.expand(x.shape[0], -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
+        # embedding
 
-        # apply Transformer blocks
-        for blk in self.blocks:
-            x = blk(x)
-        x = self.norm(x)
+        # dropping
 
-        return x, mask, ids_restore
+        # Transformer encoder
+        pass
 
     def forward_decoder(self, x, ids_restore):
         x = self.decoder_embed(x)
-        # print(f'x shape after decoder embed: {x.shape}')
 
-        mask_tokens = self.mask_token.repeat(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
-        x_ = torch.cat([x[:, 1:, :], mask_tokens], dim=1)  # no cls token
-        x_ = torch.gather(x_, dim=1, index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[2]))  # unshuffle
-        x = torch.cat([x[:, :1, :], x_], dim=1)  # append cls token
+        # add masked tokens into the sequence
 
-        x = x + self.decoder_pos_embed
+        # undrop
 
-        for blk in self.decoder_blocks:
-            x = blk(x)
-        x = self.decoder_norm(x)
+        # Transformer decoder
 
-        x = self.decoder_pred(x)
+        # MLM to get logit of masked tokens
+        pass
 
-        x = x[:, 1:, :]
 
-        return x
+
 
     def forward(self, imgs, mask_ratio=0.):
         latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
