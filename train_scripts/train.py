@@ -116,7 +116,6 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
     parser = get_parser()
-    # parser = Trainer.add_argparse_args(parser)
 
     opt, unknown = parser.parse_known_args()
 
