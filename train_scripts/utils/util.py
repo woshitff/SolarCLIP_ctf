@@ -35,8 +35,6 @@ class TrainerSetup:
         self.trainer_config = dict()
         self.trainer_kwargs = dict()
 
-        print(f'trainer_config 1: {trainer_config}')
-
         self.init_trainer_config(trainer_config)
         self.trainer_opt = argparse.Namespace(**self.trainer_config)
         self.lightning_config.trainer = self.trainer_config
