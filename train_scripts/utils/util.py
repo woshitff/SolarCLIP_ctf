@@ -159,7 +159,7 @@ class TrainerSetup:
                 "verbose": True,
                 "save_last": False,
                 'save_top_k': -1,
-                'every_n_epochs': 500,
+                'every_n_epochs': 1,
                 'save_weights_only': True
             }
         }
