@@ -195,7 +195,7 @@ class SolarImageLogger(Callback):
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
         elif pl_module.__class__.__name__ in ["VQModel"]:
-            target_keys = ["inputs", 'recon']
+            target_keys = ["inputs", 'recon', 'latent_prequant', 'latent_quant']
         elif pl_module.__class__.__name__ in ["ClipVitDecoder", "SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
             target_keys = ['inputs', 'targets', 'targets_hat']
         elif pl_module.__class__.__name__ in ["ViTMAE"]:

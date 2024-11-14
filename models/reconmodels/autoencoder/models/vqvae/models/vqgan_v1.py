@@ -101,16 +101,16 @@ class VQModel(pl.LightningModule):
         h = self.quant_conv(h)
         quant, emb_loss, info = self.quantize(h)
         return quant, emb_loss, info
+    
+    def decode(self, quant):
+        quant = self.post_quant_conv(quant)
+        dec = self.decoder(quant)
+        return dec
 
     def encode_to_prequant(self, x):
         h = self.encoder(x)
         h = self.quant_conv(h)
         return h
-
-    def decode(self, quant):
-        quant = self.post_quant_conv(quant)
-        dec = self.decoder(quant)
-        return dec
 
     def decode_code(self, code_b):
         quant_b = self.quantize.embed_code(code_b)
@@ -237,26 +237,40 @@ class VQModel(pl.LightningModule):
     def log_images(self, batch, only_inputs=False, plot_ema=False, **kwargs):
         log = dict()
         modals = dict()
+
         x = self.get_input(batch, self.vq_modal)
         x = x.to(self.device)
         if only_inputs:
             log["inputs"] = x
             return log
-        xrec, _ = self(x)
+        
+        self.eval()
+        with torch.no_grad():
+            latent_prequant = self.encode_to_prequant(x)
+            latent_quant = self.quantize.embed_code(latent_prequant)
+            xrec = self.decode(latent_quant)
+        self.train()
+
         if x.shape[1] > 3:
             # colorize with random projection
             assert xrec.shape[1] > 3
             x = self.to_rgb(x)
-            xrec = self.to_rgb(xrec)
+            
         log["inputs"] = x
         log["recon"] = xrec
+        log["latent_prequant"] = latent_prequant
+        log["latent_quant"] = latent_quant
+
         if plot_ema:
             with self.ema_scope():
                 xrec_ema, _ = self(x)
                 if x.shape[1] > 3: xrec_ema = self.to_rgb(xrec_ema)
                 log["reconstructions_ema"] = xrec_ema
+
         modals["inputs"] = self.vq_modal
         modals["recon"] = self.vq_modal
+        modals["latent_prequant"] = self.vq_modal
+        modals["latent_quant"] = self.vq_modal
 
         return log, modals
 
