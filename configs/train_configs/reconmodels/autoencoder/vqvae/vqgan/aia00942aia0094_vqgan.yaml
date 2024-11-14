@@ -2,7 +2,7 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.autoencoder.models.vqvae.models.vqgan_v1.VQModel
+  target: models.reconmodels.autoencoder.models.vqvae.models.vqgan.VQModel
   params:
     ckpt_path: null
     vq_modal: 'aia0094_image'
