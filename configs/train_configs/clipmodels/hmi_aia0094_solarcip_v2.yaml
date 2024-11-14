@@ -13,7 +13,7 @@ model:
     base_modal_TokenizerConfig:
       target: models.reconmodels.autoencoder.models.vqvae.models.vqgan_v1.VQTokenizer
       params:
-        ckpt_path: null
+        ckpt_path: 'checkpoints/reconmodels/vqvae/vqgan/hmi_2_hmi_codebook_8192_epoch=000002.ckpt'
         vq_modal: 'hmi_image'
         embed_dim: 8
         n_embed: 8192
@@ -36,7 +36,7 @@ model:
     paired_modal_TokenizerConfig:
       target: models.reconmodels.autoencoder.models.vqvae.models.vqgan_v1.VQTokenizer
       params:
-        ckpt_path: null
+        ckpt_path: 'checkpoints/reconmodels/vqvae/vqgan/aia0094_2_aia0094_codebook_8192_epoch=000000.ckpt'
         vq_modal: 'aia0094_image'
         embed_dim: 8
         n_embed: 8192
