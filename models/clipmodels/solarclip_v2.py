@@ -1,4 +1,4 @@
-"""This is the implementation of SolarCLIP model. without any pre-training"""
+"""This is the implementation of SolarCLIP_v2, which is a modified version of SolarCLIP. using pretrained Tokenizer (VQ-GAN or VAE)"""
 from typing import Tuple, Union
 
 import torch
@@ -16,7 +16,7 @@ def disabled_train(self, mode=True):
     return self
 
 
-class SolarCLIP(pl.LightningModule):
+class SolarCLIP_v2(pl.LightningModule):
     def __init__(self,
                  ckpt_path: str=None,
                  base_modal_key: str='hmi_image',
