@@ -192,6 +192,12 @@ class VQModel(pl.LightningModule):
                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
         self.log(f"val{suffix}/aeloss", aeloss,
                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
+        
+        from metrics.reconmodels.autoencoder.vqvae.vqgan import FID
+        fid = FID(x, xrec)
+        self.log(f"val{suffix}/fid", fid,
+                   prog_bar=True, logger=True, on_step=True, on_epoch=True)
+
         if version.parse(pl.__version__) >= version.parse('1.4.0'):
             del log_dict_ae[f"val{suffix}/rec_loss"]
         self.log_dict(log_dict_ae)
