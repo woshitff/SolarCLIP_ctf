@@ -7,7 +7,7 @@ import scipy.linalg
 
 
 class FID:
-    def __init__(self,):
+    def __init__(self):
         self.transform = transforms.Compose([
         transforms.Resize(299),
         transforms.CenterCrop(299),

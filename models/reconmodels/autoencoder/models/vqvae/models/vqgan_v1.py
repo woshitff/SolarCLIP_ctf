@@ -194,7 +194,7 @@ class VQModel(pl.LightningModule):
                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
         
         from metrics.reconmodels.autoencoder.vqvae.vqgan import FID
-        fid = FID(x, xrec)
+        fid = FID()(x, xrec)
         self.log(f"val{suffix}/fid", fid,
                    prog_bar=True, logger=True, on_step=True, on_epoch=True)
 
