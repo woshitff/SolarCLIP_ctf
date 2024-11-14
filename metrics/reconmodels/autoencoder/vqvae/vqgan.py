@@ -7,7 +7,8 @@ import scipy.linalg
 
 
 class FID:
-    def __init__(self):
+    def __init__(self, device='cuda:0' if torch.cuda.is_available() else 'cpu'):
+        self.device = device
         self.transform = transforms.Compose([
         transforms.Resize(299),
         transforms.CenterCrop(299),
@@ -15,12 +16,16 @@ class FID:
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-        self.model = models.inception_v3(pretrained=True, transform_input=False)
+        self.model = models.inception_v3(pretrained=True, transform_input=False).to(device)
         self.model.eval()
 
     def get_features(self, inputs, recons):
-        inputs = self.transform(inputs)
-        recons = self.transform(recons)
+        if inputs.size(1) == 1:
+            inputs = inputs.repeat(1, 3, 1, 1)
+        if recons.size(1) == 1:
+            recons = recons.repeat(1, 3, 1, 1)
+        inputs = self.transform(inputs).to(self.device)
+        recons = self.transform(recons).to(self.device)
 
         with torch.no_grad():
             inputs_features = self.model(inputs)
