@@ -81,4 +81,4 @@ lightning:
     target: pytorch_lightning.callbacks.ModelCheckpoint
     params:
       save_last: true
-      save_every_n_epochs: 1
+      every_n_epochs: 1
