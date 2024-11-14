@@ -253,7 +253,7 @@ class VQModel(pl.LightningModule):
         self.eval()
         with torch.no_grad():
             latent_prequant = self.encode_to_prequant(x)
-            latent_quant = self.quantize.embed_code(latent_prequant)
+            latent_quant, _, _ = self.quantize(latent_prequant)
             xrec = self.decode(latent_quant)
         self.train()
 
