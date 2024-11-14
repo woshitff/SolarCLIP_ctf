@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from einops import rearrange
 
 from models.reconmodels.autoencoder.util import config_optimizers
-from models.clipmodels.modules.vit import VisionTransformer, Remove_class_token
+from models.clipmodels.modules.vit import BaseVisionTransformer, Remove_class_token
 from models.reconmodels.ldm.util import instantiate_from_config
 
 def disabled_train(self, mode=True):
@@ -75,10 +75,10 @@ class SolarCLIP_v2(pl.LightningModule):
             self.tokenizer_paired = model
 
     def instantiate_basemodal_vit(self, vit_config):
-        self.vit_base = VisionTransformer(vit_config)
+        self.vit_base = BaseVisionTransformer(vit_config)
 
     def instantiate_pairedmodal_vit(self, vit_config):
-        self.vit_paired = VisionTransformer(vit_config)
+        self.vit_paired = BaseVisionTransformer(vit_config)
 
     def encode_base(self, x):
         with torch.no_grad():

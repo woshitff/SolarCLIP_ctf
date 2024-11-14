@@ -129,11 +129,11 @@ class VisionTransformer(nn.Module):
         # x = x.permute(1, 0, 2)  # LBD -> BLD
 
         if self.transformer_token_type == 'class embedding':
-            x = self.ln_post(x[:, 0,:]) #提取token的输出，即class_embedding的输出，即可表示全局特征
+            x = self.ln_post(x[:, 0,:]) 
             # return [N, align_dim]
         elif self.transformer_token_type == 'all embedding':
             x = self.ln_post(x)
-            # return [N, L, align_dim]
+            # return [N, L+1, align_dim]
 
         if self.proj is not None:
             x = x @ self.proj   
@@ -151,6 +151,53 @@ class VisionTransformer(nn.Module):
 
         return x
  
+class BaseVisionTransformer(nn.Module):
+    def __init__(self, 
+                 width: int, layers: int, heads: int, 
+                 output_dim: int,
+                 token_type: str, norm_type: str = 'bn1d'):
+        super().__init__()
+        self.width = width
+        self.layers = layers
+        self.heads = heads
+        self.output_dim = output_dim
+        self.token_type = token_type
+        self.norm_type = norm_type
+
+        self.class_embedding = nn.Parameter(torch.zeros(width))
+        self.positional_embedding = nn.Parameter(torch.zeros((1, width)))
+        self.ln_pre = patch_norm(width, norm_type)
+
+        self.transformer = Transformer(width, layers, heads)
+
+        self.ln_post = patch_norm(width, norm_type)
+        self.proj = nn.Parameter(torch.zeros(width, output_dim))
+
+    def forward(self, x: torch.Tensor):
+        """
+        x: [N, L, C]
+        output: [N, L+1, output_dim] if token_type == 'all embedding' else [N, output_dim]
+        """
+
+        x = torch.cat([self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device), x], dim=1)  # shape = [*, grid ** 2 + 1, width]
+        x = x + self.positional_embedding.to(x.dtype)
+
+        x = self.ln_pre(x)
+        x = self.transformer(x)
+
+        if self.token_type == 'class embedding':
+            x = self.ln_post(x[:, 0,:]) 
+            # return [N, align_dim]
+        elif self.token_type == 'all embedding':
+            x = self.ln_post(x)
+            # return [N, L+1, align_dim]
+
+        if self.proj is not None:
+            x = x @ self.proj   
+
+        return x
+
+
 class Remove_class_token(nn.Module):
     def __init__(self):
         super().__init__()
