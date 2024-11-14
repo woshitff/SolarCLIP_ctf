@@ -71,7 +71,14 @@ data:
         time_step: 115200
 
 lightning:
+
   trainer:
     accelerator: "gpu"
     devices: 4
     max_epochs: 1000
+
+  modelcheckpoint:
+    target: pytorch_lightning.callbacks.ModelCheckpoint
+    params:
+      save_last: true
+      save_every_n_epochs: 1

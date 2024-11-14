@@ -199,7 +199,7 @@ if __name__ == "__main__":
         print(f'before trainer init {trainer_config}')
         trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
 
-        # Step 4: 运行训练
+        #### run training
         try:
             trainer.fit(model=model, datamodule=data)
         except Exception as e:
