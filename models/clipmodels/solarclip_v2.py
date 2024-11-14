@@ -37,9 +37,7 @@ class SolarCLIP_v2(pl.LightningModule):
         self.inner_loss_rate = inner_loss_rate
 
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-        print(f'logit scale {self.logit_scale}')
         self.instantiate_basemodal_tokenizer(base_modal_TokenizerConfig)
-        print(1)
         self.instantiate_pairedmodal_tokenizer(paired_modal_TokenizerConfig)
         self.instantiate_basemodal_vit(base_modal_VitConfig)
         self.instantiate_pairedmodal_vit(paired_modal_VitConfig)
@@ -67,7 +65,7 @@ class SolarCLIP_v2(pl.LightningModule):
     def instantiate_pairedmodal_tokenizer(self, paired_modal_config):
         model = instantiate_from_config(paired_modal_config)
         print(f"Paired model {model.__class__.__name__} loaded")
-        if model.__class__.__name__ == 'ViTMAE' or model.__class__.__name__ == 'VQModel':
+        if model.__class__.__name__ == 'ViTMAE' or model.__class__.__name__ == 'VQTokenizer':
             self.paired_model = model.eval()
             self.paired_model.train = disabled_train
             for param in self.paired_model.parameters():
@@ -87,17 +85,24 @@ class SolarCLIP_v2(pl.LightningModule):
     def encode_base(self, x):
         with torch.no_grad():
             x = self.tokenizer_base(x)
+            # print(f'base input token shape {x.shape}')
             if len(x.shape) == 4:
                 x = rearrange(x, 'b c h w -> b (h w) c')
+        # print(f'before vit base shape {x.shape}')
         x = self.vit_base(x)
+        # print(f'after vit base shape {x.shape}')
         return x
 
     def encode_paired(self, x):
+        print(f'paired origin input {x.shape}')
         with torch.no_grad():
             x = self.tokenizer_paired(x)
+            print(f'paired input token shape {x.shape}')
             if len(x.shape) == 4:
                 x = rearrange(x, 'b c h w -> b (h w) c')
+        print(f'before vit paired shape {x.shape}')
         x = self.vit_paired(x)
+        print(f'after vit paired shape {x.shape}')
         return x
 
     def get_input(self, batch, k):
@@ -114,8 +119,10 @@ class SolarCLIP_v2(pl.LightningModule):
     
     def forward(self, x_base, x_paired, token_weight_base=None, token_weight_paired=None):
         base_features = self.encode_base(x_base)   #shape = [batch_size, length,embed_dim]
+        print(f'base feature {base_features.shape}')
+
         paired_features = self.encode_paired(x_paired)
-        
+        print(f'paired feature {paired_features.shape}')
         # normalized features
         base_features = base_features / (base_features.norm(dim=-1, keepdim=True)+1e-32)
         paired_features = paired_features / (paired_features.norm(dim=-1, keepdim=True)+1e-32)
