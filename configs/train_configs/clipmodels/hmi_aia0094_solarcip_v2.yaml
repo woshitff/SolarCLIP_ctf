@@ -11,8 +11,51 @@ model:
     inner_loss_rate: 0.0
 
     base_modal_TokenizerConfig:
+    model:
+      target: models.reconmodels.autoencoder.models.vqvae.models.vqgan_v1.VQTokenizer
+      params:
+        ckpt_path: null
+        vq_modal: 'hmi_image'
+        embed_dim: 8
+        n_embed: 8192
+
+        ddconfig:
+          double_z: false
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 32
+          ch_mult: [1,2,4,4]  
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+
+        lossconfig:
+          target: nn.Identity
 
     paired_modal_TokenizerConfig:
+      target: models.reconmodels.autoencoder.models.vqvae.models.vqgan_v1.VQTokenizer
+      params:
+        ckpt_path: null
+        vq_modal: 'hmi_image'
+        embed_dim: 8
+        n_embed: 8192
+
+        ddconfig:
+          double_z: false
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 32
+          ch_mult: [1,2,4,4]  
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+
+        lossconfig:
+          target: nn.Identity
 
     base_modal_VitConfig:
       target: models.clipmodels.modules.vit.BaseVisionTransformer
@@ -35,17 +78,6 @@ model:
         output_dim: 512
         token_type: 'all embedding'
         norm_type: 'bn1d'
-
-    lossconfig:
-      target: models.reconmodels.autoencoder.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
-      params:
-        disc_conditional: false
-        disc_in_channels: 1
-        disc_start: 250001
-        disc_weight: 0.75
-        disc_num_layers: 2
-        codebook_weight: 1.0
-        n_classes: 8192
 
 
 data:
@@ -84,6 +116,7 @@ data:
           - 5346720
           - 7452000
         time_step: 115200
+
 
 lightning:
 

@@ -289,22 +289,20 @@ class VQModel(pl.LightningModule):
         return x
     
 
-class VQModelInterface(VQModel):
+class VQTokenizer(VQModel):
     def __init__(self, embed_dim, *args, **kwargs):
         super().__init__(embed_dim=embed_dim, *args, **kwargs)
         self.embed_dim = embed_dim
 
+    @torch.no_grad()
     def encode(self, x):
         h = self.encoder(x)
         h = self.quant_conv(h)
-        return h
+        quant, _, _ = self.quantize(h)
+        return quant
 
-    def decode(self, h, force_not_quantize=False):
-        # also go through quantization layer
-        if not force_not_quantize:
-            quant, emb_loss, info = self.quantize(h)
-        else:
-            quant = h
+    @torch.no_grad()
+    def decode(self, quant):
         quant = self.post_quant_conv(quant)
         dec = self.decoder(quant)
         return dec
