@@ -196,7 +196,7 @@ class BaseVisionTransformer(nn.Module):
             x = self.ln_post(x)
             # return [N, L+1, align_dim]
 
-        if self.proj is not None:
+        if self.proj_out is not None:
             x = x @ self.proj_out   
 
         return x

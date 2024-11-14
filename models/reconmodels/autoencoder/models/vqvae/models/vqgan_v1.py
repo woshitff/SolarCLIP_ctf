@@ -294,14 +294,14 @@ class VQTokenizer(VQModel):
         super().__init__(embed_dim=embed_dim, *args, **kwargs)
         self.embed_dim = embed_dim
 
-    @torch.no_grad()
+    # @torch.no_grad()
     def encode(self, x):
         h = self.encoder(x)
         h = self.quant_conv(h)
         quant, _, _ = self.quantize(h)
         return quant
 
-    @torch.no_grad()
+    # @torch.no_grad()
     def decode(self, quant):
         quant = self.post_quant_conv(quant)
         dec = self.decoder(quant)

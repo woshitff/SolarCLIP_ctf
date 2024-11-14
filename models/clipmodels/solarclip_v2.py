@@ -37,7 +37,9 @@ class SolarCLIP_v2(pl.LightningModule):
         self.inner_loss_rate = inner_loss_rate
 
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
+        print(f'logit scale {self.logit_scale}')
         self.instantiate_basemodal_tokenizer(base_modal_TokenizerConfig)
+        print(1)
         self.instantiate_pairedmodal_tokenizer(paired_modal_TokenizerConfig)
         self.instantiate_basemodal_vit(base_modal_VitConfig)
         self.instantiate_pairedmodal_vit(paired_modal_VitConfig)
@@ -51,7 +53,7 @@ class SolarCLIP_v2(pl.LightningModule):
         self.load_state_dict(checkpoint, strict=False)
 
     def instantiate_basemodal_tokenizer(self, base_modal_config):
-        if self.base_model_key == 'hmi_image':
+        if self.base_modal_key == 'hmi_image':
             model = instantiate_from_config(base_modal_config)
             print(f"Base model {model.__class__.__name__} loaded")
             self.base_model = model.eval()
@@ -60,7 +62,7 @@ class SolarCLIP_v2(pl.LightningModule):
                 param.requires_grad = False
             self.tokenizer_base = self.base_model.encode
         else:
-            raise NotImplementedError(f"Base model key {self.base_model_key} not supported, please choose base_model_key in ['hmi_image']")
+            raise NotImplementedError(f"Base model key {self.base_modal_key} not supported, please choose base_modal_key in ['hmi_image']")
         
     def instantiate_pairedmodal_tokenizer(self, paired_modal_config):
         model = instantiate_from_config(paired_modal_config)
