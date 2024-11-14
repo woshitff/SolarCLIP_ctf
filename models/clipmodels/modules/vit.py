@@ -153,10 +153,12 @@ class VisionTransformer(nn.Module):
  
 class BaseVisionTransformer(nn.Module):
     def __init__(self, 
+                 input_dim: int,
                  width: int, layers: int, heads: int, 
                  output_dim: int,
                  token_type: str, norm_type: str = 'bn1d'):
         super().__init__()
+        self.input_dim = input_dim
         self.width = width
         self.layers = layers
         self.heads = heads
@@ -164,6 +166,7 @@ class BaseVisionTransformer(nn.Module):
         self.token_type = token_type
         self.norm_type = norm_type
 
+        self.proj_in = nn.Parameter(torch.zeros(input_dim, width))
         self.class_embedding = nn.Parameter(torch.zeros(width))
         self.positional_embedding = nn.Parameter(torch.zeros((1, width)))
         self.ln_pre = patch_norm(width, norm_type)
@@ -171,14 +174,15 @@ class BaseVisionTransformer(nn.Module):
         self.transformer = Transformer(width, layers, heads)
 
         self.ln_post = patch_norm(width, norm_type)
-        self.proj = nn.Parameter(torch.zeros(width, output_dim))
+        self.proj_out = nn.Parameter(torch.zeros(width, output_dim))
 
     def forward(self, x: torch.Tensor):
         """
         x: [N, L, C]
         output: [N, L+1, output_dim] if token_type == 'all embedding' else [N, output_dim]
         """
-
+        x = x @ self.proj_in
+        
         x = torch.cat([self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device), x], dim=1)  # shape = [*, grid ** 2 + 1, width]
         x = x + self.positional_embedding.to(x.dtype)
 
@@ -193,7 +197,7 @@ class BaseVisionTransformer(nn.Module):
             # return [N, L+1, align_dim]
 
         if self.proj is not None:
-            x = x @ self.proj   
+            x = x @ self.proj_out   
 
         return x
 

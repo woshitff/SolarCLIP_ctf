@@ -25,7 +25,7 @@ class SolarCLIP_v2(pl.LightningModule):
                  base_modal_VitConfig: dict=None,
                  paired_modal_key: str='aia0094_image',
                  paired_modal_TokenizerConfig: dict=None,
-                 paired_modal_VitVonfig: dict=None,
+                 paired_modal_VitConfig: dict=None,
                  token_type: str='all embedding',
                  inner_loss_rate: float=0.0,
                          ):
@@ -40,7 +40,7 @@ class SolarCLIP_v2(pl.LightningModule):
         self.instantiate_basemodal_tokenizer(base_modal_TokenizerConfig)
         self.instantiate_pairedmodal_tokenizer(paired_modal_TokenizerConfig)
         self.instantiate_basemodal_vit(base_modal_VitConfig)
-        self.instantiate_pairedmodal_vit(paired_modal_VitVonfig)
+        self.instantiate_pairedmodal_vit(paired_modal_VitConfig)
 
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path)
@@ -75,10 +75,12 @@ class SolarCLIP_v2(pl.LightningModule):
             self.tokenizer_paired = model
 
     def instantiate_basemodal_vit(self, vit_config):
-        self.vit_base = BaseVisionTransformer(vit_config)
+        self.vit_base = instantiate_from_config(vit_config)
+        print(f"Base Vit {self.vit_base.__class__.__name__} loaded")
 
     def instantiate_pairedmodal_vit(self, vit_config):
-        self.vit_paired = BaseVisionTransformer(vit_config)
+        self.vit_paired = instantiate_from_config(vit_config)
+        print(f"Paired Vit {self.vit_paired.__class__.__name__} loaded")
 
     def encode_base(self, x):
         with torch.no_grad():
