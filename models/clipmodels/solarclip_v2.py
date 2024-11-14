@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pytorch_lightning as pl
+from einops import rearrange
 
 from models.reconmodels.autoencoder.util import config_optimizers
 from models.clipmodels.modules.vit import VisionTransformer, Remove_class_token
@@ -34,8 +35,8 @@ class SolarCLIP_v2(pl.LightningModule):
         self.inner_loss_rate = inner_loss_rate
 
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-        self.instantiate_basemodal_encode(base_modal_config)
-        self.instantiate_pairedmodal_encode(paired_modal_config)
+        self.instantiate_basemodal_tokenizer(base_modal_config)
+        self.instantiate_pairedmodal_tokenizer(paired_modal_config)
 
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path)
@@ -45,7 +46,7 @@ class SolarCLIP_v2(pl.LightningModule):
         checkpoint = torch.load(ckpt_path)
         self.load_state_dict(checkpoint, strict=False)
 
-    def instantiate_basemodal_encode(self, base_modal_config):
+    def instantiate_basemodal_tokenizer(self, base_modal_config):
         if self.base_model_key == 'hmi_image':
             model = instantiate_from_config(base_modal_config)
             print(f"Base model {model.__class__.__name__} loaded")
@@ -53,11 +54,11 @@ class SolarCLIP_v2(pl.LightningModule):
             self.base_model.train = disabled_train
             for param in self.base_model.parameters():
                 param.requires_grad = False
-            self.encode_base = self.base_model.encode
+            self.tokenizer_base = self.base_model.encode
         else:
             raise NotImplementedError(f"Base model key {self.base_model_key} not supported, please choose base_model_key in ['hmi_image']")
         
-    def instantiate_pairedmodal_encode(self, paired_modal_config):
+    def instantiate_pairedmodal_tokenizer(self, paired_modal_config):
         model = instantiate_from_config(paired_modal_config)
         print(f"Paired model {model.__class__.__name__} loaded")
         if model.__class__.__name__ == 'ViTMAE' or model.__class__.__name__ == 'VQModel':
@@ -65,9 +66,25 @@ class SolarCLIP_v2(pl.LightningModule):
             self.paired_model.train = disabled_train
             for param in self.paired_model.parameters():
                 param.requires_grad = False
-            self.encode_paired = self.paired_model.encode
+            self.tokenizer_paired = self.paired_model.encode
         else:
-            self.encode_paired = model
+            self.tokenizer_paired = model
+
+    def encode_base(self, x):
+        with torch.no_grad():
+            x = self.tokenizer_base(x)
+            if len(x.shape) == 4:
+                x = rearrange(x, 'b c h w -> b (h w) c')
+        x = self.vit_base(x)
+        return x
+
+    def encode_paired(self, x):
+        with torch.no_grad():
+            x = self.tokenizer_paired(x)
+            if len(x.shape) == 4:
+                x = rearrange(x, 'b c h w -> b (h w) c')
+        x = self.vit_paired(x)
+        return x
 
     def get_input(self, batch, k):
         if k == 'hmi_image':
