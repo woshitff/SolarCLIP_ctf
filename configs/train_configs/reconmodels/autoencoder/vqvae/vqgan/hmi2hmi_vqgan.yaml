@@ -6,12 +6,12 @@ model:
   params:
     ckpt_path: null
     vq_modal: 'hmi_image'
-    embed_dim: 8
-    n_embed: 8192
+    embed_dim: 16
+    n_embed: 16384
 
     ddconfig:
       double_z: false
-      z_channels: 8
+      z_channels: 16
       resolution: 1024
       in_channels: 1
       out_ch: 1
@@ -30,7 +30,7 @@ model:
         disc_weight: 0.75
         disc_num_layers: 2
         codebook_weight: 1.0
-        n_classes: 8192
+        n_classes: 16384
 
 
 data:
