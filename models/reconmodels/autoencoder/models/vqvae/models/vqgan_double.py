@@ -13,8 +13,15 @@ from models.reconmodels.autoencoder.models.vae.CNN_VAE_v2 import Encoder, Decode
 from models.reconmodels.ldm.modules.ema import LitEma
 
 
-class VQModel(pl.LightningModule):
+def disabled_train(self, mode=True):
+    """Overwrite model.train with this function to make sure train/eval mode
+    does not change anymore."""
+    return self
+
+
+class VQVAE2Model(pl.LightningModule):
     def __init__(self,
+                 first_vq_model_config,
                  ddconfig,
                  lossconfig,
                  n_embed,
@@ -36,6 +43,8 @@ class VQModel(pl.LightningModule):
         self.embed_dim = embed_dim
         self.n_embed = n_embed
         self.vq_modal = vq_modal
+
+        self.instantiate_first_vqmodel(first_vq_model_config)
         self.encoder = Encoder(**ddconfig)
         self.decoder = Decoder(**ddconfig)
         self.loss = instantiate_from_config(lossconfig)
@@ -44,6 +53,15 @@ class VQModel(pl.LightningModule):
                                         sane_index_shape=sane_index_shape)
         self.quant_conv = torch.nn.Conv2d(ddconfig["z_channels"], embed_dim, 1)
         self.post_quant_conv = torch.nn.Conv2d(embed_dim, ddconfig["z_channels"], 1)
+        self.mlp =   torch.nn.Sequential(
+            torch.nn.Linear(embed_dim, 4*embed_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(4*embed_dim, 4*embed_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(4*embed_dim, self.n_embed),
+            torch.nn.Softmax(dim=-1),
+        )
+
         if colorize_nlabels is not None:
             assert type(colorize_nlabels)==int
             self.register_buffer("colorize", torch.randn(3, colorize_nlabels, 1, 1))
@@ -96,6 +114,27 @@ class VQModel(pl.LightningModule):
         if self.use_ema:
             self.model_ema(self)
 
+    def instantiate_first_vqmodel(self, first_vq_model_config):
+        model = instantiate_from_config(first_vq_model_config)
+        self.first_vq_model = model.eval()
+        self.first_vq_model.train = disabled_train
+        for param in self.first_vq_model.parameters():
+            param.requires_grad = False
+
+    def encode_first_vqmodel(self, x):
+        with torch.no_grad():
+            if self.first_vq_model.hparams.get("return_indices", True):
+                quant_first, ind_first = self.first_vq_model.encode(x)
+                return quant_first, ind_first
+            else:
+                quant_first = self.first_vq_model.encode(x)
+                return quant_first
+
+    def decode_first_vqmodel(self, h):
+        with torch.no_grad():
+            xrec = self.first_vq_model.decode(h)
+        return xrec
+
     def encode(self, x):
         h = self.encoder(x)
         h = self.quant_conv(h)
@@ -112,53 +151,54 @@ class VQModel(pl.LightningModule):
         h = self.quant_conv(h)
         return h
 
-    def decode_code(self, code_b):
-        quant_b = self.quantize.embed_code(code_b)
-        dec = self.decode(quant_b)
-        return dec
-
     def forward(self, input, return_pred_indices=False):
-        quant, diff, (_,_,ind) = self.encode(input)
-        dec = self.decode(quant)
+        quant_second, diff, (_,_,ind) = self.encode(input)
+        dec = self.decode(quant_second)
         if return_pred_indices:
-            return dec, diff, ind
+            logits = self.mlp(dec)
+            return dec, diff, ind, logits
         return dec, diff
 
     def get_input(self, batch, k):
         if k == 'hmi_image':
-            x = batch[:, 0, :, :, :]
+            origin_inputs = batch[:, 0, :, :, :]
         elif k == 'aia0094_image':
-            x = batch[:, 1, :, :, :]
+            origin_inputs = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
-        if len(x.shape) == 3:
-            x = x[..., None]
-        x = x.to(memory_format=torch.contiguous_format).float()
-        return x
+        if len(origin_inputs.shape) == 3:
+            origin_inputs = origin_inputs[..., None]
+        origin_inputs = origin_inputs.to(memory_format=torch.contiguous_format).float()
+        
+        if self.first_vq_model is not None:
+            print(f"Using first VQ model to encode {k}.")
+            quant_first, ind_first = self.encode_first_vqmodel(origin_inputs)
+
+        return origin_inputs, quant_first, ind_first
 
     def training_step(self, batch, batch_idx):
         # https://github.com/pytorch/pytorch/issues/37142
         # try not to fool the heuristics
-        x = self.get_input(batch, self.vq_modal)
-        xrec, qloss, ind = self(x, return_pred_indices=True)
+        _, quant_first, ind_first = self.get_input(batch, self.vq_modal)
+        xrec, qloss, ind_second, logits = self(quant_first, return_pred_indices=True)
 
-        unique_indices, _ = torch.unique(ind, return_counts=True)
+        unique_indices, _ = torch.unique(ind_second, return_counts=True)
         codebook_usage = 100 * unique_indices.numel()/(batch.size(0)*self.n_embed)
         self.log("train/codebook_usage", codebook_usage, prog_bar=True, logger=True, on_step=True, on_epoch=True)
         
         opt_g, opt_d = self.optimizers()
 
         # autoencode
-        aeloss, log_dict_ae = self.loss(qloss, x, xrec, 0, self.global_step,
+        aeloss, log_dict_ae = self.loss(qloss, quant_first, xrec, 0, self.global_step,
                                         last_layer=self.get_last_layer(), split="train",
-                                        predicted_indices=ind)
+                                        predicted_indices=ind_second)
         opt_g.zero_grad()
         self.manual_backward(aeloss)
         opt_g.step()
         self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True)
 
         # discriminator
-        discloss, log_dict_disc = self.loss(qloss, x, xrec, 1, self.global_step,
+        discloss, log_dict_disc = self.loss(qloss, quant_first, xrec, 1, self.global_step,
                                         last_layer=self.get_last_layer(), split="train")
         opt_d.zero_grad()
         self.manual_backward(discloss)
@@ -289,19 +329,16 @@ class VQModel(pl.LightningModule):
         return x
     
 
-class VQTokenizer(VQModel):
-    def __init__(self, return_indices=True, *args, **kwargs):
-        super().__init__(return_indices=return_indices, *args, **kwargs)
-        self.return_indices=return_indices
+class VQTokenizer(VQVAE2Model):
+    def __init__(self, embed_dim, *args, **kwargs):
+        super().__init__(embed_dim=embed_dim, *args, **kwargs)
+        self.embed_dim = embed_dim
 
     # @torch.no_grad()
     def encode(self, x):
         h = self.encoder(x)
         h = self.quant_conv(h)
-        quant, _, info = self.quantize(h)
-        if self.return_indices:
-            _, _, ind = info
-            return quant, ind
+        quant, _, _ = self.quantize(h)
         return quant
 
     # @torch.no_grad()
