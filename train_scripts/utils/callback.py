@@ -196,6 +196,10 @@ class SolarImageLogger(Callback):
             target_keys = ['inputs', 'recon', 'mu', 'samples']
         elif pl_module.__class__.__name__ in ["VQModel"]:
             target_keys = ["inputs", 'recon', 'latent_prequant', 'latent_quant']
+        elif pl_module.__class__.__name__ in ["VQVAE2Model"]:
+            target_keys = ["original_inputs", "quantized_first_vq", 
+                           'prequant_second_vq', "quantized_second_vq", "reconstructed_second_vq", 
+                           "reconstructed_to_first_vq", "reconstructed_to_original"]
         elif pl_module.__class__.__name__ in ["ClipVitDecoder", "SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
             target_keys = ['inputs', 'targets', 'targets_hat']
         elif pl_module.__class__.__name__ in ["ViTMAE"]:
