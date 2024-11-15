@@ -39,6 +39,9 @@ class VQVAE2Model(pl.LightningModule):
                  ):
         super().__init__()
         # self.automatic_optimization = False
+        self.first_vq_model_config = first_vq_model_config
+        self.ddconfig = ddconfig
+        self.lossconfig = lossconfig
         self.embed_dim = embed_dim
         self.n_embed = n_embed
         self.vq_modal = vq_modal
@@ -131,6 +134,24 @@ class VQVAE2Model(pl.LightningModule):
         with torch.no_grad():
             xrec = self.first_vq_model.decode(h)
         return xrec
+
+    def convert_logits_to_features(self, logits):
+        """
+        将 logits 转换为特征向量，首先从 logits 中获取类别索引，然后
+        查询 codebook 中的特征向量，并调整为指定的形状 (b, c, h, w)。
+        
+        Args:
+            logits (Tensor): 形状为 (b, d)，表示类别预测的 logits。
+        
+        Returns:
+            Tensor: 重构后的特征向量，形状为 (b, c, h, w)。
+        """
+        to_first_vq_indices = logits.argmax(dim=-1) 
+        first_vqcodebook_features = self.first_vq_model(to_first_vq_indices)  
+        h = self.first_vq_model.ddconfig["resolution"] // len(self.first_vq_model.ddconfig["ch_mult"] - 1)
+        reconstructed_to_first_vq = rearrange(first_vqcodebook_features, "(b h w) c -> b c h w", h=h, w=h)
+
+        return reconstructed_to_first_vq
 
     def encode(self, x):
         h = self.encoder(x)
@@ -240,7 +261,7 @@ class VQVAE2Model(pl.LightningModule):
 
             # Perform reconstruction
             reconstructed_second_vq, _, _, logits = self(quantized_first_vq)
-            reconstructed_to_first_vq = logits.argmax(dim=-1)
+            reconstructed_to_first_vq = self.convert_logits_to_features(logits)
             reconstructed_to_original = self.decode_first_vqmodel(reconstructed_to_first_vq)
 
 

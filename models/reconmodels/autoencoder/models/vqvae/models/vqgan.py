@@ -36,6 +36,8 @@ class VQModel(pl.LightningModule):
         self.embed_dim = embed_dim
         self.n_embed = n_embed
         self.vq_modal = vq_modal
+        self.ddconfig = ddconfig
+
         self.encoder = Encoder(**ddconfig)
         self.decoder = Decoder(**ddconfig)
         self.loss = instantiate_from_config(lossconfig)
