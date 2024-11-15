@@ -33,8 +33,6 @@ class VQVAE2Model(pl.LightningModule):
                  colorize_nlabels=None,
                  monitor=None,
                  batch_resize_range=None,
-                 scheduler_config=None,
-                 lr_g_factor=1.0,
                  remap=None,
                  sane_index_shape=False, # tell vector quantizer to return indices as bhw
                  use_ema=False
@@ -79,9 +77,7 @@ class VQVAE2Model(pl.LightningModule):
 
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path, ignore_keys=ignore_keys)
-        self.scheduler_config = scheduler_config
-        self.lr_g_factor = lr_g_factor
-
+        
     @contextmanager
     def ema_scope(self, context=None):
         if self.use_ema:
@@ -225,49 +221,54 @@ class VQVAE2Model(pl.LightningModule):
         log = dict()
         modals = dict()
 
-        x = self.get_input(batch, self.vq_modal)
-        x = x.to(self.device)
+        original_inputs, quantized_first_vq, quantization_indices_first = self.get_input(batch, self.vq_modal)
+        original_inputs = original_inputs.to(self.device)
+        quantized_first_vq = quantized_first_vq.to(self.device)
+
         if only_inputs:
-            log["inputs"] = x
-            return log
+            log["original_inputs"] = original_inputs
+            log["quantized_first_vq"] = quantized_first_vq
+            modals['origin_inputs'] = self.vq_modal
+            modals['quantized_first_vq'] = self.vq_modal
+            return log, modals
         
         self.eval()
         with torch.no_grad():
-            latent_prequant = self.encode_to_prequant(x)
-            latent_quant, _, _ = self.quantize(latent_prequant)
-            xrec = self.decode(latent_quant)
+            # Perform the encoding and quantization steps
+            prequant_second_vq = self.encode_to_prequant(quantized_first_vq)
+            quantized_second_vq, _, _ = self.quantize(prequant_second_vq)
+
+            # Perform reconstruction
+            reconstructed_second_vq, _, _, logits = self(quantized_first_vq)
+            reconstructed_to_first_vq = logits.argmax(dim=-1)
+            reconstructed_to_original = self.decode_first_vqmodel(reconstructed_to_first_vq)
+
+
         self.train()
 
-        if x.shape[1] > 3:
-            # colorize with random projection
-            assert xrec.shape[1] > 3
-            x = self.to_rgb(x)
-            
-        log["inputs"] = x
-        log["recon"] = xrec
-        log["latent_prequant"] = latent_prequant
-        log["latent_quant"] = latent_quant
+        log["original_inputs"] = original_inputs
+        log["quantized_first_vq"] = quantized_first_vq
+        log['prequant_second_vq'] = prequant_second_vq
+        log["quantized_second_vq"] = quantized_second_vq
+        log["reconstructed_second_vq"] = reconstructed_second_vq
+        log["reconstructed_to_first_vq"] = reconstructed_to_first_vq
+        log["reconstructed_to_original"] = reconstructed_to_original
 
-        if plot_ema:
-            with self.ema_scope():
-                xrec_ema, _ = self(x)
-                if x.shape[1] > 3: xrec_ema = self.to_rgb(xrec_ema)
-                log["reconstructions_ema"] = xrec_ema
+        # if plot_ema:
+        #     with self.ema_scope():
+        #         xrec_ema, _ = self(x)
+        #         if x.shape[1] > 3: xrec_ema = self.to_rgb(xrec_ema)
+        #         log["reconstructions_ema"] = xrec_ema
 
-        modals["inputs"] = self.vq_modal
-        modals["recon"] = self.vq_modal
-        modals["latent_prequant"] = self.vq_modal
-        modals["latent_quant"] = self.vq_modal
-
+        modals['origin_inputs'] = self.vq_modal
+        modals['quantized_first_vq'] = self.vq_modal
+        modals['prequant_second_vq'] = self.vq_modal
+        modals['quantized_second_vq'] = self.vq_modal
+        modals['reconstructed_second_vq'] = self.vq_modal
+        modals['reconstructed_to_first_vq'] = self.vq_modal
+        modals['reconstructed_to_original'] = self.vq_modal
+        
         return log, modals
-
-    def to_rgb(self, x):
-        assert self.vq_modal == "segmentation"
-        if not hasattr(self, "colorize"):
-            self.register_buffer("colorize", torch.randn(3, x.shape[1], 1, 1).to(x))
-        x = F.conv2d(x, weight=self.colorize)
-        x = 2.*(x-x.min())/(x.max()-x.min()) - 1.
-        return x
     
 
 class VQTokenizer(VQVAE2Model):
