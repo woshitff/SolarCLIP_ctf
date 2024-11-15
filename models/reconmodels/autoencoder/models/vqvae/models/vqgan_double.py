@@ -288,7 +288,7 @@ class VQVAE2Model(pl.LightningModule):
         #         if x.shape[1] > 3: xrec_ema = self.to_rgb(xrec_ema)
         #         log["reconstructions_ema"] = xrec_ema
 
-        modals['origin_inputs'] = self.vq_modal
+        modals['original_inputs'] = self.vq_modal
         modals['quantized_first_vq'] = self.vq_modal
         modals['prequant_second_vq'] = self.vq_modal
         modals['quantized_second_vq'] = self.vq_modal
