@@ -150,9 +150,11 @@ class VQVAE2Model(pl.LightningModule):
         Returns:
             Tensor: 重构后的特征向量，形状为 (b, c, h, w)。
         """
-        to_first_vq_indices = logits.argmax(dim=-1) 
-        first_vqcodebook_features = self.first_vq_model(to_first_vq_indices)  
-        h = self.first_vq_model.ddconfig["resolution"] // len(self.first_vq_model.ddconfig["ch_mult"] - 1)
+        to_first_vq_indices = logits.argmax(dim=-1)
+        # to_first_vq_indices = rearrange(to_first_vq_indices, "(b h w) c -> b c h w")
+        
+        first_vqcodebook_features = self.first_vq_model.quantize.embedding(to_first_vq_indices)  
+        h = self.first_vq_model.ddconfig["resolution"] // 2**(len(self.first_vq_model.ddconfig["ch_mult"]) - 1)
         reconstructed_to_first_vq = rearrange(first_vqcodebook_features, "(b h w) c -> b c h w", h=h, w=h)
 
         return reconstructed_to_first_vq
@@ -294,6 +296,7 @@ class VQVAE2Model(pl.LightningModule):
         modals['reconstructed_to_first_vq'] = self.vq_modal
         modals['reconstructed_to_original'] = self.vq_modal
         
+        print('Load image down')
         return log, modals
     
 
