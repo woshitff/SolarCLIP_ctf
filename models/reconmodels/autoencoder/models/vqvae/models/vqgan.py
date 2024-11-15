@@ -292,16 +292,16 @@ class VQModel(pl.LightningModule):
     
 
 class VQTokenizer(VQModel):
-    def __init__(self, return_indices=True, *args, **kwargs):
-        super().__init__(return_indices=return_indices, *args, **kwargs)
-        self.return_indices=return_indices
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # self.return_indices=return_indices
 
     # @torch.no_grad()
-    def encode(self, x):
+    def encode(self, x, return_indices=True):
         h = self.encoder(x)
         h = self.quant_conv(h)
         quant, _, info = self.quantize(h)
-        if self.return_indices:
+        if return_indices:
             _, _, ind = info
             return quant, ind
         return quant

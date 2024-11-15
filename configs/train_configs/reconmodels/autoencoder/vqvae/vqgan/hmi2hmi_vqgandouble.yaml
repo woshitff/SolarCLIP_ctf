@@ -31,7 +31,7 @@ model:
         pixel_loss: 'l1'
 
     first_vq_model_config:
-      target: models.reconmodels.autoencoder.models.vqvae.models.vqgan.VQModel
+      target: models.reconmodels.autoencoder.models.vqvae.models.vqgan.VQTokenizer
       params:
         ckpt_path: 'checkpoints/reconmodels/vqvae/vqgan/hmi_2_hmi_codebook_8192_epoch=000002.ckpt'
         vq_modal: 'hmi_image'

@@ -84,6 +84,7 @@ class VQVAE2Model(pl.LightningModule):
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path, ignore_keys=ignore_keys)
         
+        print('model init down')
     @contextmanager
     def ema_scope(self, context=None):
         if self.use_ema:
@@ -201,15 +202,17 @@ class VQVAE2Model(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # https://github.com/pytorch/pytorch/issues/37142
         # try not to fool the heuristics
+        print(0)
         _, quant_first, ind_first = self.get_input(batch, self.vq_modal) # ind_first shape (b*h*w,)
+        print(1)
         xrec, qloss, ind_second, logits = self(quant_first, return_pred_indices=True)
-        
+        print(2)
         loss, log_dict = self.loss(qloss, quant_first, xrec, 
                                 ind_first, logits,
                                 split="train",predicted_indices=ind_second)
-        
+        print(3)
         self.log_dict(log_dict, prog_bar=False, logger=True, on_step=True, on_epoch=True)
-
+        print(4)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -271,7 +274,6 @@ class VQVAE2Model(pl.LightningModule):
             reconstructed_second_vq, _, _, logits = self(quantized_first_vq)
             reconstructed_to_first_vq = self.convert_logits_to_features(logits)
             reconstructed_to_original = self.decode_first_vqmodel(reconstructed_to_first_vq)
-
 
         self.train()
 
