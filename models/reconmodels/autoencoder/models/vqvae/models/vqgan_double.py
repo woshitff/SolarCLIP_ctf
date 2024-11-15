@@ -199,73 +199,27 @@ class VQVAE2Model(pl.LightningModule):
         return log_dict
 
     def _validation_step(self, batch, batch_idx, suffix=""):
-        x = self.get_input(batch, self.vq_modal)
-        xrec, qloss, ind = self(x, return_pred_indices=True)
-        aeloss, log_dict_ae = self.loss(qloss, x, xrec, 0,
-                                        self.global_step,
-                                        last_layer=self.get_last_layer(),
-                                        split="val"+suffix,
-                                        predicted_indices=ind
-                                        )
+        _, quant_first, ind_first = self.get_input(batch, self.vq_modal)
+        xrec, qloss, ind_second, logits = self(quant_first, return_pred_indices=True)
+        loss, log_dict = self.loss(qloss, quant_first, xrec, 
+                                ind_first, logits,
+                                split="train"+suffix,predicted_indices=ind_second)
 
-        discloss, log_dict_disc = self.loss(qloss, x, xrec, 1,
-                                            self.global_step,
-                                            last_layer=self.get_last_layer(),
-                                            split="val"+suffix,
-                                            predicted_indices=ind
-                                            )
-        rec_loss = log_dict_ae[f"val{suffix}/rec_loss"]
+        rec_loss = log_dict[f"val{suffix}/rec_loss"]
         self.log(f"val{suffix}/rec_loss", rec_loss,
                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
-        self.log(f"val{suffix}/aeloss", aeloss,
+        self.log(f"val{suffix}/aeloss", loss,
                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
         
-        from metrics.reconmodels.autoencoder.vqvae.vqgan import FID
-        fid = FID().calculate_fid(x, xrec)
-        self.log(f"val{suffix}/fid", fid,
-                   prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        # from metrics.reconmodels.autoencoder.vqvae.vqgan import FID
+        # fid = FID().calculate_fid(quant_first, xrec)
+        # self.log(f"val{suffix}/fid", fid,
+        #            prog_bar=True, logger=True, on_step=True, on_epoch=True)
 
         if version.parse(pl.__version__) >= version.parse('1.4.0'):
-            del log_dict_ae[f"val{suffix}/rec_loss"]
-        self.log_dict(log_dict_ae)
-        self.log_dict(log_dict_disc)
+            del log_dict[f"val{suffix}/rec_loss"]
+        self.log_dict(log_dict)
         return self.log_dict
-
-    def configure_optimizers(self):
-        lr_d = self.learning_rate
-        lr_g = self.lr_g_factor*self.learning_rate
-        print("lr_d", lr_d)
-        print("lr_g", lr_g)
-        opt_ae = torch.optim.Adam(list(self.encoder.parameters())+
-                                  list(self.decoder.parameters())+
-                                  list(self.quantize.parameters())+
-                                  list(self.quant_conv.parameters())+
-                                  list(self.post_quant_conv.parameters()),
-                                  lr=lr_g, betas=(0.5, 0.9))
-        opt_disc = torch.optim.Adam(self.loss.discriminator.parameters(),
-                                    lr=lr_d, betas=(0.5, 0.9))
-
-        if self.scheduler_config is not None:
-            scheduler = instantiate_from_config(self.scheduler_config)
-
-            print("Setting up LambdaLR scheduler...")
-            scheduler = [
-                {
-                    'scheduler': LambdaLR(opt_ae, lr_lambda=scheduler.schedule),
-                    'interval': 'step',
-                    'frequency': 1
-                },
-                {
-                    'scheduler': LambdaLR(opt_disc, lr_lambda=scheduler.schedule),
-                    'interval': 'step',
-                    'frequency': 1
-                },
-            ]
-            return [opt_ae, opt_disc], scheduler
-        return [opt_ae, opt_disc], []
-
-    def get_last_layer(self):
-        return self.decoder.conv_out.weight
 
     def log_images(self, batch, only_inputs=False, plot_ema=False, **kwargs):
         log = dict()
