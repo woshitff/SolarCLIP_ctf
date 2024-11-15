@@ -29,7 +29,7 @@ model:
         ckpt_path: 'checkpoints/reconmodels/vqvae/vqgan/hmi_2_hmi_codebook_8192_epoch=000002.ckpt'
         vq_modal: 'hmi_image'
         embed_dim: 8
-        n_embed: 16384
+        n_embed: 8192
 
         ddconfig:
           double_z: false
