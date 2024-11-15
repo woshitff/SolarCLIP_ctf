@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 from contextlib import contextmanager
 from einops import rearrange
 
+from models.reconmodels.autoencoder.util import config_optimizers
 from models.reconmodels.autoencoder.models.vqvae.modules.taming_vqgan.vqvae.quantize import VectorQuantizer2 as VectorQuantizer
 from models.reconmodels.autoencoder.util import instantiate_from_config
 from models.reconmodels.autoencoder.models.vae.CNN_VAE_v2 import Encoder, Decoder
@@ -239,6 +240,11 @@ class VQVAE2Model(pl.LightningModule):
             del log_dict[f"val{suffix}/rec_loss"]
         self.log_dict(log_dict)
         return self.log_dict
+
+    def configure_optimizers(self):
+        lr = self.learning_rate
+        opt, scheduler = config_optimizers(self.learning_optimizer, self.parameters(), lr, self.learning_schedule)
+        return (opt, scheduler)
 
     def log_images(self, batch, only_inputs=False, plot_ema=False, **kwargs):
         log = dict()
