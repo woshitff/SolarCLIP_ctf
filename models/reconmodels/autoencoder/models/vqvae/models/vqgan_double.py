@@ -266,7 +266,7 @@ class VQVAE2Model(pl.LightningModule):
             quantized_second_vq, _, _ = self.quantize(prequant_second_vq)
 
             # Perform reconstruction
-            reconstructed_second_vq, _, _, logits = self(quantized_first_vq)
+            reconstructed_second_vq, _, _, logits = self(quantized_first_vq, return_pred_indices=True)
             reconstructed_to_first_vq = self.convert_logits_to_features(logits)
             reconstructed_to_original = self.decode_first_vqmodel(reconstructed_to_first_vq)
 
