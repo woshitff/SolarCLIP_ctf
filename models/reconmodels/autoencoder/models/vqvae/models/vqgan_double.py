@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import LambdaLR
 import pytorch_lightning as pl
 from contextlib import contextmanager
+from einops import rearrange
 
 from models.reconmodels.autoencoder.models.vqvae.modules.taming_vqgan.vqvae.quantize import VectorQuantizer2 as VectorQuantizer
 from models.reconmodels.autoencoder.util import instantiate_from_config
@@ -39,7 +40,7 @@ class VQVAE2Model(pl.LightningModule):
                  use_ema=False
                  ):
         super().__init__()
-        self.automatic_optimization = False
+        # self.automatic_optimization = False
         self.embed_dim = embed_dim
         self.n_embed = n_embed
         self.vq_modal = vq_modal
@@ -155,7 +156,8 @@ class VQVAE2Model(pl.LightningModule):
         quant_second, diff, (_,_,ind) = self.encode(input)
         dec = self.decode(quant_second)
         if return_pred_indices:
-            logits = self.mlp(dec)
+            dec_flatten = rearrange(dec, "b c h w -> (b h w) c")
+            logits = self.mlp(dec_flatten)
             return dec, diff, ind, logits
         return dec, diff
 
@@ -179,31 +181,16 @@ class VQVAE2Model(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # https://github.com/pytorch/pytorch/issues/37142
         # try not to fool the heuristics
-        _, quant_first, ind_first = self.get_input(batch, self.vq_modal)
+        _, quant_first, ind_first = self.get_input(batch, self.vq_modal) # ind_first shape (b*h*w,)
         xrec, qloss, ind_second, logits = self(quant_first, return_pred_indices=True)
-
-        unique_indices, _ = torch.unique(ind_second, return_counts=True)
-        codebook_usage = 100 * unique_indices.numel()/(batch.size(0)*self.n_embed)
-        self.log("train/codebook_usage", codebook_usage, prog_bar=True, logger=True, on_step=True, on_epoch=True)
         
-        opt_g, opt_d = self.optimizers()
+        loss, log_dict = self.loss(qloss, quant_first, xrec, 
+                                ind_first, logits,
+                                split="train",predicted_indices=ind_second)
+        
+        self.log_dict(log_dict, prog_bar=False, logger=True, on_step=True, on_epoch=True)
 
-        # autoencode
-        aeloss, log_dict_ae = self.loss(qloss, quant_first, xrec, 0, self.global_step,
-                                        last_layer=self.get_last_layer(), split="train",
-                                        predicted_indices=ind_second)
-        opt_g.zero_grad()
-        self.manual_backward(aeloss)
-        opt_g.step()
-        self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True)
-
-        # discriminator
-        discloss, log_dict_disc = self.loss(qloss, quant_first, xrec, 1, self.global_step,
-                                        last_layer=self.get_last_layer(), split="train")
-        opt_d.zero_grad()
-        self.manual_backward(discloss)
-        opt_d.step()
-        self.log_dict(log_dict_disc, prog_bar=False, logger=True, on_step=True, on_epoch=True)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         log_dict = self._validation_step(batch, batch_idx)
