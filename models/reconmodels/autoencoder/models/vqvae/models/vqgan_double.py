@@ -55,12 +55,14 @@ class VQVAE2Model(pl.LightningModule):
                                         sane_index_shape=sane_index_shape)
         self.quant_conv = torch.nn.Conv2d(ddconfig["z_channels"], embed_dim, 1)
         self.post_quant_conv = torch.nn.Conv2d(embed_dim, ddconfig["z_channels"], 1)
+        first_vq_dim = self.first_vq_model.embed_dim
+        first_vq_codebook_size = self.first_vq_model.n_embed
         self.mlp =   torch.nn.Sequential(
-            torch.nn.Linear(embed_dim, 4*embed_dim),
+            torch.nn.Linear(first_vq_dim, 4*first_vq_dim),
             torch.nn.ReLU(),
-            torch.nn.Linear(4*embed_dim, 4*embed_dim),
+            torch.nn.Linear(4*first_vq_dim, 4*first_vq_dim),
             torch.nn.ReLU(),
-            torch.nn.Linear(4*embed_dim, self.n_embed),
+            torch.nn.Linear(4*first_vq_dim, first_vq_codebook_size),
             torch.nn.Softmax(dim=-1),
         )
 
