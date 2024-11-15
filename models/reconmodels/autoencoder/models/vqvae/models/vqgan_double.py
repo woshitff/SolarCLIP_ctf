@@ -127,12 +127,12 @@ class VQVAE2Model(pl.LightningModule):
 
     def encode_first_vqmodel(self, x):
         with torch.no_grad():
-            if self.first_vq_model.hparams.get("return_indices", True):
-                quant_first, ind_first = self.first_vq_model.encode(x)
-                return quant_first, ind_first
-            else:
-                quant_first = self.first_vq_model.encode(x)
-                return quant_first
+            # if self.first_vq_model.hparams.get("return_indices", True):
+            quant_first, ind_first = self.first_vq_model.encode(x)
+            return quant_first, ind_first
+            # else:
+            #     quant_first = self.first_vq_model.encode(x)
+            #     return quant_first
 
     def decode_first_vqmodel(self, h):
         with torch.no_grad():
@@ -194,25 +194,20 @@ class VQVAE2Model(pl.LightningModule):
         origin_inputs = origin_inputs.to(memory_format=torch.contiguous_format).float()
         
         if self.first_vq_model is not None:
-            print(f"Using first VQ model to encode {k}.")
+            # print(f"Using first VQ model to encode {k}.")
             quant_first, ind_first = self.encode_first_vqmodel(origin_inputs)
-
+        # print('get input down')
         return origin_inputs, quant_first, ind_first
 
     def training_step(self, batch, batch_idx):
         # https://github.com/pytorch/pytorch/issues/37142
         # try not to fool the heuristics
-        print(0)
         _, quant_first, ind_first = self.get_input(batch, self.vq_modal) # ind_first shape (b*h*w,)
-        print(1)
         xrec, qloss, ind_second, logits = self(quant_first, return_pred_indices=True)
-        print(2)
         loss, log_dict = self.loss(qloss, quant_first, xrec, 
                                 ind_first, logits,
                                 split="train",predicted_indices=ind_second)
-        print(3)
         self.log_dict(log_dict, prog_bar=False, logger=True, on_step=True, on_epoch=True)
-        print(4)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -226,7 +221,7 @@ class VQVAE2Model(pl.LightningModule):
         xrec, qloss, ind_second, logits = self(quant_first, return_pred_indices=True)
         loss, log_dict = self.loss(qloss, quant_first, xrec, 
                                 ind_first, logits,
-                                split="train"+suffix,predicted_indices=ind_second)
+                                split="val"+suffix, predicted_indices=ind_second)
 
         rec_loss = log_dict[f"val{suffix}/rec_loss"]
         self.log(f"val{suffix}/rec_loss", rec_loss,

@@ -68,7 +68,7 @@ class VQDoubleLoss(nn.Module):
 
         # ind_first shape (B*H*W, )
         # logits shape (B*H*W, n_classes)
-        print(f"ind_first shape: {ind_first.shape}, logits shape: {logits.shape}")
+        # print(f"ind_first shape: {ind_first.shape}, logits shape: {logits.shape}")
         if self.classifier_weight > 0:
             classifier_loss = F.cross_entropy(logits, ind_first)
             rec_loss = rec_loss + self.classifier_weight * classifier_loss
