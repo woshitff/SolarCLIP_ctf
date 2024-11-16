@@ -104,7 +104,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
         rec_loss = self.pixel_loss(inputs.contiguous(), reconstructions.contiguous())
         if self.perceptual_weight > 0:
             if inputs.shape[1] == 1:
-                p_loss = self.perceptual_loss(inputs.repeat(1, 3, 1, 1).contiguous(), reconstructions.repeat(1, 3, 1, 1).contiguous())
+                p_loss = self.perceptual_loss(inputs.repeat(1, 3, 1, 1).contiguous(), reconstructions.repeat(1, 3, 1, 1).contiguous())/3.0
             elif inputs.shape[1] == 3:
                 p_loss = self.perceptual_loss(inputs.contiguous(), reconstructions.contiguous())
             else:
