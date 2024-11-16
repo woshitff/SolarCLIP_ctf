@@ -7,7 +7,7 @@ model:
     ckpt_path: null
     vq_modal: 'hmi_image'
     embed_dim: 8
-    n_embed: 8192
+    n_embed: 16384
 
     ddconfig:
       double_z: false
@@ -24,7 +24,7 @@ model:
     vqconfig:
       target: models.reconmodels.autoencoder.models.vqvae.modules.solarvqmodules.vqvae.quantize.simvq.SimVQ
       params:
-        n_e: 8192
+        n_e: 16384
         e_dim: 8 
         beta: 0.25
         remap: null
@@ -39,7 +39,7 @@ model:
         disc_weight: 0.75
         disc_num_layers: 2
         codebook_weight: 1.0
-        n_classes: 8192
+        n_classes: 16384
 
 
 data:
