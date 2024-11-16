@@ -24,8 +24,8 @@ model:
     vqconfig:
       target: models.reconmodels.autoencoder.models.vqvae.modules.solarvqmodules.vqvae.quantize.simvq.SimVQ
       params:
-        n_embed: 8192
-        embed_dim: 8 
+        n_e: 8192
+        e_dim: 8 
         beta: 0.25
         remap: null
         sane_index_shape: false
