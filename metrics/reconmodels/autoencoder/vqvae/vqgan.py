@@ -33,20 +33,23 @@ class FID:
         return inputs_features.cpu().numpy(), recons_features.cpu().numpy() 
     
     def calculate_fid(self, inputs, recons):
-        inputs_features, recons_features = self.get_features(inputs, recons)
+        if inputs.size(1) == 1 and recons.size(1) == 1:
+            inputs_features, recons_features = self.get_features(inputs, recons)
 
-        mu_inputs = np.mean(inputs_features, axis=0)
-        sigma_inputs = np.cov(inputs_features, rowvar=False)
+            mu_inputs = np.mean(inputs_features, axis=0)
+            sigma_inputs = np.cov(inputs_features, rowvar=False)
 
-        mu_recons = np.mean(recons_features, axis=0)
-        sigma_recons = np.cov(recons_features, rowvar=False)
+            mu_recons = np.mean(recons_features, axis=0)
+            sigma_recons = np.cov(recons_features, rowvar=False)
 
-        diff = mu_inputs - mu_recons
-        diff_squared = np.sum(diff**2)
-        covmean, _ = scipy.linalg.sqrtm(sigma_inputs.dot(sigma_recons), disp=False)
-        fid = diff_squared + np.trace(sigma_inputs + sigma_recons - 2 * covmean)
+            diff = mu_inputs - mu_recons
+            diff_squared = np.sum(diff**2)
+            covmean, _ = scipy.linalg.sqrtm(sigma_inputs.dot(sigma_recons), disp=False)
+            fid = (diff_squared + np.trace(sigma_inputs + sigma_recons - 2 * covmean)) / 3
 
-        print(f"FID score between original and reconstructed images: {fid}")
+            print(f"FID score between original and reconstructed images: {fid}")
+        else:
+            print("Solar Images must be in format with 1 channels.")
         return fid
     
 
