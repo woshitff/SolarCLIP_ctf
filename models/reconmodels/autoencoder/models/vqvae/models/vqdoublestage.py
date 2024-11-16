@@ -21,7 +21,7 @@ def disabled_train(self, mode=True):
     return self
 
 
-class VQVAE2Model(pl.LightningModule):
+class VQDoubleStageModel(pl.LightningModule):
     def __init__(self,
                  first_vq_model_config,
                  ddconfig,
@@ -300,7 +300,7 @@ class VQVAE2Model(pl.LightningModule):
         return log, modals
     
 
-class VQTokenizer(VQVAE2Model):
+class VQTokenizer(VQDoubleStageModel):
     def __init__(self, embed_dim, *args, **kwargs):
         super().__init__(embed_dim=embed_dim, *args, **kwargs)
         self.embed_dim = embed_dim
