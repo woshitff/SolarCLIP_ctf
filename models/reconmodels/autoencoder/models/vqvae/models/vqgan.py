@@ -193,10 +193,14 @@ class VQModel(pl.LightningModule):
         self.log(f"val{suffix}/aeloss", aeloss,
                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
         
-        # from metrics.reconmodels.autoencoder.vqvae.vqgan import FID
-        # fid = FID().calculate_fid(x, xrec)
-        # self.log(f"val{suffix}/fid", fid,
-        #            prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        from metrics.reconmodels.autoencoder.vqvae.vqgan import FID
+        print(f"x.shape: {x.shape}, xrec.shape: {xrec.shape} ")
+        try:
+            fid = FID().calculate_fid(x, xrec)
+            self.log(f"val{suffix}/fid", fid,
+                    prog_bar=True, logger=True, on_step=True, on_epoch=True)
+        except:
+            print("FID calculation failed.")
 
         if version.parse(pl.__version__) >= version.parse('1.4.0'):
             del log_dict_ae[f"val{suffix}/rec_loss"]
