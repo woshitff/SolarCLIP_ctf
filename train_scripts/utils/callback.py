@@ -192,16 +192,24 @@ class SolarImageLogger(Callback):
     def get_target_keys(self, pl_module):
         if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion"]:
             target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row', 'denoise_row']
+
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
+
         elif pl_module.__class__.__name__ in ["VQModel"]:
             target_keys = ["inputs", 'recon', 'latent_prequant', 'latent_quant']
+
         elif pl_module.__class__.__name__ in ["VQVAE2Model"]:
             target_keys = ["original_inputs", "quantized_first_vq", 
                            'prequant_second_vq', "quantized_second_vq", "reconstructed_second_vq", 
                            "reconstructed_to_first_vq", "reconstructed_to_original"]
+            
+        elif pl_module.__class__.__name__ in ["VQVAE2"]:
+            target_keys = ["inputs", "recon"]
+        
         elif pl_module.__class__.__name__ in ["ClipVitDecoder", "SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
             target_keys = ['inputs', 'targets', 'targets_hat']
+
         elif pl_module.__class__.__name__ in ["ViTMAE"]:
             target_keys = ['inputs', 'targets', 'targets_hat_mask_ratio_set', 'targets_hat_mask_ratio_0', 'targets_hat_inference']
         else:
