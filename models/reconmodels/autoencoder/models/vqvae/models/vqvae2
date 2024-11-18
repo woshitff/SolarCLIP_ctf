@@ -188,7 +188,12 @@ class VQVAE2(pl.LightningModule):
             nb_levels: int                  = 2,
             embed_dim: int                  = 8,
             nb_entries: int                 = 8192,
-            scaling_rates: list[int]        = [8, 2]
+            scaling_rates: list[int]        = [8, 2],
+            lossconfig: dict                = None,
+            ckpt_path: str                  = None,
+            ignore_keys: list[str]          = [],
+            scheduler_config: dict          = None,
+            lr_g_factor=1.0,
         ):
         super().__init__()
         self.automatic_optimization = False
@@ -213,6 +218,26 @@ class VQVAE2(pl.LightningModule):
         self.upscalers = nn.ModuleList()
         for i in range(nb_levels - 1):
             self.upscalers.append(Upscaler(embed_dim, scaling_rates[1:len(scaling_rates) - i][::-1]))
+
+        self.loss = instantiate_from_config(lossconfig)
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path, ignore_keys=ignore_keys)
+        self.scheduler_config = scheduler_config
+        self.lr_g_factor = lr_g_factor
+
+    def init_from_ckpt(self, path, ignore_keys=list()):
+        sd = torch.load(path, map_location="cpu")["state_dict"]
+        keys = list(sd.keys())
+        for k in keys:
+            for ik in ignore_keys:
+                if k.startswith(ik):
+                    print("Deleting key {} from state_dict.".format(k))
+                    del sd[k]
+        missing, unexpected = self.load_state_dict(sd, strict=False)
+        print(f"Restored from {path} with {len(missing)} missing and {len(unexpected)} unexpected keys")
+        if len(missing) > 0:
+            print(f"Missing Keys: {missing}")
+            print(f"Unexpected Keys: {unexpected}")
 
     def forward(self, x):
         encoder_outputs = []
