@@ -8,10 +8,10 @@ import pytorch_lightning as pl
 from contextlib import contextmanager
 from einops import rearrange
 
-from models.reconmodels.autoencoder.util import config_optimizers
 from models.reconmodels.autoencoder.models.vqvae.modules.taming_vqgan.vqvae.quantize import VectorQuantizer2 as VectorQuantizer
+from models.reconmodels.autoencoder.models.vqvae.modules.model import Encoder, Decoder
 from models.reconmodels.autoencoder.util import instantiate_from_config
-from models.reconmodels.autoencoder.models.vae.CNN_VAE_v2 import Encoder, Decoder
+from models.reconmodels.autoencoder.util import config_optimizers
 from models.reconmodels.ldm.modules.ema import LitEma
 
 
