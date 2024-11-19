@@ -359,7 +359,7 @@ class VQVAE2(pl.LightningModule):
         opt_ae = torch.optim.Adam(list(self.encoders.parameters())+
                                   list(self.decoders.parameters())+
                                   list(self.codebooks.parameters())+
-                                  list(self.upscalers.parameters())
+                                  list(self.upscalers.parameters()),
                                 #   list(self.post_quant_conv.parameters()),
                                   lr=lr_g, betas=(0.5, 0.9))
         opt_disc = torch.optim.Adam(self.loss.discriminator.parameters(),
