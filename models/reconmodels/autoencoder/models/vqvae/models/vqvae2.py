@@ -113,7 +113,7 @@ class CodeLayer(nn.Module):
         self.register_buffer("cluster_size", torch.zeros(nb_entries, dtype=torch.float32))
         self.register_buffer("embed_avg", embed.clone())
 
-    @torch.amp.autocast(enabled=False)
+    # @torch.amp.autocast(enabled=False)
     def forward(self, x: torch.FloatTensor) -> Tuple[torch.FloatTensor, float, torch.LongTensor]:
         x = self.conv_in(x.float()).permute(0,2,3,1)
         flatten = x.reshape(-1, self.dim)
