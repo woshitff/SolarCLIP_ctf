@@ -385,7 +385,7 @@ class VQVAE2(pl.LightningModule):
         return [opt_ae, opt_disc], []
 
     def get_last_layer(self):
-        return None
+        return self.decoders[-1].layers[-1].weight
 
     def log_images(self, batch, only_inputs=False, plot_ema=False, **kwargs):
         log = dict()
