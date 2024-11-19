@@ -388,6 +388,7 @@ class VQVAE2(pl.LightningModule):
         return self.decoders[-1].layers[-1].weight
 
     def log_images(self, batch, only_inputs=False, plot_ema=False, **kwargs):
+        print('begin log image')
         log = dict()
         modals = dict()
 
@@ -418,7 +419,7 @@ class VQVAE2(pl.LightningModule):
 
         modals["inputs"] = self.vq_modal
         modals["recon"] = self.vq_modal
-
+        print('log image done')
         return log, modals
 
 
