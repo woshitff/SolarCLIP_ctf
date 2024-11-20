@@ -14,8 +14,8 @@ model:
     embed_dim: 8
     nb_entries: 8192
     scaling_rates:
-      - 8
-      - 2
+      - 4
+      - 4
 
     lossconfig:
       target: models.reconmodels.autoencoder.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
@@ -26,7 +26,7 @@ model:
         disc_weight: 0.75
         disc_num_layers: 2
         codebook_weight: 1.0
-        n_classes: 16384
+        n_classes: 8192
 
 
 data:
