@@ -10,10 +10,11 @@ model:
     hidden_channels: 128
     res_channels: 32
     nb_res_layers: 2
-    nb_levels: 2
+    nb_levels: 3
     embed_dim: 8
     nb_entries: 8192
     scaling_rates:
+      - 4
       - 4
       - 4
 

@@ -342,6 +342,7 @@ class VQVAE2(pl.LightningModule):
             fid = FID().calculate_fid(x, xrec)
             self.log(f"val{suffix}/fid", fid,
                     prog_bar=True, logger=True, on_step=True, on_epoch=True)
+            print(f'FID Value: {fid}')
         except:
             print("FID calculation failed.")
 
