@@ -40,6 +40,12 @@ def exists(val):
 def l1(x, y):
     return torch.abs(x-y)
 
+def l1_mask(x, y):
+    mask = x > 1e-6 & y > 1e-6
+    diff = torch.abs(x-y)
+    filtered_diff = diff * mask.float()
+    return filtered_diff.sum() / mask.sum()
+
 def l2(x, y):
     return torch.pow((x-y), 2)
 
@@ -64,7 +70,8 @@ class VQLPIPSWithDiscriminator(nn.Module):
         self.perceptual_weight = perceptual_weight
 
         if pixel_loss == "l1":
-            self.pixel_loss = l1
+            # self.pixel_loss = l1
+            self.pixel_loss = l1_mask
         else:
             self.pixel_loss = l2
 
