@@ -41,7 +41,7 @@ def l1(x, y):
     return torch.abs(x-y)
 
 def l1_mask(x, y):
-    mask = (x > 1e-6) & (y > 1e-6)
+    mask = (x > 1e-9) & (y > 1e-9)
     diff = torch.abs(x-y)
     filtered_diff = diff * mask.float()
     return filtered_diff.sum() / mask.sum()
