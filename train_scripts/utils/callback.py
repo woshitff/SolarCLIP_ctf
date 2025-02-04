@@ -166,7 +166,7 @@ class SolarImageLogger(Callback):
         self.logger_log_images = {
             pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
         }
-        self.log_steps = [1000 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
+        self.log_steps = [1 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
         if not increase_log_steps:
             self.log_steps = [self.batch_freq]
         self.clamp = clamp
@@ -284,11 +284,16 @@ class SolarImageLogger(Callback):
         self._log_images(pl_module, images, modals, batch_idx, split, save_dir=save_dir)
 
     def log_img(self, pl_module, batch, batch_idx, split="train"):
+        # print('begin log_img')
+        # print(f'batch_idx: {batch_idx}')
         check_idx = batch_idx if self.log_on_batch_idx else pl_module.global_step
-        if (self.check_frequency(check_idx) and  # batch_idx % self.batch_freq == 0
+        # print(f"check_idx {check_idx}")
+        #if (self.check_frequency(check_idx) and  # batch_idx % self.batch_freq == 0
+        if (
                 hasattr(pl_module, "log_images") and
                 callable(pl_module.log_images) and
                 self.max_images > 0):
+            print('enter if circle')
             logger = type(pl_module.logger)
 
             is_train = pl_module.training
@@ -329,4 +334,12 @@ class SolarImageLogger(Callback):
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
         if not self.disabled and (pl_module.global_step > 0 or self.log_first_step):
             self.log_img(pl_module, batch, batch_idx, split="train")
+
+    def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+        # print("here is 1")
+        # print(f'global_step: {pl_module.global_step}')
+        # if not self.disabled and (pl_module.global_step > 0 or self.log_first_step):
+        #     print("here is 0")
+        self.log_img(pl_module, batch, batch_idx, split="val")
+        # print("here is 2")
 

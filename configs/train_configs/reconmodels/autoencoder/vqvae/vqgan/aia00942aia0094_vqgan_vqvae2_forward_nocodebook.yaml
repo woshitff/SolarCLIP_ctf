@@ -2,7 +2,7 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.autoencoder.models.vqvae.models.vqvae2.VQVAE2
+  target: models.reconmodels.autoencoder.models.vqvae.models.vqvae2_forward_nocodebook.VQVAE2
   params:
     ckpt_path: "logs/reconmodels/autoencoder/vae/2025-01-17T19-46-45_vqgan_aia00942aia0094_vqgan_vqvae2/checkpoints/epoch=000172.ckpt"
     vq_modal: aia0094_image

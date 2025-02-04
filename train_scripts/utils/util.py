@@ -101,6 +101,7 @@ class TrainerSetup:
                 "target": "train_scripts.utils.callback.SolarImageLogger",
                 "params": {
                     "batch_frequency": 750,
+                    # "batch_frequency": 1,
                     "max_images": 4,
                     "clamp": False,
                 }
