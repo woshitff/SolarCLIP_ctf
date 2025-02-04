@@ -49,6 +49,13 @@ def l1_mask(x, y):
 def l2(x, y):
     return torch.pow((x-y), 2)
 
+##
+def l1_weighted_mask(x, y):
+    mask = torch.abs(x / torch.max(torch.abs(x)))
+    diff = torch.abs(x-y)
+    filtered_diff = diff * mask.float()
+    return filtered_diff.sum() / mask.sum()
+##
 
 class VQLPIPSWithDiscriminator(nn.Module):
     def __init__(self, disc_start, codebook_weight=1.0, pixelloss_weight=1.0,
@@ -71,7 +78,8 @@ class VQLPIPSWithDiscriminator(nn.Module):
 
         if pixel_loss == "l1":
             # self.pixel_loss = l1
-            self.pixel_loss = l1_mask
+            #self.pixel_loss = l1_mask
+            self.pixel_loss = l1_weighted_mask
         else:
             self.pixel_loss = l2
 
