@@ -288,8 +288,8 @@ class SolarImageLogger(Callback):
         # print(f'batch_idx: {batch_idx}')
         check_idx = batch_idx if self.log_on_batch_idx else pl_module.global_step
         # print(f"check_idx {check_idx}")
-        #if (self.check_frequency(check_idx) and  # batch_idx % self.batch_freq == 0
-        if (
+        if (self.check_frequency(check_idx) and  batch_idx % self.batch_freq == 0 and
+        # if (
                 hasattr(pl_module, "log_images") and
                 callable(pl_module.log_images) and
                 self.max_images > 0):
