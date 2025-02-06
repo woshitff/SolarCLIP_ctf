@@ -36,6 +36,15 @@ def transfer_id_to_date(date_id,y_start=2010, m_start = 5, d_start = 1, y_end=20
 
     return current_date
 
+def transfer_id_to_date_V2(date_id,y_start=2010, m_start = 5, d_start = 1, y_end=2024, m_end = 7, d_end = 1): # todo
+    start_date = datetime(y_start, m_start, d_start)
+    end_date = datetime(y_end, m_end, d_end)
+    if date_id < 0 or date_id > (end_date - start_date).days*24*60:
+        raise ValueError(f'date_id out of range, should be in 0 to {(end_date - start_date).days*24*60}')
+    current_date = start_date + timedelta(days=date_id)
+
+    return current_date
+
 def transfer_date_to_id(y_now, m_now, d_now, y_start=2010, m_start = 5, d_start = 1, y_end=2024, m_end = 7, d_end = 1):
     start_date = datetime(y_start, m_start, d_start)
     end_date = datetime(y_end, m_end, d_end)
@@ -60,6 +69,20 @@ def get_modal_dir(modal, date_id, y_start=2010, m_start=5, d_start=1, y_end=2024
     elif modal == '0094':
         path_pt = f"/mnt/nas/home/huxing/202407/nas/data/spectral/0094_pt/{date_str_1}/AIA{date_str_2}_{formatted_hours}{formatted_minutes}_0094.pt"
         path_fits = f"/mnt/nas/home/zhouyuqing/downloads/AIA{date_str_2}_{formatted_hours}{formatted_minutes}_0094.fits"
+    return path_fits, path_pt
+
+def get_modal_dir_V2(modal, date_id, y_start=2010, m_start=5, d_start=1, y_end=2024, m_end=7, d_end=1):
+    """
+    This is a function for tianwen-tianqingnas and backup. 2025/02/06
+    """
+    current_date = transfer_id_to_date(date_id, y_start, m_start, d_start, y_end, m_end, d_end)
+    # date_str_1 = current_date.strftime('%Y/%m/%d')
+    # date_str = current_date.strftime('%Y%m%d')
+    if not modal == 'hmi':
+        path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_pt/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0000_{modal}.pt"
+        path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_fits/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0000_{modal}.fits"
+    else:
+        pass
     return path_fits, path_pt
 
 
@@ -232,7 +255,16 @@ if __name__ == '__main__':
 
     # transfer_fits_to_pt('0094',exist_list='./Data/idx_list/0094_exist_idx.pkl')
     # transfer_fits_to_pt('magnet',exist_list='./Data/idx_list/magnet_exist_idx.pkl')
-    start_date = transfer_date_to_id(2010, 5, 1)
-    end_date = transfer_date_to_id(2020, 6, 30)
-    time_interval = [start_date, end_date]
-    print(time_interval)
+    # start_date = transfer_date_to_id(2010, 5, 1)
+    # end_date = transfer_date_to_id(2020, 6, 30)
+    # time_interval = [start_date, end_date]
+    # print(time_interval)
+    a=transfer_id_to_date_V2(date_id=50)
+    print(a.year)
+    print(a.month)
+    print(a.day)
+    modal = '4500'
+    url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{a.year:04d}/{a.month:02d}/{a.day:02d}/H0000/AIA{a.year:04d}{a.month:02d}{a.day:02d}_0000_{modal}.fits'
+    print(url)
+    import wget
+    wget.download(url)
