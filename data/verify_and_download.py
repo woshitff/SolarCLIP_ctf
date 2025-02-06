@@ -118,7 +118,7 @@ def dl_and_conver_V2(modal,
         if not modal == 'hmi':
             url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{year:04d}/{month:02d}/{day:02d}/H0000/AIA{year:04d}{month:02d}{day:02d}_0000_{modal}.fits'
                     # https://jsoc1.stanford.edu/data/hmi/fits/2011/02/02/hmi.M_720s.20110202_000001_TAI.fits
-            path_fits, path_pt = get_modal_dir_V2('modal',i)
+            path_fits, path_pt = get_modal_dir_V2(modal, i)
 
             try:
                 dir_fits = os.path.dirname(path_fits)
