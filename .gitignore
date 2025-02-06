@@ -11,3 +11,7 @@ __pycache__/
 **.sh
 *.ipynb
 *.pth
+*.tar
+*.tar.gz
+Dockerfile
+*.fits

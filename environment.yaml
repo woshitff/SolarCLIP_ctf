@@ -1,7 +1,8 @@
-name: SolarCLIP
+# name: SolarCLIP
 channels:
   - https://repo.anaconda.com/pkgs/main
   - conda-forge
+  - pytorch
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge

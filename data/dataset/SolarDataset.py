@@ -104,13 +104,13 @@ class multimodal_dataset(Dataset):
         time_slice = slice(time_interval[0],time_interval[1],time_step)
         if 'magnet' in modal_list:
             # mag_dir_list = load_list('./Data/dir_list/magnet_dir_list_pt.pkl')[time_slice]
-            mag_idx = load_list('./data/idx_list/magnet_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('magnet',mag_idx))
+            hmi_idx = load_list('./data/idx_list/magnet_exist_idx.pkl')
+            self.dataset.append(Dataset_one_modal('magnet',hmi_idx))
 
         if '0094' in modal_list:
             # h0094_dir_list = load_list('./Data/dir_list/0094_dir_list_pt.pkl')[time_slice]
-            h0094_idx = load_list('./data/idx_list/0094_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0094',h0094_idx))
+            aia0094_idx = load_list('./data/idx_list/0094_exist_idx.pkl')
+            self.dataset.append(Dataset_one_modal('0094',aia0094_idx))
 
         # find the all exist index
         exist_list = []
@@ -138,7 +138,7 @@ class multimodal_dataset(Dataset):
                     del image_dic[idx]
             del list_of_image_dic
 
-    def filter_exist_idx(self,exist_list, time_interval, time_step):
+    def filter_exist_idx(self, exist_list, time_interval, time_step):
         exist_list = np.array(exist_list)
         exist_idx = np.all(exist_list,axis=0)
         exist_idx = np.nonzero(exist_idx)[0] # get the index of all exist data
