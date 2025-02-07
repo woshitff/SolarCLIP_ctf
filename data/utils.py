@@ -71,11 +71,11 @@ def get_modal_dir(modal, date_id, y_start=2010, m_start=5, d_start=1, y_end=2024
         path_fits = f"/mnt/nas/home/zhouyuqing/downloads/AIA{date_str_2}_{formatted_hours}{formatted_minutes}_0094.fits"
     return path_fits, path_pt
 
-def get_modal_dir_V2(modal, date_id, y_start=2010, m_start=5, d_start=1, y_end=2024, m_end=7, d_end=1):
+def get_modal_dir_V2(modal, date_id, y_start=2010, m_start=5, d_start=1, y_end=2024, m_end=12, d_end=31):
     """
     This is a function for tianwen-tianqingnas and backup. 2025/02/06
     """
-    current_date = transfer_id_to_date(date_id, y_start, m_start, d_start, y_end, m_end, d_end)
+    current_date = transfer_id_to_date_V2(date_id, y_start, m_start, d_start, y_end, m_end, d_end)
     # date_str_1 = current_date.strftime('%Y/%m/%d')
     # date_str = current_date.strftime('%Y%m%d')
     if not modal == 'hmi':

@@ -102,10 +102,16 @@ def dl_and_conver_V2(modal,
     """
     modal: hmi, 0094, 0131, 0171, 0193, 0211, 0304, 0335, 1600, 1700, 4500
     """
+    print('start')
+    exist_num = 0
     download_num = 0
     error_url = []
+    error_path = '/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/'
+    if not os.path.exists(error_path):
+        os.mkdir(error_path)
 
-    for i in tqdm(range(6000)):
+    pbar = tqdm(range(6000))
+    for i in pbar:
         if i<time_interval[0] or i>time_interval[1]:
             continue
         
@@ -114,6 +120,8 @@ def dl_and_conver_V2(modal,
         year = date_time.year
         month = date_time.month
         day = date_time.day
+        pbar.set_description(f'{modal} | {year} | {month} | {day}')
+
 
         if not modal == 'hmi':
             url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{year:04d}/{month:02d}/{day:02d}/H0000/AIA{year:04d}{month:02d}{day:02d}_0000_{modal}.fits'
@@ -124,31 +132,38 @@ def dl_and_conver_V2(modal,
                 dir_fits = os.path.dirname(path_fits)
                 if not os.path.exists(dir_fits):
                     os.makedirs(dir_fits)
-                wget.download(url, path_fits) # download fits file
-                download_num += 1
+                if os.path.exists(path_fits):
+                    exist_num += 1
+                else:
+                    wget.download(url, path_fits) # download fits file
+                    download_num += 1
                 try:
-                    fits_img = read_fits_image(dir_fits)
-                    fits_img = np.nan_to_num(fits_img, nan=0.0)
-                    pt_img = torch.tensor(fits_img,dtype=torch.float32)
+                    if not os.path.exists(path_pt):
+                        fits_img = read_fits_image(path_fits)
+                        fits_img = np.nan_to_num(fits_img, nan=0.0)
+                        pt_img = torch.tensor(fits_img,dtype=torch.float32)
 
-                    pt_dir = os.path.dirname(path_pt)
-                    if not os.path.exists(pt_dir):
-                        os.makedirs(pt_dir)
-                    torch.save(pt_img, path_pt)
-                    # pt_idx_list[i] = True
+                        pt_dir = os.path.dirname(path_pt)
+                        if not os.path.exists(pt_dir):
+                            os.makedirs(pt_dir)
+                        torch.save(pt_img, path_pt)
+                        # pt_idx_list[i] = True
                 except Exception as e:
                     print(f"Error occured : {e}, delete {path_pt} if exists")
                     if os.path.exists(path_pt):
                         os.remove(path_pt)                           
             except Exception as e:
                 error_url.append(url)
+                with open(f'{error_path}error_url.txt', 'a') as f:
+                    f.writelines(f'{error_url[-1]}\n')
         else:
             pass  # TODO add hmi download maybe
-        print(f'{download_num} files downloaded, {len(error_url)} files failed:')
-        time.sleep(5)
+        print(f'|  {download_num} success, {len(error_url)} fail, {modal} {year} {month} {day}')
+        # time.sleep(5)
 
     for url in error_url:
         print(url)
+    print('finish')
             
 
 if __name__ == '__main__' :
