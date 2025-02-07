@@ -230,12 +230,12 @@ def update_exist_list(modal, save_dir = './Data/idx_list',time_interval = [0,745
 
 
 #2025/02/07 make pkl to log the exist 11 modals. The save_dir is in SolarCLIP https://github.com/woshitff/SolarCLIP_ctf
-def make_dir_list_V2(modal, save_dir = './data/idx_list_v2',time_interval = [0,5400]): 
+def update_exist_list_V2(modal, save_dir = './data/idx_list_v2', time_interval = [0,5400]): 
     exist_idx = np.zeros(time_interval[1], dtype=np.bool)
     # if not modal == 'hmi':
     for i in tqdm(range(time_interval[0], time_interval[1])):
-        dir_fits, dir_pt = get_modal_dir_V2(modal, i)
-        if os.path.exists(dir_pt):
+        path_fits, path_pt = get_modal_dir_V2(modal, i)
+        if os.path.exists(path_pt):
             exist_idx[i] = True
     save_list(exist_idx, f'{save_dir}/{modal}_exist_idx.pkl')
 
