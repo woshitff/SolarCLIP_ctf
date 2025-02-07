@@ -261,21 +261,22 @@ if __name__ == '__main__':
 
     # update_exist_list('magnet')
 
-    # pass
+    modal_list = ['0094', '0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']
+    for modal in modal_list:
+        update_exist_list_V2(modal)
     
-
     # transfer_fits_to_pt('0094',exist_list='./Data/idx_list/0094_exist_idx.pkl')
     # transfer_fits_to_pt('magnet',exist_list='./Data/idx_list/magnet_exist_idx.pkl')
     # start_date = transfer_date_to_id(2010, 5, 1)
     # end_date = transfer_date_to_id(2020, 6, 30)
     # time_interval = [start_date, end_date]
     # print(time_interval)
-    a=transfer_id_to_date_V2(date_id=50)
-    print(a.year)
-    print(a.month)
-    print(a.day)
-    modal = '4500'
-    url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{a.year:04d}/{a.month:02d}/{a.day:02d}/H0000/AIA{a.year:04d}{a.month:02d}{a.day:02d}_0000_{modal}.fits'
-    print(url)
-    import wget
-    wget.download(url)
+    # a=transfer_id_to_date_V2(date_id=50)
+    # print(a.year)
+    # print(a.month)
+    # print(a.day)
+    # modal = '4500'
+    # url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{a.year:04d}/{a.month:02d}/{a.day:02d}/H0000/AIA{a.year:04d}{a.month:02d}{a.day:02d}_0000_{modal}.fits'
+    # print(url)
+    # import wget
+    # wget.download(url)
