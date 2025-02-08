@@ -1,0 +1,80 @@
+model:
+  hmi_model:
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: 'aia0094_image'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  
+  0094_model:
+  0131_model:
+  0171_model:
+  0193_model:
+  0211_model:
+  0304_model:
+  0335_model:
+  1600_model:
+  1700_model:
+  4500_model:
+
+
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 2
+    num_workers: 9
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 5346720
+        time_step: 600
+    validation:
+      target: data.dataset.SolarDataset.multimodal_dataset
+      params:
+        modal_list: 
+          - 'magnet'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 5346720
+          - 7452000
+        time_step: 115200
+
+
+training:
+  device: 0
+  epochs: 1000
+  save_freq: 10
+  test_freq: 10
+  contrast_weight: 0.1
