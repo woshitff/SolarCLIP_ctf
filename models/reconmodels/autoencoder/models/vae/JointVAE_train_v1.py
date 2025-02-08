@@ -4,6 +4,7 @@ import os
 import random
 import yaml
 from omegaconf import OmegaConf
+import argparse
 
 import torch
 import torch.nn as nn
@@ -17,9 +18,64 @@ from models.reconmodels.autoencoder.util import instantiate_from_config
 # 1. model config
 # 2. data config
 # 3. train config
+
+def get_parser(**parser_kwargs):
+    parser = argparse.ArgumentParser(**parser_kwargs)    
+    parser.add_argument(
+        "-n",
+        "--name",
+        type=str,
+        const=True,
+        default="",
+        nargs="?",
+        help="postfix for logdir",
+    )
+    parser.add_argument(
+        "-r",
+        "--resume",
+        type=str,
+        const=True,
+        default="",
+        nargs="?",
+        help="resume from logdir or checkpoint in logdir",
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        nargs="*",
+        metavar="",
+        help="paths to base configs. Loaded from left-to-right. "
+             "Parameters can be overwritten or added with command-line options of the form `--key value`.",
+        default=['configs/train_configs/reconmodels/autoencoder/vae/JointVAE.yaml']
+    )
+    parser.add_argument(
+        "-f",
+        "--postfix",
+        type=str,
+        default="",
+        help="post-postfix for default name",
+    )
+    parser.add_argument(
+        "--logdir",
+        type=str,
+        default="logs/reconmodels/autoencoder/vae",
+        help="log directory",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="random seed",
+    )
+
+    return parser
+
+
 if __name__ == "__main__":
-    # ckpt_dict should have same order with data
-    config = OmegaConf.load("configs/train_configs/reconmodels/autoencoder/vae/JointVAE.yaml") # TODO make config yaml can be load from cli.
+    # ckpt_paths should have same order with data make config yaml can be load from cli.
+    parser = get_parser()
+    opt, unknown = parser.parse_known_args()
+    config = OmegaConf.load(opt.config) 
 
 
     #### init data
@@ -50,10 +106,15 @@ if __name__ == "__main__":
     models = {}
     optimizers = {}
     schedulers = {}
+    ckpt_paths = {} 
 
-    ckpt_dict = {} # TODO
+    for model_name, model_config in config.model.items():
+        if model_config is not None and "params" in model_config and "ckpt_path" in model_config.params:
+            ckpt_paths[model_name] = model_config.params.ckpt_path
+        else:
+            ckpt_paths[model_name] = None 
 
-    for modal_name, ckpt_path in ckpt_dict.items():
+    for modal_name, ckpt_path in ckpt_paths.items():
         model = Model.load_from_ckpt(ckpt_path)
         models[modal_name] = model
 
