@@ -117,6 +117,7 @@ class multimodal_dataset(Dataset):
                   time_step = 1): #time_step = 1 means get every data
         # 定义数据集
         self.dataset = [] 
+        # new version
         for name in modal_list:
             if not name in ['0094','hmi','0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']:
                 raise ValueError(f'{name} not supported')
