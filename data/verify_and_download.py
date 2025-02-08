@@ -126,38 +126,39 @@ def dl_and_conver_V2(modal,
         if not modal == 'hmi':
             url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{year:04d}/{month:02d}/{day:02d}/H0000/AIA{year:04d}{month:02d}{day:02d}_0000_{modal}.fits'
                     # https://jsoc1.stanford.edu/data/hmi/fits/2011/02/02/hmi.M_720s.20110202_000001_TAI.fits
-            path_fits, path_pt = get_modal_dir_V2(modal, i)
-
-            try:
-                dir_fits = os.path.dirname(path_fits)
-                if not os.path.exists(dir_fits):
-                    os.makedirs(dir_fits)
-                if os.path.exists(path_fits):
-                    exist_num += 1
-                else:
-                    wget.download(url, path_fits) # download fits file
-                    download_num += 1
-                try:
-                    if not os.path.exists(path_pt):
-                        fits_img = read_fits_image(path_fits)
-                        fits_img = np.nan_to_num(fits_img, nan=0.0)
-                        pt_img = torch.tensor(fits_img,dtype=torch.float32)
-
-                        pt_dir = os.path.dirname(path_pt)
-                        if not os.path.exists(pt_dir):
-                            os.makedirs(pt_dir)
-                        torch.save(pt_img, path_pt)
-                        # pt_idx_list[i] = True
-                except Exception as e:
-                    print(f"Error occured : {e}, delete {path_pt} if exists")
-                    if os.path.exists(path_pt):
-                        os.remove(path_pt)                           
-            except Exception as e:
-                error_url.append(url)
-                with open(f'{error_path}error_url.txt', 'a') as f:
-                    f.writelines(f'{error_url[-1]}\n')
         else:
-            pass  # TODO add hmi download maybe
+            url = f'https://jsoc1.stanford.edu/data/hmi/fits/{year:04d}/{month:02d}/{day:02d}/hmi.M_720s.{year:04d}{month:02d}{day:02d}_000000_TAI.fits'
+        path_fits, path_pt = get_modal_dir_V2(modal, i)
+
+        try:
+            dir_fits = os.path.dirname(path_fits)
+            if not os.path.exists(dir_fits):
+                os.makedirs(dir_fits)
+            if os.path.exists(path_fits):
+                exist_num += 1
+            else:
+                wget.download(url, path_fits) # download fits file
+                download_num += 1
+            try:
+                if not os.path.exists(path_pt):
+                    fits_img = read_fits_image(path_fits)
+                    fits_img = np.nan_to_num(fits_img, nan=0.0)
+                    pt_img = torch.tensor(fits_img,dtype=torch.float32)
+
+                    pt_dir = os.path.dirname(path_pt)
+                    if not os.path.exists(pt_dir):
+                        os.makedirs(pt_dir)
+                    torch.save(pt_img, path_pt)
+                    # pt_idx_list[i] = True
+            except Exception as e:
+                print(f"Error occured : {e}, delete {path_pt} if exists")
+                if os.path.exists(path_pt):
+                    os.remove(path_pt)                           
+        except Exception as e:
+            error_url.append(url)
+            with open(f'{error_path}error_url.txt', 'a') as f:
+                f.writelines(f'{error_url[-1]}\n')
+    
         print(f'|  {download_num} success, {len(error_url)} fail, {modal} {year} {month} {day}')
         # time.sleep(5)
 
@@ -180,6 +181,8 @@ if __name__ == '__main__' :
     # dl_and_convert('magnet',exist_idx_list,[500000*i,500000*(i+1)])
     # with open(f'/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/ctf_105/SolarCLIP_ctf/data/idx_list_v2/{modal}_exist_idx.pkl','rb') as f:
     #     pt_idx_list = pickle.load(f)
-    modal_list = ['0094', '0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']
-    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-        executor.map(dl_and_conver_V2, modal_list)
+    # modal_list = ['0094', '0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
+    #     executor.map(dl_and_conver_V2, modal_list)
+
+    dl_and_conver_V2('hmi')

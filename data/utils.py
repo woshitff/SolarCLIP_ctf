@@ -81,8 +81,9 @@ def get_modal_dir_V2(modal, date_id, y_start=2010, m_start=5, d_start=1, y_end=2
     if not modal == 'hmi':
         path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_pt/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0000_{modal}.pt"
         path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_fits/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0000_{modal}.fits"
-    else:
-        pass
+    else: # TODO
+        path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_pt/{modal}.M_720s.{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_000000_TAI.pt"
+        path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_fits/{modal}.M_720s.{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_000000_TAI.fits"
     return path_fits, path_pt
 
 
@@ -231,7 +232,8 @@ def update_exist_list(modal, save_dir = './Data/idx_list',time_interval = [0,745
 
 #2025/02/07 make pkl to log the exist 11 modals. The save_dir is in SolarCLIP https://github.com/woshitff/SolarCLIP_ctf
 def update_exist_list_V2(modal, save_dir = './data/idx_list_v2', time_interval = [0,5400]): 
-    exist_idx = np.zeros(time_interval[1], dtype=np.bool)
+    print(f'begin to update {modal} exist list')
+    exist_idx = np.zeros(time_interval[1], dtype=np.bool_)
     # if not modal == 'hmi':
     for i in tqdm(range(time_interval[0], time_interval[1])):
         path_fits, path_pt = get_modal_dir_V2(modal, i)
@@ -261,7 +263,7 @@ if __name__ == '__main__':
 
     # update_exist_list('magnet')
 
-    modal_list = ['0094', '0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']
+    modal_list = ['hmi', '0094', '0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']
     for modal in modal_list:
         update_exist_list_V2(modal)
     
