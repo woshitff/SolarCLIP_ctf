@@ -100,8 +100,8 @@ class Dataset_one_modal(Dataset):
 # todo version 1.1, 20240813, move filter exist_idx to independent function, call it during initialization
 class multimodal_dataset(Dataset):
     def __init__(self, modal_list = [
-                    'hmi',
                     '0094',
+                    'hmi',
                     '0131', 
                     '0171', 
                     '0193', 
@@ -117,50 +117,16 @@ class multimodal_dataset(Dataset):
                   time_step = 1): #time_step = 1 means get every data
         # 定义数据集
         self.dataset = [] 
+        for name in modal_list:
+            if not name in ['0094','hmi','0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']:
+                raise ValueError(f'{name} not supported')
+            idx = load_list(f'./data/idx_list_v2/{name}_exist_idx.pkl')
+            self.dataset.append(Dataset_one_modal(name,idx))
         # time_slice = slice(time_interval[0],time_interval[1],time_step)
-        if 'hmi' in modal_list:
-            hmi_idx = load_list('./data/idx_list_v2/hmi_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('hmi',hmi_idx))
+        # if 'hmi' in modal_list:
+        #     hmi_idx = load_list('./data/idx_list_v2/hmi_exist_idx.pkl')
+        #     self.dataset.append(Dataset_one_modal('hmi',hmi_idx))
 
-        if '0094' in modal_list:
-            aia0094_idx = load_list('./data/idx_list_v2/0094_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0094',aia0094_idx))
-
-        if '0131' in modal_list:
-            aia0131_idx = load_list('./data/idx_list_v2/0131_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0131', aia0131_idx))
-
-        if '0171' in modal_list:
-            aia0171_idx = load_list('./data/idx_list_v2/0171_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0171', aia0171_idx))
-
-        if '0193' in modal_list:
-            aia0193_idx = load_list('./data/idx_list_v2/0193_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0193', aia0193_idx))
-
-        if '0211' in modal_list:
-            aia0211_idx = load_list('./data/idx_list_v2/0211_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0211', aia0211_idx))
-
-        if '0304' in modal_list:
-            aia0304_idx = load_list('./data/idx_list_v2/0304_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0304', aia0304_idx))
-
-        if '0335' in modal_list:
-            aia0335_idx = load_list('./data/idx_list_v2/0335_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('0335', aia0335_idx))
-
-        if '1600' in modal_list:
-            aia1600_idx = load_list('./data/idx_list_v2/1600_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('1600', aia1600_idx))
-
-        if '1700' in modal_list:
-            aia1700_idx = load_list('./data/idx_list_v2/1700_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('1700', aia1700_idx))
-
-        if '4500' in modal_list:
-            aia4500_idx = load_list('./data/idx_list_v2/4500_exist_idx.pkl')
-            self.dataset.append(Dataset_one_modal('4500', aia4500_idx))
 
         # find the all exist index
         exist_list = []
