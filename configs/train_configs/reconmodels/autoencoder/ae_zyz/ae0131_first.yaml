@@ -5,7 +5,7 @@ model:
   target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
   params:
     ckpt_path: null
-    vae_modal: 'aia0094_image'
+    vae_modal: 'aia0131_image'
     kl_weight: 0.1
     loss_type: 'MSE'
 
@@ -40,7 +40,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024
@@ -55,7 +55,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024

@@ -2,22 +2,23 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+  target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
   params:
     ckpt_path: null
     vae_modal: 'aia0094_image'
     kl_weight: 0.1
     loss_type: 'MSE'
+    
 
     dd_config:
       double_z: True
-      z_channels: 8
+      z_channels: 16
       resolution: 1024
-      in_channels: 1
-      out_ch: 1
-      ch: 16
-      ch_mult: [1,2,2,2] # num_down = len(ch_mult)-1
-      num_res_blocks: 4
+      in_channels: 8
+      out_ch: 8
+      ch: 32
+      ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
+      num_res_blocks: 2
       attn_resolutions: []
       dropout: 0.0
 
@@ -28,11 +29,26 @@ model:
     #     log_var_init: 0.0
     #     kl_weight: 0.000001
     #     perceptual_weight: 1.0
-
+    first_stage_config:
+      ckpt_path: ./logs/reconmodels/autoencoder/vae/ae0094_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+      vae_modal: 'aia0094_image'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 2
+    batch_size: 2 
     num_workers: 9
     wrap: false
     train:
@@ -40,7 +56,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024
@@ -49,13 +65,13 @@ data:
         time_interval: 
           - 0
           - 5000
-        time_step: 1000
+        time_step: 1
     validation:
       target: data.data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024
@@ -64,10 +80,10 @@ data:
         time_interval: 
           - 5000
           - 5400
-        time_step: 100
+        time_step: 1
 
 lighting:
   trainer:
     accelerator: "gpu"
     devices: 2
-    max_epochs: 100
+    max_epochs: 1000

@@ -1,0 +1,10 @@
+{
+    "cache_key": "eyJhcmd1bWVudHMiOlsiLS1sb2dkaXI9Li9sb2dzIl0sImNvbmZpZ3VyZV9rd2FyZ3MiOnt9LCJ3b3JraW5nX2RpcmVjdG9yeSI6Ii9tbnQvdGlhbndlbi10aWFucWluZy1uYXMvdGlhbndlbi9jdGYvc29sYXJjbGlwL3p5el8xMDYifQ==",
+    "db": "",
+    "logdir": "./logs",
+    "path_prefix": "",
+    "pid": 3233671,
+    "port": 6006,
+    "start_time": 1738760496,
+    "version": "2.18.0"
+}
