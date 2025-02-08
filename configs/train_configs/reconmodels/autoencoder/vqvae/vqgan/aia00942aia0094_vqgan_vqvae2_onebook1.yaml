@@ -2,12 +2,12 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.autoencoder.models.vqvae.models.vqvae2_nobook.VQVAE2
+  target: models.reconmodels.autoencoder.models.vqvae.models.vqvae2a.VQVAE2_1
   params:
     ckpt_path: null
     vq_modal: aia0094_image
     in_channels: 1
-    hidden_channels: 128
+    hidden_channels: 8
     res_channels: 32
     nb_res_layers: 2
     nb_levels: 2
@@ -15,11 +15,10 @@ model:
     nb_entries: 8192
     scaling_rates:
       - 4
-      - 4
-      #- 4
+      - 2
 
     lossconfig:
-      target: models.reconmodels.autoencoder.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      target: models.reconmodels.autoencoder.modules.losses.vqperceptual.VaeLPIPSWithDiscriminator
       params:
         disc_conditional: false
         disc_in_channels: 1
@@ -28,7 +27,7 @@ model:
         disc_num_layers: 2
         codebook_weight: 1.0
         n_classes: 8192
-        pixel_loss: l2
+
 
 
 data:
@@ -73,7 +72,7 @@ lightning:
 
   trainer:
     accelerator: "gpu"
-    devices: 4
+    devices: 2
     max_epochs: 1000
 
   modelcheckpoint:

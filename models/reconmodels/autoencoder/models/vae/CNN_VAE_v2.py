@@ -15,7 +15,7 @@ This model use VAE architecture like autoencoderKL in LDM to reconstruct the sol
 see https://github.com/CompVis/stable-diffusion/blob/main/ldm/modules/diffusionmodules/model.py
 """
     
-def Normalize(in_channels, num_groups=16):
+def Normalize(in_channels, num_groups=8):
     return torch.nn.GroupNorm(num_groups=num_groups, num_channels=in_channels, eps=1e-6, affine=True)
 
 def nonlinearity(x):
@@ -436,8 +436,9 @@ class CNN_VAE(pl.LightningModule):
 
     def forward(self, x):
         mu, logvar = self.encode(x)
-        z = self.reparameterize(mu, logvar)
+        #z = self.reparameterize(mu, logvar)
         z = mu
+        # print(z.shape)
         recon_x = self.decode(z)
         return recon_x, mu, logvar
 
@@ -445,7 +446,8 @@ class CNN_VAE(pl.LightningModule):
         if k == 'hmi_image':
             x = batch[:, 0, :, :, :]
         elif k == 'aia0094_image':
-            x = batch[:, 1, :, :, :]
+            # x = batch[:, 1, :, :, :]
+            x = batch[:, 0, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
@@ -473,10 +475,177 @@ class CNN_VAE(pl.LightningModule):
         loss_dict = {}
 
         loss, recon_loss, recon_loss_weighted, kl_loss = self.loss_function(recon_x, x, weights, mu, logvar, lambda_kl)
-        loss_dict.update({f'{log_prefix}/loss': loss})
-        loss_dict.update({f'{log_prefix}/recon_loss': recon_loss})
-        loss_dict.update({f'{log_prefix}/recon_loss_weighted': recon_loss_weighted})
-        loss_dict.update({f'{log_prefix}/kl_loss': kl_loss})
+        loss_dict.update({f'{log_prefix}_loss': loss})
+        loss_dict.update({f'{log_prefix}_recon_loss': recon_loss})
+        loss_dict.update({f'{log_prefix}_recon_loss_weighted': recon_loss_weighted})
+        loss_dict.update({f'{log_prefix}_kl_loss': kl_loss})
+
+        return loss, loss_dict
+    
+    def shared_step(self, batch, batch_idx):
+        x = self.get_input(batch, self.vae_modal)
+        recon_x, mu, logvar = self(x)
+        weights = torch.ones_like(x)
+        loss, loss_dict = self.get_loss(recon_x, x, weights, mu, logvar, self.lambda_kl)
+        return loss, loss_dict
+    
+    def training_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        loss, loss_dict = self.shared_step(batch, batch_idx)
+        self.log_dict(loss_dict, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        return loss
+    
+    def configure_optimizers(self):
+        lr = self.learning_rate
+        opt, scheduler = config_optimizers(self.learning_optimizer, self.parameters(), lr, self.learning_schedule)
+        return (opt, scheduler)
+
+    def log_images(self, batch, N=4):
+        print('Begin to log images')
+        log = dict()
+        modals = dict()
+
+        x = self.get_input(batch, self.vae_modal)
+        N = min(N, x.shape[0])
+        log['inputs'] = x[:N]
+
+        self.eval()
+        with torch.no_grad():
+            recon_x, mu, logvar = self(x)
+            samples = self.sample(x)
+        log['recon'] = recon_x[:N]
+        log['mu'] = mu[:N]
+        log['samples'] = samples[:N]
+        self.train()
+        modals['inputs'] = self.vae_modal
+        modals['recon'] = self.vae_modal
+        modals['mu'] = self.vae_modal
+        modals['samples'] = self.vae_modal
+
+        print('Log images down')
+        return log, modals
+    
+class CNN_VAE_two(pl.LightningModule):
+    def __init__(self,
+                 ckpt_path: str = None,
+                 vae_modal: str = 'magnet_image',
+                 kl_weight: float = 1.0,
+                 loss_type: str = 'MSE',
+                 dd_config: dict = None,
+                 first_stage_config: dict = None,
+                 train_first_stage: bool = False):
+        super().__init__()
+        self.save_hyperparameters()
+
+        self.vae_modal = vae_modal
+        self.lambda_kl = kl_weight
+        self.loss_type = loss_type
+        self.first_stage = CNN_VAE(**first_stage_config)
+        if not train_first_stage:
+            self.first_stage.eval()
+        self.encoder = Encoder(**dd_config)
+        self.decoder = Decoder(**dd_config)
+
+        if ckpt_path is not None:
+            self.init_from_ckpt(ckpt_path)
+
+    def init_from_ckpt(self, ckpt_path):
+        if os.path.splitext(ckpt_path)[-1] == '.pt':
+            checkpoint = torch.load(ckpt_path)
+            self.load_state_dict(checkpoint['model'])
+        elif os.path.splitext(ckpt_path)[-1] == '.ckpt':
+            checkpoint = torch.load(ckpt_path)
+            if 'loss' in checkpoint['state_dict']:
+                del checkpoint['state_dict']['loss']
+            self.load_state_dict(checkpoint['state_dict'], strict=False)
+
+        print(f"Loaded model from {ckpt_path}")
+
+
+    def encode(self, x):
+        """
+        x: (B, C, H, W) eg: (B, 1, 1024, 1024)
+        output: (B, C_out, H_out, W_out) eg: (B, 3, 64, 64)
+        """
+        mu, logvar = self.first_stage.encode(x)
+        # x = self.first_stage.reparameterize(mu, logvar)
+        x = self.encoder(mu) # (B, C, H, W) -> (B, C_out, H_out, W_out)
+        mu, logvar = torch.chunk(x, 2, dim=1)
+        logvar = torch.clamp(logvar, -30, 30)
+        return mu, logvar
+
+    def reparameterize(self, mu, logvar, scale=1.0):
+        std = torch.exp(0.5*logvar)
+        eps = torch.randn_like(std)
+        if self.training:   
+            z = mu + eps*std
+        else:
+            z = mu
+        z = z*scale
+        return z
+
+    def decode(self, z):
+        """
+        z: (B, latent_dim, H_out, W_out) eg: (B, 3, 16, 16)
+        output: (B, input_dim, H, W) eg: (B, 1, 1024, 1024)
+        """
+        x = self.decoder(z)
+        return self.first_stage.decode(x)
+
+    def sample(self, x):
+        mu, logvar = self.encode(x)
+        std = torch.exp(0.5*logvar)
+        eps = torch.randn_like(std)
+        z = mu + eps*std
+        return self.decode(z)
+
+    def forward(self, x):
+        mu, logvar = self.encode(x)
+        # z = self.reparameterize(mu, logvar)
+        z = mu
+        recon_x = self.decode(z)
+        return recon_x, mu, logvar
+
+    def get_input(self, batch, k):
+        if k == 'hmi_image':
+            x = batch[:, 0, :, :, :]
+        elif k == 'aia0094_image':
+            x = batch[:, 0, :, :, :]
+        else:
+            raise NotImplementedError(f"Key {k} not supported")
+        if len(x.shape) == 3:
+            x = x[..., None]
+        x = x.to(memory_format=torch.contiguous_format).float()
+        return x
+    
+    def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):
+        if self.loss_type == 'MSE':
+            with torch.no_grad():
+                RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
+            RECON_LOSS_weighted = weights*F.mse_loss(recon_x, x, reduction='none')
+            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+        elif self.loss_type == 'BCE':
+            RECON_LOSS = F.binary_cross_entropy(recon_x, x, reduction='sum')
+        else:
+            raise ValueError(f"loss_type {self.loss_type} is not supported")
+        KLD = (-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))/mu.numel()
+
+        total_loss = RECON_LOSS_weighted + KLD*lambda_kl
+        return total_loss, RECON_LOSS.detach(), RECON_LOSS_weighted.detach(), KLD.detach()
+    
+    def get_loss(self, recon_x, x, weights, mu, logvar, lambda_kl):
+        log_prefix = 'train' if self.training else 'val'
+        loss_dict = {}
+
+        loss, recon_loss, recon_loss_weighted, kl_loss = self.loss_function(recon_x, x, weights, mu, logvar, lambda_kl)
+        loss_dict.update({f'{log_prefix}_loss': loss})
+        loss_dict.update({f'{log_prefix}_recon_loss': recon_loss})
+        loss_dict.update({f'{log_prefix}_recon_loss_weighted': recon_loss_weighted})
+        loss_dict.update({f'{log_prefix}_kl_loss': kl_loss})
 
         return loss, loss_dict
     

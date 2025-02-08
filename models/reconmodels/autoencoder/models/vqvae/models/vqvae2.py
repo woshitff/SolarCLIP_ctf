@@ -49,6 +49,9 @@ class Encoder(nn.Module):
         for _ in range(downscale_steps):
             layers.append(nn.Sequential(
                 nn.Conv2d(c_channel, n_channel, 4, stride=2, padding=1),
+                nn.Conv2d(n_channel, n_channel, 3, stride=1, padding=1),
+                nn.Conv2d(n_channel, n_channel, 3, stride=1, padding=1),
+                nn.Conv2d(n_channel, n_channel, 3, stride=1, padding=1),
                 nn.BatchNorm2d(n_channel),
                 nn.ReLU(inplace=True),
             ))
@@ -78,6 +81,10 @@ class Decoder(nn.Module):
         for _ in range(upscale_steps):
             layers.append(nn.Sequential(
                 nn.ConvTranspose2d(c_channel, n_channel, 4, stride=2, padding=1),
+                nn.Conv2d(c_channel, n_channel, 3, stride=1, padding=1),
+                nn.Conv2d(n_channel, n_channel, 3, stride=1, padding=1),
+                nn.Conv2d(n_channel, n_channel, 3, stride=1, padding=1),
+                nn.Conv2d(n_channel, n_channel, 3, stride=1, padding=1),
                 nn.BatchNorm2d(n_channel),
                 nn.ReLU(inplace=True),
             ))

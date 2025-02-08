@@ -152,7 +152,8 @@ if __name__ == "__main__":
             name = "_" + model_name + "_" + cfg_name
         else:
             name = ""
-        nowname = now + name + opt.postfix
+        # nowname = now + name + opt.postfix
+        nowname = cfg_name
         os.makedirs(opt.logdir, exist_ok=True)
         logdir = os.path.join(opt.logdir, nowname)
 
@@ -204,7 +205,10 @@ if __name__ == "__main__":
             trainer.fit(model=model, datamodule=data)
         except Exception as e:
             print(f"Training error: {e}")
-
+            import traceback
+            traceback.print_exc()
     except Exception as e:
         print(e)
         print("Failed to parse config files. Please check your syntax.")
+        import traceback
+        traceback.print_exc()

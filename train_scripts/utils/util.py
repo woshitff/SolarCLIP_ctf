@@ -117,13 +117,14 @@ class TrainerSetup:
                 "target": "train_scripts.utils.callback.CUDACallback"
             }
         }
-        if version.parse(pl.__version__) >= version.parse('1.4.0'):
-            default_callbacks_cfg.update({'checkpoint_callback': self._init_checkpoint_callback()})
+        # if version.parse(pl.__version__) >= version.parse('1.4.0'):
+        #     default_callbacks_cfg.update({'checkpoint_callback': self._init_checkpoint_callback()})
         if "callbacks" in self.lightning_config:
             callbacks_cfg = self.lightning_config.callbacks
         else:
             callbacks_cfg = OmegaConf.create()
-        if 'metrics_over_trainsteps_checkpoint' in callbacks_cfg:
+        # if 'metrics_over_trainsteps_checkpoint' in callbacks_cfg:
+        if True:
             print(
                 'Caution: Saving checkpoints every n train steps without deleting. This might require some free space.')
             default_metrics_over_trainsteps_ckpt_dict = {
@@ -131,15 +132,28 @@ class TrainerSetup:
                     {"target": 'pytorch_lightning.callbacks.ModelCheckpoint',
                      'params': {
                          "dirpath": os.path.join(self.ckptdir, 'trainstep_checkpoints'),
-                         "filename": "{epoch:06}-{step:09}",
+                         "filename": "best_val_loss_epoch",
                          "verbose": True,
-                         'save_top_k': -1,
-                         'every_n_epochs': 50,
+                         'save_top_k': 1,
+                         'monitor':'val_loss_epoch',
+                         'every_n_epochs': 1,
                          'save_weights_only': True
                      }
                      }
             }
+            early_stop_callbacks_dict = {
+                'early_stop':
+                {'target':'pytorch_lightning.callbacks.EarlyStopping',
+                 'params':{
+                        'monitor':"val_loss_epoch",   
+                        'patience':10,           
+                        'verbose':True,         
+                        'mode':"min"  
+                }
+                }
+            }
             default_callbacks_cfg.update(default_metrics_over_trainsteps_ckpt_dict)
+            default_callbacks_cfg.update(early_stop_callbacks_dict)
 
         callbacks_cfg = OmegaConf.merge(default_callbacks_cfg, callbacks_cfg)
         if 'ignore_keys_callback' in callbacks_cfg and hasattr(self.trainer_opt, 'resume_from_checkpoint'):

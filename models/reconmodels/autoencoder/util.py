@@ -29,7 +29,7 @@ def config_optimizers(optimizer_name, parameters, learning_rate, lr_scheduler_na
     elif lr_scheduler_name == 'StepLR':
         scheduler = torch.optim.lr_scheduler.StepLR(opt, step_size=10, gamma=0.5)
     elif lr_scheduler_name == 'CosineAnnealingLR':
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=1000, eta_min=0)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=10, eta_min=0)
     else:
         scheduler = None
     

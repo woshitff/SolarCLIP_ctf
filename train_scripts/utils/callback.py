@@ -59,16 +59,16 @@ class SetupCallback(Callback):
             OmegaConf.save(OmegaConf.create({"lightning": self.lightning_config}),
                            os.path.join(self.cfgdir, "{}-lightning.yaml".format(self.now)))
 
-        else:
+        else: #! bug
             # ModelCheckpoint callback created log directory --- remove it
             if not self.resume and os.path.exists(self.logdir):
                 dst, name = os.path.split(self.logdir)
                 dst = os.path.join(dst, "child_runs", name)
-                os.makedirs(os.path.split(dst)[0], exist_ok=True)
-                try:
-                    os.rename(self.logdir, dst)
-                except FileNotFoundError:
-                    pass
+                # os.makedirs(os.path.split(dst)[0], exist_ok=True)
+                # try:
+                #     os.rename(self.logdir, dst)
+                # except FileNotFoundError:
+                #     pass
 
 class CUDACallback(Callback):
     # see https://github.com/SeanNaren/minGPT/blob/master/mingpt/callback.py
@@ -193,7 +193,7 @@ class SolarImageLogger(Callback):
         if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion"]:
             target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row', 'denoise_row']
 
-        elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE"]:
+        elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE",'CNN_VAE_two']:
             target_keys = ['inputs', 'recon', 'mu', 'samples']
 
         elif pl_module.__class__.__name__ in ["VQModel"]:
@@ -204,7 +204,7 @@ class SolarImageLogger(Callback):
                            'prequant_second_vq', "quantized_second_vq", "reconstructed_second_vq", 
                            "reconstructed_to_first_vq", "reconstructed_to_original"]
             
-        elif pl_module.__class__.__name__ in ["VQVAE2"]:
+        elif pl_module.__class__.__name__ in ["VQVAE2",'VQVAE2_1']:
             target_keys = ["inputs", "recon"]
         
         elif pl_module.__class__.__name__ in ["ClipVitDecoder", "SolarLatentGPT", "vit_regressor", "SolarCLIPDAE"]:
@@ -242,7 +242,7 @@ class SolarImageLogger(Callback):
             cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
             
             plt.figure(figsize=(32, 16))
-            num_images = min(image_array.shape[0], 2)
+            num_images = min(image_array.shape[0], 4)
             for i in range(num_images):
                 plt.subplot(1, 2, i+1)
                 if len(image_array.shape) == 4:

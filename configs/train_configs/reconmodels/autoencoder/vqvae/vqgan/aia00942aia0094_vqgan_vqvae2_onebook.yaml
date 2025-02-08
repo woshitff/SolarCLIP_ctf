@@ -2,24 +2,24 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "Adam"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.autoencoder.models.vqvae.models.vqvae2_nobook.VQVAE2
+  target: models.reconmodels.autoencoder.models.vqvae.models.vqvae2a.VQVAE2
   params:
-    ckpt_path: null
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/2025-02-06T14-08-10_vqgan_aia00942aia0094_vqgan_vqvae2_onebook/checkpoints/epoch=000002.ckpt
     vq_modal: aia0094_image
     in_channels: 1
     hidden_channels: 128
     res_channels: 32
     nb_res_layers: 2
-    nb_levels: 2
-    embed_dim: 8
+    nb_levels: 3
+    embed_dim: 64
     nb_entries: 8192
     scaling_rates:
       - 4
       - 4
-      #- 4
+      - 2
 
     lossconfig:
-      target: models.reconmodels.autoencoder.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      target: models.reconmodels.autoencoder.modules.losses.vqperceptual.VaeLPIPSWithDiscriminator
       params:
         disc_conditional: false
         disc_in_channels: 1
@@ -28,7 +28,7 @@ model:
         disc_num_layers: 2
         codebook_weight: 1.0
         n_classes: 8192
-        pixel_loss: l2
+
 
 
 data:
