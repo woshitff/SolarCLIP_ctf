@@ -454,9 +454,12 @@ class DDPM(pl.LightningModule):
         return self.p_losses(x, t, *args, **kwargs)
 
     def get_input(self, batch, k):
-        if k == 'hmi_image_vae' or k == 'hmi_image_cliptoken':
+        # print('xxxxxxxxxxx',batch.shape,'xxxxxxxxxxxx')
+        # if k == 'hmi_image_vae' or k == 'hmi_image_cliptoken':
+        if k == 'first_stage_key':
             x = batch[:, 0, :, :, :]
-        elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
+        # elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
+        elif k == 'cond_key':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")

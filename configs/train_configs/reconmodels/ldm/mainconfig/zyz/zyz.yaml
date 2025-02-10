@@ -11,8 +11,9 @@ model:
     timesteps: 100
     first_stage_key: "0094_image"
     cond_stage_key: "0094_image"
-    image_size: 64
-    channels: 3
+    # image_size: 32
+    spatial_size: [32, 32]
+    channels: 32
     cond_stage_trainable: false
     conditioning_key: concat
     scale_factor: 1
