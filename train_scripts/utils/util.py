@@ -5,6 +5,7 @@ from omegaconf import OmegaConf
 from packaging import version
 
 import pytorch_lightning as pl
+import torch
 
 def instantiate_from_config(config):
     if not "target" in config:
@@ -42,17 +43,17 @@ class TrainerSetup:
 
     def init_trainer_config(self, trainer_config=None):
         if not "devices" in trainer_config:
-            cpu = True
             if 'strategy' in trainer_config:
                 del trainer_config['strategy']
-            trainer_config['accelerator'] = 'cpu'
+            trainer_config['accelerator'] = 'gpu' if torch.cuda.is_available() else 'cpu'
             trainer_config['devices'] = "auto"
         else:
-            cpu = True
             trainer_config['accelerator'] = 'gpu'
             if (isinstance(trainer_config.devices, int) and trainer_config.devices > 1) or \
                 (isinstance(trainer_config['devices'], list) and len(trainer_config['devices']) > 1): # use ddp as default
                 trainer_config['strategy'] = trainer_config.get('strategy', 'ddp_find_unused_parameters_true')
+
+        self.trainer_config = trainer_config
 
             
     def init_trainer_kwargs(self):

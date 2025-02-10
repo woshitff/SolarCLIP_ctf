@@ -18,6 +18,8 @@ def config_optimizers(optimizer_name, parameters, learning_rate, lr_scheduler_na
     # 选择优化器
     if optimizer_name == 'Adam':
         opt = torch.optim.Adam(parameters, lr=learning_rate)
+    elif optimizer_name == 'AdamW':
+        opt = torch.optim.AdamW(parameters, lr=learning_rate)
     elif optimizer_name == 'SGD':
         opt = torch.optim.SGD(parameters, lr=learning_rate, momentum=0.9)
     else:

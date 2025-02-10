@@ -1,6 +1,6 @@
 model:
   base_learning_rate: 1.0e-04
-  base_learning_optimizer: "Adam"
+  base_learning_optimizer: "AdamW"
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
   params:
