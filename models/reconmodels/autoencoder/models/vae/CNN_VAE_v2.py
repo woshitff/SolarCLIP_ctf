@@ -475,10 +475,10 @@ class CNN_VAE(pl.LightningModule):
         loss_dict = {}
 
         loss, recon_loss, recon_loss_weighted, kl_loss = self.loss_function(recon_x, x, weights, mu, logvar, lambda_kl)
-        loss_dict.update({f'{log_prefix}_loss': loss})
-        loss_dict.update({f'{log_prefix}_recon_loss': recon_loss})
-        loss_dict.update({f'{log_prefix}_recon_loss_weighted': recon_loss_weighted})
-        loss_dict.update({f'{log_prefix}_kl_loss': kl_loss})
+        loss_dict.update({f'{log_prefix}/loss': loss})
+        loss_dict.update({f'{log_prefix}/recon_loss': recon_loss})
+        loss_dict.update({f'{log_prefix}/recon_loss_weighted': recon_loss_weighted})
+        loss_dict.update({f'{log_prefix}/kl_loss': kl_loss})
 
         return loss, loss_dict
     
@@ -504,7 +504,7 @@ class CNN_VAE(pl.LightningModule):
         opt, scheduler = config_optimizers(self.learning_optimizer, self.parameters(), lr, self.learning_schedule)
         return (opt, scheduler)
 
-    def log_images(self, batch, N=4):
+    def log_images(self, batch, N=2):
         print('Begin to log images')
         log = dict()
         modals = dict()
@@ -642,10 +642,10 @@ class CNN_VAE_two(pl.LightningModule):
         loss_dict = {}
 
         loss, recon_loss, recon_loss_weighted, kl_loss = self.loss_function(recon_x, x, weights, mu, logvar, lambda_kl)
-        loss_dict.update({f'{log_prefix}_loss': loss})
-        loss_dict.update({f'{log_prefix}_recon_loss': recon_loss})
-        loss_dict.update({f'{log_prefix}_recon_loss_weighted': recon_loss_weighted})
-        loss_dict.update({f'{log_prefix}_kl_loss': kl_loss})
+        loss_dict.update({f'{log_prefix}/loss': loss})
+        loss_dict.update({f'{log_prefix}/recon_loss': recon_loss})
+        loss_dict.update({f'{log_prefix}/recon_loss_weighted': recon_loss_weighted})
+        loss_dict.update({f'{log_prefix}/kl_loss': kl_loss})
 
         return loss, loss_dict
     

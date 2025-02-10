@@ -36,7 +36,7 @@ data:
     num_workers: 9
     wrap: false
     train:
-      target: data.data.dataset.SolarDataset_v2.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
@@ -49,9 +49,9 @@ data:
         time_interval: 
           - 0
           - 5000
-        time_step: 1000
+        time_step: 1
     validation:
-      target: data.data.dataset.SolarDataset_v2.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
@@ -64,10 +64,10 @@ data:
         time_interval: 
           - 5000
           - 5400
-        time_step: 100
+        time_step: 1
 
 lighting:
   trainer:
-    accelerator: "gpu"
-    devices: 2
-    max_epochs: 100
+    # accelerator: "gpu"
+    # devices: 2
+    max_epochs: 200

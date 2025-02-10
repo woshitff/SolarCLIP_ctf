@@ -167,6 +167,7 @@ class SolarImageLogger(Callback):
             pl.loggers.tensorboard.TensorBoardLogger: self._log_images_tensorboard
         }
         self.log_steps = [1 * n for n in range(int(np.log2(self.batch_freq)) + 1)]
+        # print(f"self.log_steps: {self.log_steps}")
         if not increase_log_steps:
             self.log_steps = [self.batch_freq]
         self.clamp = clamp
@@ -288,8 +289,8 @@ class SolarImageLogger(Callback):
         # print(f'batch_idx: {batch_idx}')
         check_idx = batch_idx if self.log_on_batch_idx else pl_module.global_step
         # print(f"check_idx {check_idx}")
-        if (self.check_frequency(check_idx) and  batch_idx % self.batch_freq == 0 and
-        # if (
+        # if (self.check_frequency(check_idx) and  batch_idx % self.batch_freq == 0 and
+        if (batch_idx % self.batch_freq == 0 and
                 hasattr(pl_module, "log_images") and
                 callable(pl_module.log_images) and
                 self.max_images > 0):

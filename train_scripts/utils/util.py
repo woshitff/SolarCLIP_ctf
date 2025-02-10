@@ -117,8 +117,8 @@ class TrainerSetup:
                 "target": "train_scripts.utils.callback.CUDACallback"
             }
         }
-        # if version.parse(pl.__version__) >= version.parse('1.4.0'):
-        #     default_callbacks_cfg.update({'checkpoint_callback': self._init_checkpoint_callback()})
+        if version.parse(pl.__version__) >= version.parse('1.4.0'):
+            default_callbacks_cfg.update({'checkpoint_callback': self._init_checkpoint_callback()})
         if "callbacks" in self.lightning_config:
             callbacks_cfg = self.lightning_config.callbacks
         else:
@@ -135,7 +135,7 @@ class TrainerSetup:
                          "filename": "best_val_loss_epoch",
                          "verbose": True,
                          'save_top_k': 1,
-                         'monitor':'val_loss_epoch',
+                         'monitor':'val/loss_epoch',
                          'every_n_epochs': 1,
                          'save_weights_only': True
                      }
@@ -145,8 +145,8 @@ class TrainerSetup:
                 'early_stop':
                 {'target':'pytorch_lightning.callbacks.EarlyStopping',
                  'params':{
-                        'monitor':"val_loss_epoch",   
-                        'patience':10,           
+                        'monitor':"val/loss_epoch",   
+                        'patience':30,           
                         'verbose':True,         
                         'mode':"min"  
                 }

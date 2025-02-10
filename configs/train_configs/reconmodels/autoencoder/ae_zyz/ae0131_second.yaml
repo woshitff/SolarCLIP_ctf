@@ -30,7 +30,7 @@ model:
     #     kl_weight: 0.000001
     #     perceptual_weight: 1.0
     first_stage_config:
-      ckpt_path: ./logs/reconmodels/autoencoder/vae/ae0094_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+      ckpt_path: ./logs/reconmodels/autoencoder/vae/ae0131_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
       vae_modal: 'aia0094_image'
       kl_weight: 0.1
       loss_type: 'MSE'
@@ -52,7 +52,7 @@ data:
     num_workers: 9
     wrap: false
     train:
-      target: data.data.dataset.SolarDataset_v2.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
@@ -64,10 +64,10 @@ data:
           - 90
         time_interval: 
           - 0
-          - 5000
+          - 4800
         time_step: 1
     validation:
-      target: data.data.dataset.SolarDataset_v2.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
@@ -78,12 +78,12 @@ data:
           - 0.5
           - 90
         time_interval: 
-          - 5000
-          - 5400
+          - 4800
+          - 5149
         time_step: 1
 
 lighting:
   trainer:
-    accelerator: "gpu"
-    devices: 2
-    max_epochs: 1000
+    # accelerator: "gpu"
+    # devices: 2
+    max_epochs: 200

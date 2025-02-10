@@ -30,7 +30,7 @@ model:
     #     kl_weight: 0.000001
     #     perceptual_weight: 1.0
     first_stage_config:
-      ckpt_path: ./logs/reconmodels/autoencoder/vae/ae0094_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+      ckpt_path: ./logs/reconmodels/autoencoder/vae/ae4500_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
       vae_modal: 'aia0094_image'
       kl_weight: 0.1
       loss_type: 'MSE'
@@ -56,7 +56,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
+          - '4500'
         load_imgs: false
         enhance_list:
           - 1024
@@ -71,7 +71,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
+          - '4500'
         load_imgs: false
         enhance_list:
           - 1024

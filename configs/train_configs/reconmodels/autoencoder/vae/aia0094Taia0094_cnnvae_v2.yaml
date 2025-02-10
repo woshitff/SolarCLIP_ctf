@@ -36,7 +36,7 @@ data:
     num_workers: 9
     wrap: false
     train:
-      target: data.data.dataset.SolarDataset_v2.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
@@ -51,7 +51,7 @@ data:
           - 5000
         time_step: 1000
     validation:
-      target: data.data.dataset.SolarDataset_v2.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
