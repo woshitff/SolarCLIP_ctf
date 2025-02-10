@@ -47,7 +47,7 @@ def get_parser(**parser_kwargs):
         metavar="",
         help="paths to base configs. Loaded from left-to-right. "
              "Parameters can be overwritten or added with command-line options of the form `--key value`.",
-        default=['configs/train_configs/reconmodels/autoencoder/vae/JointVAE.yaml']
+        default=['configs/train_configs/reconmodels/autoencoder/jointvae/JointVAE.yaml']
     )
     parser.add_argument(
         "-f",
