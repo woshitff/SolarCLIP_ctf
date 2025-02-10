@@ -3,19 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 
-class JointContrastiveLoss(nn.Module):
-    def __init__(self,
-                 models: dict = None
-                 ):
-         super().__init__()
-         self.models = models
-      
-    def forward(self, 
-                data):
+def JointContrastiveLoss(models: dict = None, data: torch.Tensor = None):
 
         features = {}
-        for i, (modal_name, model) in enumerate(self.models.items()):
-            feature = model.encode(data[:, i, :, :, :])
+        for i, (modal_name, model) in enumerate(models.items()):
+            feature, _ = model.encode(data[:, i, :, :, :])
+            print(f"feature shape: {feature.shape}")
             feature = rearrange(feature, 'b c h w -> b h w c')
             feature= feature / (feature.norm(dim=-1, keepdim=True)+1e-32)
             features.update({f"{modal_name}":feature})

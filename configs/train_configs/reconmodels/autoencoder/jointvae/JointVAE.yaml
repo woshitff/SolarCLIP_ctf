@@ -6,7 +6,7 @@ model:
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
       ckpt_path: null
-      vae_modal: 'aia0094_image'
+      vae_modal: 'hmi'
       kl_weight: 0.1
       loss_type: 'MSE'
 
@@ -21,31 +21,249 @@ model:
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
-  
-  0094:
-  0131:
-  0171:
-  0193:
-  0211:
-  0304:
-  0335:
-  1600:
-  1700:
-  4500:
+  '0094':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '0094'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  '0131':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '0131'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  '0171':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '0171'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  '0193':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '0193'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  '0211':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '0211'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  '0304':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '0304'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  '0335':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '0335'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  '1600':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '1600'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+  # '1700':
+  #   base_learning_rate: 1.0e-04
+  #   base_learning_optimizer: "Adam"
+  #   base_learning_schedule: "CosineAnnealingLR"
+  #   target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+  #   params:
+  #     ckpt_path: null
+  #     vae_modal: '1700'
+  #     kl_weight: 0.1
+  #     loss_type: 'MSE'
+
+  #     dd_config:
+  #       double_z: True
+  #       z_channels: 8
+  #       resolution: 1024
+  #       in_channels: 1
+  #       out_ch: 1
+  #       ch: 32
+  #       ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+  #       num_res_blocks: 2
+  #       attn_resolutions: []
+  #       dropout: 0.0
+  '4500':
+    base_learning_rate: 1.0e-04
+    base_learning_optimizer: "Adam"
+    base_learning_schedule: "CosineAnnealingLR"
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    params:
+      ckpt_path: null
+      vae_modal: '4500'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+
+      dd_config:
+        double_z: True
+        z_channels: 8
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 32
+        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
 
 
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 2
+    batch_size: 1
     num_workers: 9
     wrap: false
     train:
-      target: data.dataset.SolarDataset.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
-          - 'magnet'
+          - 'hmi'
           - '0094'
+          - '0131'
+          - '0171'
+          - '0193'
+          - '0211'
+          - '0304'
+          - '0335'
+          - '1600'
+          # - '1700'
+          - '4500'
         load_imgs: false
         enhance_list:
           - 1024
@@ -53,23 +271,32 @@ data:
           - 90
         time_interval: 
           - 0
-          - 5346720
-        time_step: 600
+          - 5000
+        time_step: 1
     validation:
-      target: data.dataset.SolarDataset.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
-          - 'magnet'
+          - 'hmi'
           - '0094'
+          - '0131'
+          - '0171'
+          - '0193'
+          - '0211'
+          - '0304'
+          - '0335'
+          - '1600'
+          # - '1700'
+          - '4500'
         load_imgs: false
         enhance_list:
           - 1024
           - 0.5
           - 90
         time_interval: 
-          - 5346720
-          - 7452000
-        time_step: 115200
+          - 5000
+          - 5400
+        time_step: 1
 
 
 training:
@@ -78,5 +305,7 @@ training:
   test_freq: 10
   save_freq: 10
   contrast_weight: 0.1
+  reconstruct_weight: 1
+  kl_weight: 0
   logger_checkpoint_path: ''
   model_checkpoint_path: ''
