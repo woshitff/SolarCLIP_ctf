@@ -184,7 +184,8 @@ class SolarImageLogger(Callback):
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
         elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage' or mode == 'aia0094_image_cliptoken':  # '0094_image'
-            vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+            # vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+            vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 1
             vmin = 0
         else:
             raise ValueError("Unknown modal type")

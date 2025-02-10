@@ -1,6 +1,6 @@
 model:
   base_learning_rate: 1.0e-04
-  base_learning_optimizer: "Adam"
+  base_learning_optimizer: "AdamW"
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LatentDiffusion
   params:
@@ -40,25 +40,43 @@ model:
         attn_type: "vanilla"
     
     first_stage_config:
-      target: models.reconmodels.autoencoder.models.vqvae.models.vqvae2_nobook.VQVAE2
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
-        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/2025-02-04T17-06-14_vqgan_aia00942aia0094_vqgan_vqvae2_nobook/checkpoints/epoch=000008.ckpt
-        vq_modal: aia0094_image
-        in_channels: 1
-        hidden_channels: 128
-        res_channels: 32
-        nb_res_layers: 2
-        nb_levels: 3
-        embed_dim: 8
-        nb_entries: 8192
-        scaling_rates:
-          - 4
-          - 4
-          - 4
-      lossconfig:
-        target: torch.nn.Identity
+        ckpt_path: null
+        vae_modal: aia0094_image
+        kl_weight: 0.1
+        loss_type: 'MSE'
+
+        dd_config:
+          double_z: True
+          z_channels: 32
+          resolution: 1024
+          in_channels: 8
+          out_ch: 8
+          ch: 32
+          ch_mult: [1,2,2]
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        first_stage_config:
+          ckpt_path: null
+          vae_modal: 'aia0094_image'
+          kl_weight: 0.1
+          loss_type: 'MSE'
+          dd_config:
+            double_z: True
+            z_channels: 8
+            resolution: 1024
+            in_channels: 1
+            out_ch: 1
+            ch: 16
+            ch_mult: [1,2,2,2]
+            num_res_blocks: 2
+            attn_resolutions: []
+            dropout: 0.0
 
     cond_stage_config: __is_first_stage__
+
 
 data:
   target: data.build.DataModuleFromConfig
@@ -67,11 +85,12 @@ data:
     num_workers: 9
     wrap: false
     train:
-      target: data.dataset.SolarDataset.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
-          - 'magnet'
+          # - 'magnet'
           - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024
@@ -79,30 +98,32 @@ data:
           - 90
         time_interval: 
           - 0
-          - 5346720
-        time_step: 115200
+          - 4800
+        time_step: 1
     validation:
-      target: data.dataset.SolarDataset.multimodal_dataset
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
-          - 'magnet'
+          # - 'magnet'
           - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024
           - 0.5
           - 90
         time_interval: 
-          - 5346720
-          - 7452000
-        time_step: 115200
+          - 4800
+          - 5265
+        time_step: 1
 
 lightning:
   trainer:
-    strategy: "ddp"
+    # strategy: "ddp"
     accelerator: "gpu"
-    devices: 2
-    benchmark: True
+    # devices: 2
+    max_epochs: 200
+    # benchmark: True
 
   # callbacks:
   #   image_logger:
