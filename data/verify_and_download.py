@@ -181,8 +181,8 @@ if __name__ == '__main__' :
     # dl_and_convert('magnet',exist_idx_list,[500000*i,500000*(i+1)])
     # with open(f'/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/ctf_105/SolarCLIP_ctf/data/idx_list_v2/{modal}_exist_idx.pkl','rb') as f:
     #     pt_idx_list = pickle.load(f)
-    # modal_list = ['0094', '0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-    #     executor.map(dl_and_conver_V2, modal_list)
+    modal_list = ['0131', '0171', '0193', '0211', '0304']
+    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
+        executor.map(dl_and_conver_V2, modal_list)
 
-    dl_and_conver_V2('hmi')
+    # dl_and_conver_V2('hmi')

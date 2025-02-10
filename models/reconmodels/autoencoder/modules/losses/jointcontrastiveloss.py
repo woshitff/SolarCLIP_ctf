@@ -5,31 +5,20 @@ from einops import rearrange
 
 class JointContrastiveLoss(nn.Module):
     def __init__(self,
-                #  basic_modal_key,
+                 models: dict = None
                  ):
-        pass
-        # self.basic_modal_key = basic_modal_key
-
-    # def calculate_contrastloss(base_modal, paired_modal):
-    #     """
-    #     base_modal: ususally HMI modal, shape (B, C, H, W)
-    #     paired_modal: ususally a single modal using contrastive-learning-like way to learn a better representation, shape (B, C, H, W)
-    #     """
-    #     base_features = rearrange(base_modal, 'b c h w -> b h w c')
-    #     paired_features = rearrange(paired_modal, 'b c h w -> b h w c')
-
-    #     base_features = base_features / (base_features.norm(dim=-1, keepdim=True)+1e-32)
-    #     paired_features = paired_features / (paired_features.norm(dim=-1, keepdim=True)+1e-32)
+         super().__init__()
+         self.models = models
+      
     def forward(self, 
-                split="train", 
-                **modals):
-        print(f"Received {len(modals)} modals: {list(modals.keys())}")
+                data):
 
         features = {}
-        for name, modal in modals.items():
-            feature = rearrange(modal, 'b c h w -> b h w c')
+        for i, (modal_name, model) in enumerate(self.models.items()):
+            feature = model.encode(data[:, i, :, :, :])
+            feature = rearrange(feature, 'b c h w -> b h w c')
             feature= feature / (feature.norm(dim=-1, keepdim=True)+1e-32)
-            features[name] = feature
+            features.update({f"{modal_name}":feature})
 
         inner_prod = None
         for name, feature in features.items():
@@ -40,8 +29,5 @@ class JointContrastiveLoss(nn.Module):
         inner_prod = inner_prod.sum(dim=-1)
 
         loss = torch.mean(inner_prod)
-        log = {
-            "{}/total_contrastive_loss".format(split): loss.clone().detach().mean()
-        }
-
-        return loss, log
+    
+        return loss

@@ -1,5 +1,5 @@
 model:
-  hmi_model:
+  hmi:
     base_learning_rate: 1.0e-04
     base_learning_optimizer: "Adam"
     base_learning_schedule: "CosineAnnealingLR"
@@ -22,16 +22,16 @@ model:
         attn_resolutions: []
         dropout: 0.0
   
-  0094_model:
-  0131_model:
-  0171_model:
-  0193_model:
-  0211_model:
-  0304_model:
-  0335_model:
-  1600_model:
-  1700_model:
-  4500_model:
+  0094:
+  0131:
+  0171:
+  0193:
+  0211:
+  0304:
+  0335:
+  1600:
+  1700:
+  4500:
 
 
 data:
@@ -75,6 +75,8 @@ data:
 training:
   device: 0
   epochs: 1000
-  save_freq: 10
   test_freq: 10
+  save_freq: 10
   contrast_weight: 0.1
+  logger_checkpoint_path: ''
+  model_checkpoint_path: ''
