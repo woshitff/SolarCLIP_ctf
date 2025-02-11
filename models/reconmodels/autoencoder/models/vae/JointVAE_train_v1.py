@@ -161,9 +161,10 @@ if __name__ == "__main__":
         print(f"Optimizer {optimizer_name} and Scheduler {scheduler_name} initize")
     # for modal_name, model in models.items():
     #     print(f'{modal_name}: f{id(model)}')
-    print('Start training')
 
     #### Begin training 
+    loss_dict = {}
+    print('Start training')
     for epoch in range(epochs):
         for modal_name, model in models.items():
             model.eval()
@@ -187,17 +188,18 @@ if __name__ == "__main__":
             rec_loss, kl_loss = models[selected_model_name].calculate_loss(data[:, random_index, :, :, :])
             cor_loss = JointContrastiveLoss(models,data)
             loss = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
-            print(f'loss: {loss}')
-            # break
+            print(f'{selected_model_name} loss: {loss}')
+            # loss_dict.update({f'{selected_model_name}/train/loss': loss.detach()})
             loss.backward()
             optimizers[f"optimizer_{selected_model_name}"].step()
 
             for param in models[selected_model_name].parameters():
                 param.requires_grad = False
+            print(f'one iteration done!')
 
         schedulers[f"scheduler_{selected_model_name}"].step()
         # break
-
+        print(f'one epoch done!')
         if (epoch+1) % test_epoch == 0:
             pass
         #     loss_test = {}
