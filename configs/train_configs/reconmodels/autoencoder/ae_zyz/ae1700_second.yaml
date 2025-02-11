@@ -64,7 +64,7 @@ data:
           - 90
         time_interval: 
           - 0
-          - 400
+          - 4800
         time_step: 1
     validation:
       target: data.dataset.SolarDataset_v2.multimodal_dataset
@@ -78,8 +78,8 @@ data:
           - 0.5
           - 90
         time_interval: 
-          - 400
-          - 487
+          - 4800
+          - 5148
         time_step: 1
 
 lighting:

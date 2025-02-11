@@ -407,6 +407,7 @@ class DDPM(pl.LightningModule):
             if mean:
                 loss = torch.nn.functional.mse_loss(target, pred)
             else:
+                # print('xxxxxxxxxxx',target.shape, pred.shape,'xxxxxxxxxxxx')
                 loss = torch.nn.functional.mse_loss(target, pred, reduction='none')
         else:
             raise NotImplementedError("unknown loss type '{loss_type}'")
@@ -456,6 +457,7 @@ class DDPM(pl.LightningModule):
     def get_input(self, batch, k):
         # print('xxxxxxxxxxx',batch.shape,'xxxxxxxxxxxx')
         # if k == 'hmi_image_vae' or k == 'hmi_image_cliptoken':
+        
         if k == 'first_stage_key':
             x = batch[:, 0, :, :, :]
         # elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
@@ -944,10 +946,12 @@ class LatentDiffusion(DDPM):
         return mean_flat(kl_prior) / np.log(2.0)
 
     def p_losses(self, x_start, cond, t, noise=None):
+        # print(f'x_start: {x_start.shape}, cond: {cond.shape}, t: {t.shape}')
         noise = default(noise, lambda: torch.randn_like(x_start))
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
         model_output = self.apply_model(x_noisy, t, cond)
-
+        # print(f'model_output: {model_output.shape}')
+        # print(f'x_noisy: {x_noisy.shape}')
         loss_dict = {}
         prefix = 'train' if self.training else 'val'
 
@@ -959,7 +963,7 @@ class LatentDiffusion(DDPM):
             target = self.get_v(x_start, noise, t)
         else:
             raise NotImplementedError()
-
+        # print('xxxxxxxxx',model_output.shape, target.shape,'xxxxxxxxxxxx')
         loss_simple = self.get_loss(model_output, target, mean=False).mean(dim=tuple(range(1,model_output.dim())))
         loss_dict.update({f'{prefix}/loss_simple': loss_simple.mean()})
         

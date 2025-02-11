@@ -180,10 +180,13 @@ class SolarImageLogger(Callback):
         cmap = "RdBu_r" if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'hmi_image' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
-        if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'hmi_image':
+        print('mode',mode)
+        mode_list_1 = ['hmi_image_vae','hmi_image_cliptoken','hmi_image']
+        mode_list_2 = ['0094_image','aia0094_image','aia0094_image_vae','aia0094_image_cliptoken_decodelrimage','aia0094_image_cliptoken']
+        if mode in mode_list_1:  # 'hmi_image_vae':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
-        elif mode == '0094_image' or mode == 'aia0094_image' or mode == 'aia0094_image_vae' or mode == 'aia0094_image_cliptoken_decodelrimage' or mode == 'aia0094_image_cliptoken':  # '0094_image'
+        elif mode in mode_list_2:  # '0094_image'
             # vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 1
             vmin = 0

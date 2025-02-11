@@ -9,8 +9,8 @@ model:
     linear_end: 0.0120
     log_every_t: 200
     timesteps: 100
-    first_stage_key: "0094_image"
-    cond_stage_key: "0094_image"
+    first_stage_key: "0094"
+    cond_stage_key: "0094"
     # image_size: 32
     spatial_size: [32, 32]
     channels: 32
@@ -24,7 +24,7 @@ model:
       target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
       params:
         ch: 384
-        out_ch: 3
+        out_ch: 32
         ch_mult:
           - 1
           - 2
@@ -34,7 +34,7 @@ model:
         attn_resolutions: []
         dropout: 0.0
         resamp_with_conv: true
-        in_channels: 6
+        in_channels: 64
         resolution: 64
         use_timestep: true
         use_linear_attn: false
@@ -91,7 +91,7 @@ data:
         modal_list: 
           # - 'magnet'
           - '0094'
-          - '0131'
+          - '0094'
         load_imgs: false
         enhance_list:
           - 1024
@@ -107,7 +107,7 @@ data:
         modal_list: 
           # - 'magnet'
           - '0094'
-          - '0131'
+          - '0094'
         load_imgs: false
         enhance_list:
           - 1024
