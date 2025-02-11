@@ -87,7 +87,7 @@ if __name__ == "__main__":
     parser = get_parser()
     opt, unknown = parser.parse_known_args()
     config = OmegaConf.load(opt.config[0]) 
-    print(config.model.keys())
+    print(f'Total modal:{config.model.keys()}')
     random.seed(opt.seed)
     np.random.seed(opt.seed)
     torch.manual_seed(opt.seed)
