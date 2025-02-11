@@ -78,9 +78,12 @@ def get_modal_dir_V2(modal, date_id, y_start=2010, m_start=5, d_start=1, y_end=2
     current_date = transfer_id_to_date_V2(date_id, y_start, m_start, d_start, y_end, m_end, d_end)
     # date_str_1 = current_date.strftime('%Y/%m/%d')
     # date_str = current_date.strftime('%Y%m%d')
-    if not modal == 'hmi':
+    if modal != 'hmi' and modal != '1700':
         path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_pt/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0000_{modal}.pt"
         path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_fits/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0000_{modal}.fits"
+    elif modal == '1700':
+        path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_pt/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0002_{modal}.pt"
+        path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_fits/AIA{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_0002_{modal}.fits"
     else: # TODO
         path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_pt/{modal}.M_720s.{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_000000_TAI.pt"
         path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_fits/{modal}.M_720s.{current_date.year:04d}{current_date.month:02d}{current_date.day:02d}_000000_TAI.fits"
@@ -263,7 +266,7 @@ if __name__ == '__main__':
 
     # update_exist_list('magnet')
 
-    modal_list = ['hmi', '0094', '0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']
+    modal_list = ['1700']
     for modal in modal_list:
         update_exist_list_V2(modal)
     

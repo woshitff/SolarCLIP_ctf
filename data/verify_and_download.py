@@ -123,9 +123,11 @@ def dl_and_conver_V2(modal,
         pbar.set_description(f'{modal} | {year} | {month} | {day}')
 
 
-        if not modal == 'hmi':
+        if modal != 'hmi' and modal != '1700':
             url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{year:04d}/{month:02d}/{day:02d}/H0000/AIA{year:04d}{month:02d}{day:02d}_0000_{modal}.fits'
                     # https://jsoc1.stanford.edu/data/hmi/fits/2011/02/02/hmi.M_720s.20110202_000001_TAI.fits
+        elif modal == '1700':
+            url = f'https://jsoc1.stanford.edu/data/aia/synoptic/{year:04d}/{month:02d}/{day:02d}/H0000/AIA{year:04d}{month:02d}{day:02d}_0002_{modal}.fits'
         else:
             url = f'https://jsoc1.stanford.edu/data/hmi/fits/{year:04d}/{month:02d}/{day:02d}/hmi.M_720s.{year:04d}{month:02d}{day:02d}_000000_TAI.fits'
         path_fits, path_pt = get_modal_dir_V2(modal, i)
@@ -181,7 +183,7 @@ if __name__ == '__main__' :
     # dl_and_convert('magnet',exist_idx_list,[500000*i,500000*(i+1)])
     # with open(f'/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/ctf_105/SolarCLIP_ctf/data/idx_list_v2/{modal}_exist_idx.pkl','rb') as f:
     #     pt_idx_list = pickle.load(f)
-    modal_list = ['0131', '0171', '0193', '0211', '0304']
+    modal_list = ['1700']
     with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
         executor.map(dl_and_conver_V2, modal_list)
 
