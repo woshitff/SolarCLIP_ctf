@@ -309,3 +309,4 @@ training:
   kl_weight: 0
   logger_checkpoint_path: ''
   model_checkpoint_path: ''
+  img_local: True

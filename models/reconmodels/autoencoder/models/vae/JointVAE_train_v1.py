@@ -5,12 +5,14 @@ import os
 import random
 from omegaconf import OmegaConf
 import argparse
-import pickle
+import datetime
+import io
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
+from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -48,7 +50,7 @@ def get_parser(**parser_kwargs):
         const=True,
         default="",
         nargs="?",
-        help="resume from logdir or checkpoint in logdir",
+        help="resume traning from logdir or checkpoint in logdir",
     )
     parser.add_argument(
         "-c",
@@ -69,7 +71,7 @@ def get_parser(**parser_kwargs):
     parser.add_argument(
         "--logdir",
         type=str,
-        default="logs/reconmodels/autoencoder/vae",
+        default="logs/reconmodels/autoencoder/vae/jointvae",
         help="log directory",
     )
     parser.add_argument(
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     parser = get_parser()
     opt, unknown = parser.parse_known_args()
     config = OmegaConf.load(opt.config[0]) 
-    print(f'Total modal:{config.model.keys()}')
+ 
     random.seed(opt.seed)
     np.random.seed(opt.seed)
     torch.manual_seed(opt.seed)
@@ -110,6 +112,7 @@ if __name__ == "__main__":
         print(data.shape)
         break
 
+
     #### Init basic traing config
     training_config = config.training
 
@@ -117,9 +120,7 @@ if __name__ == "__main__":
     epochs = training_config.epochs
     test_epoch = epochs//training_config.test_freq
     save_epoch = epochs//training_config.save_freq
-    logger_checkpoint_path = training_config.logger_checkpoint_path
-    model_checkpoint_path = training_config.model_checkpoint_path
-
+    
 
     #### Init Model
     models = {}
@@ -159,19 +160,38 @@ if __name__ == "__main__":
 
         print(f"Model {modal_name} loaded from {ckpt_path}")
         print(f"Optimizer {optimizer_name} and Scheduler {scheduler_name} initize")
-    # for modal_name, model in models.items():
-    #     print(f'{modal_name}: f{id(model)}')
+    
+
+    #### Init Logger
+    now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    cfg_fname = os.path.split(opt.config[0])[-1]
+    cfg_name = os.path.splitext(cfg_fname)[0]
+    name = cfg_name
+    nowname = now + name + opt.postfix
+    logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/vae/jointvae/{nowname}/
+    ckptdir = os.path.join(logdir, 'checkpoints')
+    cfgdir = os.path.join(logdir, 'configs')
+    os.makedirs(logdir, exist_ok=True)
+    os.makedirs(ckptdir, exist_ok=True)
+    os.makedirs(cfgdir, exist_ok=True)
+
+    print("Project config")
+    print(OmegaConf.to_yaml(config))
+    OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
+
+    writer =  SummaryWriter(log_dir = logdir)
 
     #### Begin training 
-    loss_dict = {}
     print('Start training')
+    gs = 0
+    gs_val = 0
     for epoch in range(epochs):
         for modal_name, model in models.items():
             model.eval()
             # model.train()
             # for param in model.parameters():
             #     param.requires_grad = False
-        for i, data in enumerate(train_dataloader):
+        for batch_idx, data in enumerate(train_dataloader):
 
             keys_list = list(models.keys())
             random_index = random.randint(0, len(keys_list) - 1)  
@@ -189,70 +209,98 @@ if __name__ == "__main__":
             cor_loss = JointContrastiveLoss(models,data)
             loss = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
             print(f'{selected_model_name} loss: {loss}')
-            # loss_dict.update({f'{selected_model_name}/train/loss': loss.detach()})
             loss.backward()
             optimizers[f"optimizer_{selected_model_name}"].step()
 
             for param in models[selected_model_name].parameters():
                 param.requires_grad = False
-            print(f'one iteration done!')
+
+            loss_dict = {
+                "loss": loss.detach(),
+                "rec_loss": rec_loss.detach(),
+                "kl_loss": kl_loss.detach(),
+                "cor_loss": cor_loss.detach()
+            }
+            for loss_name, loss_value in loss_dict.items():
+                writer.add_scalar(f'{selected_model_name}/train/{loss_name}', loss_value, gs)
+
+            gs += 1
+            # print(f'one iteration done!')
 
         schedulers[f"scheduler_{selected_model_name}"].step()
-        # break
-        print(f'one epoch done!')
+        # print(f'one epoch done!')
+
         if (epoch+1) % test_epoch == 0:
-            pass
-        #     loss_test = {}
-
-        #     for i, data in enumerate(val_dataloader):
-        #         data = data.to(device)
-        #         for k, (modal_name, model) in enumerate(models.items()):
-        #             with torch.no_grad():
-        #                 model.eval()
-        #             loss = training_config.contrast_weight * JointContrastiveLoss(models,data) + model.calculate_loss(data[:, k, :, :, :])
-        #             loss_test.update({f"{modal_name}_loss_test": loss})
-
-        #             # with open(f'{logger_checkpoint_path}logger_train_loss.pkl', 'wb') as f:
-        #             #     pickle.dump(loss, f)
-
-        #             # painting function #TODO
-        #             # for k, img_tensor in images.items():
-        #                 # if k not in target_keys:
-        #                 #     print(f"Warning: No modal type provided for {k}. Skipping.")
-        #                 #     continue
-        #             img_tensor = data[:, k, :, :, :]
-        #             image_array = img_tensor.cpu().numpy()
-        #             # modal = modals.get(k, None)
-        #             cmap = "RdBu_r"
-        #             vmin = np.min(data)
-        #             vmax = np.max(data)
-        #             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
-        #             vmin = 0
-        #             # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+            for batch_idx, data in enumerate(val_dataloader):
+                data = data.to(device)
+                for k, (modal_name, model) in enumerate(models.items()):
+                    with torch.no_grad():
+                        model.eval()
                     
-        #             plt.figure(figsize=(32, 16))
-        #             num_images = min(image_array.shape[0], 4)
-        #             for i in range(num_images):
-        #                 plt.subplot(1, 2, i+1)
-        #                 if len(image_array.shape) == 4:
-        #                     plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-        #                 elif len(image_array.shape) == 3:
-        #                     plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-        #                 plt.title(f"{k} - Image {i}")
-        #                 plt.subplots_adjust(wspace=0, hspace=0)
+                    for j in range(len(keys_list)-1):
+                        rec_loss_test, kl_loss_test = models[keys_list[j]].calculate_loss(data[:, j, :, :, :])
+                        cor_loss_test = JointContrastiveLoss(models,data)
+                        loss_test = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
 
-        #                 # if save_dir:
-        #                 #     # Save locally
-        #                 #     root = os.path.join(save_dir, "images", split)
-        #                 #     filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(k, pl_module.global_step, pl_module.current_epoch, batch_idx)
-        #                 #     path = os.path.join(root, filename)
-        #                 #     os.makedirs(os.path.split(path)[0], exist_ok=True)
-        #                 #     plt.savefig(path)
+                        loss_dict_test = {
+                            "loss": loss_test.detach(),
+                            "rec_loss": rec_loss_test.detach(),
+                            "kl_loss": kl_loss_test.detach(),
+                            "cor_loss": cor_loss_test.detach()
+                        }
+                        for loss_name, loss_value in loss_dict_test.items():
+                            writer.add_scalar(f'{keys_list[j]}/test/{loss_name}', loss_value, gs_val)
+
+                        # painting function #TODO
+                        img_tensor = data[:, j, :, :, :]
+                        image_array = img_tensor.cpu().numpy()
+                        cmap = "RdBu_r"
+                        vmin = np.min(data)
+                        vmax = np.max(data)
+                        vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                        vmin = 0
+                        # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+                        
+                        plt.figure(figsize=(32, 16))
+                        num_images = min(image_array.shape[0], 4)
+                        for i in range(num_images):
+                            plt.subplot(1, 2, i+1)
+                            if len(image_array.shape) == 4:
+                                plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                            elif len(image_array.shape) == 3:
+                                plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                            plt.title(f"{k} - Image {i}")
+                            plt.subplots_adjust(wspace=0, hspace=0)
+
+                        image_type = {"input", "recon"}
+
+                        if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
+                            # Save locally
+                            root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
+                            filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
+                            path = os.path.join(root, filename)
+                            os.makedirs(os.path.split(path)[0], exist_ok=True)
+                            plt.savefig(path)
+                        else:
+                            buf = io.BytesIO()
+                            plt.savefig(buf, format='png')
+                            buf.seek(0)
+                            plt.close()
+
+                            img_rgb = plt.imread(buf)[:, :, :3]
+                            tag = f"val/{image_type}"
+                            writer.add_image(
+                                tag, img_rgb,
+                                global_step=gs_val, dataformats='HWC'
+                            )
+
+                    gs_val += 1
 
 
-        # if (epoch+1) % save_epoch == 0:
-        #     for modal_name, model in models.items():
-        #         torch.save({'model': model.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
-        #                 'scheduler': schedulers[f"scheduler_{modal_name}"].state_dict(), 'epoch': epoch},
-        #                f'{model_checkpoint_path}/{modal_name}/epoch_{epoch+1}.pt')
+        if (epoch+1) % save_epoch == 0:
+            for modal_name, model in models.items():
+                torch.save({'model': model.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
+                        'scheduler': schedulers[f"scheduler_{modal_name}"].state_dict(), 'epoch': epoch},
+                       f'{ckptdir}/{modal_name}/epoch_{epoch+1}.pt')
 
+    writer.close()
