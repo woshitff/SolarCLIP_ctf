@@ -278,8 +278,8 @@ def train(rank, world_size, config, opt):
                             for image_type, img_tensor in images.items():
                                 image_array = img_tensor.cpu().numpy()
                                 cmap = "RdBu_r"
-                                vmin = np.min(data)
-                                vmax = np.max(data)
+                                vmin = np.min(image_array)
+                                vmax = np.max(image_array)
                                 vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
                                 vmin = 0
                                 # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
