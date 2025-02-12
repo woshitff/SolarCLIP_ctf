@@ -252,47 +252,51 @@ if __name__ == "__main__":
                             writer.add_scalar(f'{keys_list[j]}/test/{loss_name}', loss_value, gs_val)
 
                         # painting function #TODO
-                        img_tensor = data[:, j, :, :, :]
-                        image_array = img_tensor.cpu().numpy()
-                        cmap = "RdBu_r"
-                        vmin = np.min(data)
-                        vmax = np.max(data)
-                        vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
-                        vmin = 0
-                        # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
-                        
-                        plt.figure(figsize=(32, 16))
-                        num_images = min(image_array.shape[0], 4)
-                        for i in range(num_images):
-                            plt.subplot(1, 2, i+1)
-                            if len(image_array.shape) == 4:
-                                plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                            elif len(image_array.shape) == 3:
-                                plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                            plt.title(f"{k} - Image {i}")
-                            plt.subplots_adjust(wspace=0, hspace=0)
+                        images = {
+                            "input": data[:, j, :, :, :],
+                            "recon": model.encode(data[:, j, :, :, :])[0]
+                        }
 
-                        image_type = {"input", "recon"}
+                        for image_type, img_tensor in images:
+                            image_array = img_tensor.cpu().numpy()
+                            cmap = "RdBu_r"
+                            vmin = np.min(data)
+                            vmax = np.max(data)
+                            vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                            vmin = 0
+                            # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+                            
+                            plt.figure(figsize=(32, 16))
+                            num_images = min(image_array.shape[0], 4)
+                            for i in range(num_images):
+                                plt.subplot(1, 2, i+1)
+                                if len(image_array.shape) == 4:
+                                    plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                                elif len(image_array.shape) == 3:
+                                    plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                                plt.title(f"{k} - Image {i}")
+                                plt.subplots_adjust(wspace=0, hspace=0)
 
-                        if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
-                            # Save locally
-                            root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
-                            filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
-                            path = os.path.join(root, filename)
-                            os.makedirs(os.path.split(path)[0], exist_ok=True)
-                            plt.savefig(path)
-                        else:
-                            buf = io.BytesIO()
-                            plt.savefig(buf, format='png')
-                            buf.seek(0)
-                            plt.close()
 
-                            img_rgb = plt.imread(buf)[:, :, :3]
-                            tag = f"val/{image_type}"
-                            writer.add_image(
-                                tag, img_rgb,
-                                global_step=gs_val, dataformats='HWC'
-                            )
+                            if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
+                                # Save locally
+                                root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
+                                filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
+                                path = os.path.join(root, filename)
+                                os.makedirs(os.path.split(path)[0], exist_ok=True)
+                                plt.savefig(path)
+                            else:
+                                buf = io.BytesIO()
+                                plt.savefig(buf, format='png')
+                                buf.seek(0)
+                                plt.close()
+
+                                img_rgb = plt.imread(buf)[:, :, :3]
+                                tag = f"val/{image_type}"
+                                writer.add_image(
+                                    tag, img_rgb,
+                                    global_step=gs_val, dataformats='HWC'
+                                )
 
                     gs_val += 1
 
