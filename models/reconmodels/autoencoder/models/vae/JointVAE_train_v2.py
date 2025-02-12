@@ -1,4 +1,4 @@
-# 2025/02/08 Suppose all 11 modals can be loaded in a single machine.
+# 2025/02/12 Suppose all 11 modals can be loaded in a single machine and add ddp training
 import math
 import sys
 import os
@@ -12,7 +12,10 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, Dataset
+import torch.distributed as dist
+import torch.multiprocessing as mp
+from torch.utils.data import DataLoader, Dataset, DistributedSampler
+from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 import numpy as np
@@ -84,16 +87,15 @@ def get_parser(**parser_kwargs):
 
     return parser
 
+def train(rank, world_size, config, opt):
+    """ rank: 当前进程的 GPU ID, world_size: 总共的 GPU 数量 """
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+    torch.cuda.set_device(rank)
 
-if __name__ == "__main__":
-    # ckpt_paths should have same order with data make config yaml can be load from cli.
-    parser = get_parser()
-    opt, unknown = parser.parse_known_args()
-    config = OmegaConf.load(opt.config[0]) 
- 
     random.seed(opt.seed)
     np.random.seed(opt.seed)
     torch.manual_seed(opt.seed)
+    torch.cuda.manual_seed_all(opt.seed)
 
     #### init data
     data = instantiate_from_config(config.data)
@@ -105,10 +107,15 @@ if __name__ == "__main__":
     print("#### Data #####")
     for k in data.datasets:
         print(f"{k}, {data.datasets[k].__class__.__name__}, {len(data.datasets[k])}")
-    train_dataloader = DataLoader(data.datasets["train"], batch_size=data.batch_size, 
-                          shuffle=True, num_workers=data.num_workers)
-    val_dataloader = DataLoader(data.datasets["validation"], batch_size=data.batch_size, 
-                          shuffle=False, num_workers=data.num_workers)
+    train_sampler = DistributedSampler(data.datasets["train"], num_replicas=world_size, rank=rank)
+    val_sampler = DistributedSampler(data.datasets["validation"], num_replicas=world_size, rank=rank, shuffle=False)
+    train_dataloader = DataLoader(data.datasets["train"], batch_size=data.batch_size, sampler=train_sampler, num_workers=data.num_workers)
+    val_dataloader = DataLoader(data.datasets["validation"], batch_size=data.batch_size, sampler=val_sampler, num_workers=data.num_workers)
+
+    # train_dataloader = DataLoader(data.datasets["train"], batch_size=data.batch_size, 
+    #                       shuffle=True, num_workers=data.num_workers)
+    # val_dataloader = DataLoader(data.datasets["validation"], batch_size=data.batch_size, 
+    #                       shuffle=False, num_workers=data.num_workers)
     for i, data in enumerate(train_dataloader):
         print(data.shape)
         break
@@ -117,7 +124,7 @@ if __name__ == "__main__":
     #### Init basic traing config
     training_config = config.training
 
-    device = training_config.device
+    # device = training_config.device
     epochs = training_config.epochs
     test_epoch = epochs//training_config.test_freq
     save_epoch = epochs//training_config.save_freq
@@ -139,8 +146,8 @@ if __name__ == "__main__":
         model = instantiate_from_config(getattr(config.model, modal_name))
         if ckpt_path is not None:
             model = model.load_from_ckpt(getattr(config.model, modal_name).ckpt_path)
-        model = model.to(device)
-        models[modal_name] = model
+        model = model.to(rank)  
+        models[modal_name] = DDP(model, device_ids=[rank])
 
         optimizer_name = f"optimizer_{modal_name}"
         if getattr(config.model, modal_name).base_learning_optimizer == 'Adam':
@@ -161,8 +168,8 @@ if __name__ == "__main__":
 
         print(f"Model {modal_name} loaded from {ckpt_path}")
         print(f"Optimizer {optimizer_name} and Scheduler {scheduler_name} initize")
-    
 
+    
     #### Init Logger
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     cfg_fname = os.path.split(opt.config[0])[-1]
@@ -182,13 +189,15 @@ if __name__ == "__main__":
 
     writer =  SummaryWriter(log_dir = logdir)
 
+
     #### Begin training 
     print('Start training')
     gs = 0
     gs_val = 0
     for epoch in range(epochs):
+        train_sampler.set_epoch(epoch)
         for modal_name, model in models.items():
-            model.eval()
+            model.modules.eval()
             # model.train()
             # for param in model.parameters():
             #     param.requires_grad = False
@@ -202,31 +211,32 @@ if __name__ == "__main__":
             # selected_model_name = random.choice(keys_list)
             print(f'Modal {selected_model_name} VAE Model start to train')
 
-            for param in models[selected_model_name].parameters():
+            for param in models[selected_model_name].module.parameters():
                 param.requires_grad = True
 
-            data = data.to(device)
+            # data = data.to(device)
             optimizers[f"optimizer_{selected_model_name}"].zero_grad()
 
-            rec_loss, kl_loss = models[selected_model_name].calculate_loss(data[:, random_index, :, :, :])
-            cor_loss = JointContrastiveLoss(models,data)
+            rec_loss, kl_loss = models[selected_model_name].module.calculate_loss(data[:, random_index, :, :, :])
+            cor_loss = JointContrastiveLoss(models.module, data)
             loss = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
             print(f'{selected_model_name} loss: {loss}')
             loss.backward()
             optimizers[f"optimizer_{selected_model_name}"].step()
 
-            for param in models[selected_model_name].parameters():
+            for param in models[selected_model_name].module.parameters():
                 param.requires_grad = False
 
-            loss_dict = {
-                "loss": loss.detach(),
-                "rec_loss": rec_loss.detach(),
-                "kl_loss": kl_loss.detach(),
-                "cor_loss": cor_loss.detach()
-            }
-            for loss_name, loss_value in loss_dict.items():
-                writer.add_scalar(f'{selected_model_name}/train/{loss_name}', loss_value, gs)
-            loop_train.set_postfix(modal=selected_model_name, loss=loss.item(), rec_loss=rec_loss.item(), kl_loss=kl_loss.item(), cor_loss=cor_loss.item())
+            if rank == 0:
+                loss_dict = {
+                    "loss": loss.detach(),
+                    "rec_loss": rec_loss.detach(),
+                    "kl_loss": kl_loss.detach(),
+                    "cor_loss": cor_loss.detach()
+                }
+                for loss_name, loss_value in loss_dict.items():
+                    writer.add_scalar(f'{selected_model_name}/train/{loss_name}', loss_value, gs)
+                loop_train.set_postfix(modal=selected_model_name, loss=loss.item(), rec_loss=rec_loss.item(), kl_loss=kl_loss.item(), cor_loss=cor_loss.item())
             gs += 1
             # print(f'one iteration done!')
 
@@ -238,71 +248,72 @@ if __name__ == "__main__":
             loop_test = tqdm(val_dataloader, leave=True)  
             loop_test.set_description(f"Testing Epoch [{epoch+1}/{epochs}]")
             for batch_idx, data in enumerate(loop_test):
-                data = data.to(device)
+                # data = data.to(device)
                 for k, (modal_name, model) in enumerate(models.items()):
                     with torch.no_grad():
-                        model.eval()
+                        model.module.eval()
                     
                     for j in range(len(keys_list)-1):
-                        rec_loss_test, kl_loss_test = models[keys_list[j]].calculate_loss(data[:, j, :, :, :])
-                        cor_loss_test = JointContrastiveLoss(models,data)
+                        rec_loss_test, kl_loss_test = models[keys_list[j]].module.calculate_loss(data[:, j, :, :, :])
+                        cor_loss_test = JointContrastiveLoss(models.module, data)
                         loss_test = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+                        
+                        if rank == 0:
+                            loss_dict_test = {
+                                "loss": loss_test.detach(),
+                                "rec_loss": rec_loss_test.detach(),
+                                "kl_loss": kl_loss_test.detach(),
+                                "cor_loss": cor_loss_test.detach()
+                            }
+                            for loss_name, loss_value in loss_dict_test.items():
+                                writer.add_scalar(f'{keys_list[j]}/test/{loss_name}', loss_value, gs_val)
+                            loop_test.set_postfix(modal=modal_name, loss=loss.item(), rec_loss=rec_loss.item(), kl_loss=kl_loss.item(), cor_loss=cor_loss.item())
 
-                        loss_dict_test = {
-                            "loss": loss_test.detach(),
-                            "rec_loss": rec_loss_test.detach(),
-                            "kl_loss": kl_loss_test.detach(),
-                            "cor_loss": cor_loss_test.detach()
-                        }
-                        for loss_name, loss_value in loss_dict_test.items():
-                            writer.add_scalar(f'{keys_list[j]}/test/{loss_name}', loss_value, gs_val)
-                        loop_test.set_postfix(modal=modal_name, loss=loss.item(), rec_loss=rec_loss.item(), kl_loss=kl_loss.item(), cor_loss=cor_loss.item())
-
-                        # painting function #TODO
-                        images = {
-                            "input": data[:, j, :, :, :],
-                            "recon": model.encode(data[:, j, :, :, :])[0]
-                        }
-                        for image_type, img_tensor in images:
-                            image_array = img_tensor.cpu().numpy()
-                            cmap = "RdBu_r"
-                            vmin = np.min(data)
-                            vmax = np.max(data)
-                            vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
-                            vmin = 0
-                            # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
-                            
-                            plt.figure(figsize=(32, 16))
-                            num_images = min(image_array.shape[0], 4)
-                            for i in range(num_images):
-                                plt.subplot(1, 2, i+1)
-                                if len(image_array.shape) == 4:
-                                    plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                                elif len(image_array.shape) == 3:
-                                    plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                                plt.title(f"{k} - Image {i}")
-                                plt.subplots_adjust(wspace=0, hspace=0)
+                            # painting function #TODO
+                            images = {
+                                "input": data[:, j, :, :, :],
+                                "recon": model.encode(data[:, j, :, :, :])[0]
+                            }
+                            for image_type, img_tensor in images:
+                                image_array = img_tensor.cpu().numpy()
+                                cmap = "RdBu_r"
+                                vmin = np.min(data)
+                                vmax = np.max(data)
+                                vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                                vmin = 0
+                                # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+                                
+                                plt.figure(figsize=(32, 16))
+                                num_images = min(image_array.shape[0], 4)
+                                for i in range(num_images):
+                                    plt.subplot(1, 2, i+1)
+                                    if len(image_array.shape) == 4:
+                                        plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                                    elif len(image_array.shape) == 3:
+                                        plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                                    plt.title(f"{k} - Image {i}")
+                                    plt.subplots_adjust(wspace=0, hspace=0)
 
 
-                            if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
-                                # Save locally
-                                root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
-                                filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
-                                path = os.path.join(root, filename)
-                                os.makedirs(os.path.split(path)[0], exist_ok=True)
-                                plt.savefig(path)
-                            else:
-                                buf = io.BytesIO()
-                                plt.savefig(buf, format='png')
-                                buf.seek(0)
-                                plt.close()
+                                if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
+                                    # Save locally
+                                    root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
+                                    filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
+                                    path = os.path.join(root, filename)
+                                    os.makedirs(os.path.split(path)[0], exist_ok=True)
+                                    plt.savefig(path)
+                                else:
+                                    buf = io.BytesIO()
+                                    plt.savefig(buf, format='png')
+                                    buf.seek(0)
+                                    plt.close()
 
-                                img_rgb = plt.imread(buf)[:, :, :3]
-                                tag = f"val/{image_type}"
-                                writer.add_image(
-                                    tag, img_rgb,
-                                    global_step=gs_val, dataformats='HWC'
-                                )
+                                    img_rgb = plt.imread(buf)[:, :, :3]
+                                    tag = f"val/{image_type}"
+                                    writer.add_image(
+                                        tag, img_rgb,
+                                        global_step=gs_val, dataformats='HWC'
+                                    )
 
                     gs_val += 1
 
@@ -310,8 +321,22 @@ if __name__ == "__main__":
         if (epoch+1) % save_epoch == 0:
             print("begin to save")
             for modal_name, model in models.items():
-                torch.save({'model': model.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
+                torch.save({'model': model.module.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
                         'scheduler': schedulers[f"scheduler_{modal_name}"].state_dict(), 'epoch': epoch},
                        f'{ckptdir}/{modal_name}/epoch_{epoch+1}.pt')
 
     writer.close()
+
+if __name__ == "__main__":
+    # ckpt_paths should have same order with data make config yaml can be load from cli.
+    parser = get_parser()
+    opt, unknown = parser.parse_known_args()
+    config = OmegaConf.load(opt.config[0]) 
+
+    world_size = torch.cuda.device_count()
+    mp.spawn(train, args=(world_size, config), nprocs=world_size)
+    
+    
+    
+
+   

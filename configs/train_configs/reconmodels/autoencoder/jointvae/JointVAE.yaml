@@ -307,6 +307,4 @@ training:
   contrast_weight: 0.1
   reconstruct_weight: 1
   kl_weight: 0
-  logger_checkpoint_path: ''
-  model_checkpoint_path: ''
   img_local: True
