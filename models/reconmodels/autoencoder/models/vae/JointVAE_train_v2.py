@@ -197,7 +197,7 @@ def train(rank, world_size, config, opt):
     for epoch in range(epochs):
         train_sampler.set_epoch(epoch)
         for modal_name, model in models.items():
-            model.modules.eval()
+            model.module.eval()
             # model.train()
             # for param in model.parameters():
             #     param.requires_grad = False
@@ -205,6 +205,7 @@ def train(rank, world_size, config, opt):
         loop_train = tqdm(train_dataloader, leave=True)  
         loop_train.set_description(f"Traning Epoch [{epoch+1}/{epochs}]")
         for batch_idx, data in enumerate(loop_train):
+            data = data.to(rank)
             keys_list = list(models.keys())
             random_index = random.randint(0, len(keys_list) - 1)  
             selected_model_name = keys_list[random_index]
@@ -218,7 +219,7 @@ def train(rank, world_size, config, opt):
             optimizers[f"optimizer_{selected_model_name}"].zero_grad()
 
             rec_loss, kl_loss = models[selected_model_name].module.calculate_loss(data[:, random_index, :, :, :])
-            cor_loss = JointContrastiveLoss(models.module, data)
+            cor_loss = JointContrastiveLoss(models, data)
             loss = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
             print(f'{selected_model_name} loss: {loss}')
             loss.backward()
@@ -248,14 +249,14 @@ def train(rank, world_size, config, opt):
             loop_test = tqdm(val_dataloader, leave=True)  
             loop_test.set_description(f"Testing Epoch [{epoch+1}/{epochs}]")
             for batch_idx, data in enumerate(loop_test):
-                # data = data.to(device)
+                data = data.to(rank)
                 for k, (modal_name, model) in enumerate(models.items()):
                     with torch.no_grad():
                         model.module.eval()
                     
                     for j in range(len(keys_list)-1):
                         rec_loss_test, kl_loss_test = models[keys_list[j]].module.calculate_loss(data[:, j, :, :, :])
-                        cor_loss_test = JointContrastiveLoss(models.module, data)
+                        cor_loss_test = JointContrastiveLoss(models, data)
                         loss_test = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
                         
                         if rank == 0:
@@ -334,7 +335,7 @@ if __name__ == "__main__":
     config = OmegaConf.load(opt.config[0]) 
 
     world_size = torch.cuda.device_count()
-    mp.spawn(train, args=(world_size, config), nprocs=world_size)
+    mp.spawn(train, args=(world_size, config, opt), nprocs=world_size)
     
     
     

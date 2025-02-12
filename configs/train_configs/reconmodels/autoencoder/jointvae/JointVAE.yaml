@@ -302,8 +302,8 @@ data:
 training:
   device: 0
   epochs: 1000
-  test_freq: 10
-  save_freq: 10
+  test_freq: 1000
+  save_freq: 1000
   contrast_weight: 0.1
   reconstruct_weight: 1
   kl_weight: 0
