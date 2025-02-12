@@ -1,7 +1,7 @@
 model:
   hmi:
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -22,8 +22,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '0094':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -44,8 +44,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '0131':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -66,8 +66,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '0171':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -88,8 +88,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '0193':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -110,8 +110,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '0211':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -132,8 +132,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '0304':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -154,8 +154,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '0335':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -176,8 +176,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '1600':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -198,8 +198,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '1700':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -220,8 +220,8 @@ model:
         attn_resolutions: []
         dropout: 0.0
   '4500':
-    base_learning_rate: 1.0e-04
-    base_learning_optimizer: "Adam"
+    base_learning_rate: 1.0e-06
+    base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
     params:
@@ -300,7 +300,7 @@ data:
 
 
 training:
-  device: 0
+  # device: 0
   epochs: 1000
   test_freq: 1000
   save_freq: 1000

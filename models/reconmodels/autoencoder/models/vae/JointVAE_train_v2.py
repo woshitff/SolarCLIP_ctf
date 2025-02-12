@@ -210,7 +210,7 @@ def train(rank, world_size, config, opt):
             random_index = random.randint(0, len(keys_list) - 1)  
             selected_model_name = keys_list[random_index]
             # selected_model_name = random.choice(keys_list)
-            print(f'Modal {selected_model_name} VAE Model start to train')
+            # print(f'Modal {selected_model_name} VAE Model start to train')
 
             for param in models[selected_model_name].module.parameters():
                 param.requires_grad = True
@@ -220,8 +220,8 @@ def train(rank, world_size, config, opt):
 
             rec_loss, kl_loss = models[selected_model_name].module.calculate_loss(data[:, random_index, :, :, :])
             cor_loss = JointContrastiveLoss(models, data)
-            loss = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
-            print(f'{selected_model_name} loss: {loss}')
+            loss = -training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+            # print(f'{selected_model_name} loss: {loss}')
             loss.backward()
             optimizers[f"optimizer_{selected_model_name}"].step()
 
@@ -257,7 +257,7 @@ def train(rank, world_size, config, opt):
                     for j in range(len(keys_list)-1):
                         rec_loss_test, kl_loss_test = models[keys_list[j]].module.calculate_loss(data[:, j, :, :, :])
                         cor_loss_test = JointContrastiveLoss(models, data)
-                        loss_test = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+                        loss_test = -training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
                         
                         if rank == 0:
                             loss_dict_test = {
@@ -273,9 +273,9 @@ def train(rank, world_size, config, opt):
                             # painting function #TODO
                             images = {
                                 "input": data[:, j, :, :, :],
-                                "recon": model.encode(data[:, j, :, :, :])[0]
+                                "recon": model.module(data[:, j, :, :, :])[0]
                             }
-                            for image_type, img_tensor in images:
+                            for image_type, img_tensor in images.items():
                                 image_array = img_tensor.cpu().numpy()
                                 cmap = "RdBu_r"
                                 vmin = np.min(data)
