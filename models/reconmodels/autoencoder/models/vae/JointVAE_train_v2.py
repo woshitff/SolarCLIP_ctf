@@ -322,6 +322,7 @@ def train(rank, world_size, config, opt):
         if (epoch+1) % save_epoch == 0:
             print("begin to save")
             for modal_name, model in models.items():
+                os.makedirs(f'{ckptdir}/{modal_name}', exist_ok=True)
                 torch.save({'model': model.module.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
                         'scheduler': schedulers[f"scheduler_{modal_name}"].state_dict(), 'epoch': epoch},
                        f'{ckptdir}/{modal_name}/epoch_{epoch+1}.pt')
