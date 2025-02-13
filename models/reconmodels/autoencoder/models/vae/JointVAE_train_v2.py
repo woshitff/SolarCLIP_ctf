@@ -198,7 +198,7 @@ def train(rank, world_size, config, opt):
                     if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
                         # Save locally
                         root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
-                        filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
+                        filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, 0, 0, batch_idx) # TODO add image_type {"inputs", "recon"}
                         path = os.path.join(root, 'initial_test', filename)
                         os.makedirs(os.path.split(path)[0], exist_ok=True)
                         plt.savefig(path)
