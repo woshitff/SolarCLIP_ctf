@@ -139,9 +139,10 @@ def train(rank, world_size, config, opt):
     logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
     ckptdir = os.path.join(logdir, 'checkpoints')
     cfgdir = os.path.join(logdir, 'configs')
-    os.makedirs(logdir, exist_ok=True)
-    os.makedirs(ckptdir, exist_ok=True)
-    os.makedirs(cfgdir, exist_ok=True)
+    if rank == 0:
+        os.makedirs(logdir, exist_ok=True)
+        os.makedirs(ckptdir, exist_ok=True)
+        os.makedirs(cfgdir, exist_ok=True)
 
     print("Project config")
     print(OmegaConf.to_yaml(config))
@@ -187,41 +188,43 @@ def train(rank, world_size, config, opt):
         print(f"Model {modal_name} loaded from {ckpt_path}")
         print(f"Optimizer {optimizer_name} and Scheduler {scheduler_name} initize")
 
-    for batch_idx, data in val_dataloader:
-        for k, (modal_name, model) in enumerate(models.items()):
-            with torch.no_grad():
-                model.module.eval()
-                images = {
-                    "input": data[:, j, :, :, :],
-                    "recon": model.module(data[:, j, :, :, :])[0]
-                }
-                for image_type, img_tensor in images.items():
-                    image_array = img_tensor.cpu().numpy()
-                    cmap = "Reds"
-                    vmin = np.min(image_array)
-                    vmax = np.max(image_array)
-                    vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
-                    vmin = 0
-                    # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
-                    
-                    plt.figure(figsize=(32, 16))
-                    num_images = min(image_array.shape[0], 4)
-                    for i in range(num_images):
-                        plt.subplot(1, 2, i+1)
-                        if len(image_array.shape) == 4:
-                            plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                        elif len(image_array.shape) == 3:
-                            plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                        plt.title(f"{modal_name}/{image_type} - Image {gs_val}")
-                        plt.subplots_adjust(wspace=0, hspace=0)
+    for batch_idx, data in enumerate(val_dataloader):
+        if rank == 0:
+            data = data.to(rank)
+            for k, (modal_name, model) in enumerate(models.items()):
+                with torch.no_grad():
+                    model.module.eval()
+                    images = {
+                        "input": data[:, k, :, :, :],
+                        "recon": model.module(data[:, k, :, :, :])[0]
+                    }
+                    for image_type, img_tensor in images.items():
+                        image_array = img_tensor.cpu().numpy()
+                        cmap = "Reds"
+                        vmin = np.min(image_array)
+                        vmax = np.max(image_array)
+                        vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                        vmin = 0
+                        # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+                        
+                        plt.figure(figsize=(32, 16))
+                        num_images = min(image_array.shape[0], 4)
+                        for i in range(num_images):
+                            plt.subplot(1, 2, i+1)
+                            if len(image_array.shape) == 4:
+                                plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                            elif len(image_array.shape) == 3:
+                                plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                            plt.title(f"{modal_name}/{image_type} - Image Pretraining Test")
+                            plt.subplots_adjust(wspace=0, hspace=0)
 
-                    if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
-                        # Save locally
-                        root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
-                        filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, 0, 0, batch_idx) # TODO add image_type {"inputs", "recon"}
-                        path = os.path.join(root, 'initial_test', filename)
-                        os.makedirs(os.path.split(path)[0], exist_ok=True)
-                        plt.savefig(path)
+                        if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
+                            # Save locally
+                            root = os.path.join(logdir, "images", f'{modal_name}', 'val')
+                            filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, 0, 0, batch_idx) # TODO add image_type {"inputs", "recon"}
+                            path = os.path.join(root, 'initial_test', filename)
+                            os.makedirs(os.path.split(path)[0], exist_ok=True)
+                            plt.savefig(path)
                         plt.close()
         break
     
@@ -295,69 +298,68 @@ def train(rank, world_size, config, opt):
                     with torch.no_grad():
                         model.module.eval()
                     
-                    for j in range(len(keys_list)-1):
-                        rec_loss_test, kl_loss_test = models[keys_list[j]].module.calculate_loss(data[:, j, :, :, :])
-                        cor_loss_test = JointContrastiveLoss(models, data, modal_name)
-                        loss_test = -contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
-                        
-                        if rank == 0:
-                            loss_dict_test = {
-                                "loss": loss_test.detach(),
-                                "rec_loss": rec_loss_test.detach(),
-                                "kl_loss": kl_loss_test.detach(),
-                                "cor_loss": cor_loss_test.detach()
+                    rec_loss_test, kl_loss_test = models[keys_list[k]].module.calculate_loss(data[:, k, :, :, :])
+                    cor_loss_test = JointContrastiveLoss(models, data, modal_name)
+                    loss_test = -contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+                    
+                    if rank == 0:
+                        loss_dict_test = {
+                            "loss": loss_test.detach(),
+                            "rec_loss": rec_loss_test.detach(),
+                            "kl_loss": kl_loss_test.detach(),
+                            "cor_loss": cor_loss_test.detach()
+                        }
+                        for loss_name, loss_value in loss_dict_test.items():
+                            writer.add_scalar(f'{keys_list[k]}/test/{loss_name}', loss_value, gs_val)
+                        loop_test.set_postfix(modal=modal_name, loss=loss.item(), rec_loss=rec_loss.item(), kl_loss=kl_loss.item(), cor_loss=cor_loss.item())
+
+                        # painting function #TODO
+                        if (math.log2(gs_val+1) % 1 == 0):
+                            images = {
+                                "input": data[:, k, :, :, :],
+                                "recon": model.module(data[:, k, :, :, :])[0]
                             }
-                            for loss_name, loss_value in loss_dict_test.items():
-                                writer.add_scalar(f'{keys_list[j]}/test/{loss_name}', loss_value, gs_val)
-                            loop_test.set_postfix(modal=modal_name, loss=loss.item(), rec_loss=rec_loss.item(), kl_loss=kl_loss.item(), cor_loss=cor_loss.item())
+                            for image_type, img_tensor in images.items():
+                                image_array = img_tensor.cpu().numpy()
+                                cmap = "Reds"
+                                vmin = np.min(image_array)
+                                vmax = np.max(image_array)
+                                vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                                vmin = 0
+                                # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+                                
+                                plt.figure(figsize=(32, 16))
+                                num_images = min(image_array.shape[0], 4)
+                                for i in range(num_images):
+                                    plt.subplot(1, 2, i+1)
+                                    if len(image_array.shape) == 4:
+                                        plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                                    elif len(image_array.shape) == 3:
+                                        plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                                    plt.title(f"{modal_name}/{image_type} - Image {gs_val}")
+                                    plt.subplots_adjust(wspace=0, hspace=0)
 
-                            # painting function #TODO
-                            if (math.log2(gs_val+1) % 1 == 0):
-                                images = {
-                                    "input": data[:, j, :, :, :],
-                                    "recon": model.module(data[:, j, :, :, :])[0]
-                                }
-                                for image_type, img_tensor in images.items():
-                                    image_array = img_tensor.cpu().numpy()
-                                    cmap = "Reds"
-                                    vmin = np.min(image_array)
-                                    vmax = np.max(image_array)
-                                    vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
-                                    vmin = 0
-                                    # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
-                                    
-                                    plt.figure(figsize=(32, 16))
-                                    num_images = min(image_array.shape[0], 4)
-                                    for i in range(num_images):
-                                        plt.subplot(1, 2, i+1)
-                                        if len(image_array.shape) == 4:
-                                            plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                                        elif len(image_array.shape) == 3:
-                                            plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                                        plt.title(f"{modal_name}/{image_type} - Image {gs_val}")
-                                        plt.subplots_adjust(wspace=0, hspace=0)
+                                if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
+                                    # Save locally
+                                    root = os.path.join(logdir, "images", f'{keys_list[k]}', 'val')
+                                    filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
+                                    path = os.path.join(root, filename)
+                                    os.makedirs(os.path.split(path)[0], exist_ok=True)
+                                    plt.savefig(path)
+                                    plt.close()
 
-                                    if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
-                                        # Save locally
-                                        root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
-                                        filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
-                                        path = os.path.join(root, filename)
-                                        os.makedirs(os.path.split(path)[0], exist_ok=True)
-                                        plt.savefig(path)
-                                        plt.close()
+                                else:
+                                    buf = io.BytesIO()
+                                    plt.savefig(buf, format='png')
+                                    buf.seek(0)
+                                    plt.close()
 
-                                    else:
-                                        buf = io.BytesIO()
-                                        plt.savefig(buf, format='png')
-                                        buf.seek(0)
-                                        plt.close()
-
-                                        img_rgb = plt.imread(buf)[:, :, :3]
-                                        tag = f"val/{image_type}"
-                                        writer.add_image(
-                                            tag, img_rgb,
-                                            global_step=gs_val, dataformats='HWC'
-                                        )
+                                    img_rgb = plt.imread(buf)[:, :, :3]
+                                    tag = f"val/{image_type}"
+                                    writer.add_image(
+                                        tag, img_rgb,
+                                        global_step=gs_val, dataformats='HWC'
+                                    )
 
                 gs_val += 1
                 # pass
@@ -365,11 +367,12 @@ def train(rank, world_size, config, opt):
 
         if (epoch+1) % save_epoch == 0:
             print("begin to save")
-            for modal_name, model in models.items():
-                os.makedirs(f'{ckptdir}/{modal_name}', exist_ok=True)
-                torch.save({'model': model.module.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
-                        'scheduler': schedulers[f"scheduler_{modal_name}"].state_dict(), 'epoch': epoch},
-                       f'{ckptdir}/{modal_name}/epoch_{epoch+1}.pt')
+            if rank == 0:
+                for modal_name, model in models.items():
+                    os.makedirs(f'{ckptdir}/{modal_name}', exist_ok=True)
+                    torch.save({'model': model.module.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
+                            'scheduler': schedulers[f"scheduler_{modal_name}"].state_dict(), 'epoch': epoch},
+                        f'{ckptdir}/{modal_name}/epoch_{epoch+1}.pt')
 
     writer.close()
 
