@@ -271,7 +271,7 @@ def train(rank, world_size, config, opt):
                             loop_test.set_postfix(modal=modal_name, loss=loss.item(), rec_loss=rec_loss.item(), kl_loss=kl_loss.item(), cor_loss=cor_loss.item())
 
                             # painting function #TODO
-                            if (math.log2(gs_val()) % 1 == 0):
+                            if (math.log2(gs_val+1) % 1 == 0):
                                 images = {
                                     "input": data[:, j, :, :, :],
                                     "recon": model.module(data[:, j, :, :, :])[0]

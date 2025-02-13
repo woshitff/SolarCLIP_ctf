@@ -436,8 +436,8 @@ class CNN_VAE(pl.LightningModule):
 
     def forward(self, x):
         mu, logvar = self.encode(x)
-        #z = self.reparameterize(mu, logvar)
-        z = mu
+        z = self.reparameterize(mu, logvar)
+        # z = mu
         # print(z.shape)
         recon_x = self.decode(z)
         return recon_x, mu, logvar
