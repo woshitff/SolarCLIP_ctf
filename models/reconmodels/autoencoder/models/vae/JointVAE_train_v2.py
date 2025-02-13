@@ -141,11 +141,9 @@ def train(rank, world_size, config, opt):
             ckpt_paths[modal_name] = model_config.params.ckpt_path
         else:
             ckpt_paths[modal_name] = None 
-
+    print(f"ckpt paths dict {ckpt_paths}")
     for modal_name, ckpt_path in ckpt_paths.items():
         model = instantiate_from_config(getattr(config.model, modal_name))
-        if ckpt_path is not None:
-            model = model.load_from_ckpt(getattr(config.model, modal_name).ckpt_path)
         model = model.to(rank)  
         models[modal_name] = DDP(model, device_ids=[rank])
 
@@ -168,6 +166,45 @@ def train(rank, world_size, config, opt):
 
         print(f"Model {modal_name} loaded from {ckpt_path}")
         print(f"Optimizer {optimizer_name} and Scheduler {scheduler_name} initize")
+
+    for batch_idx, data in val_dataloader:
+        for k, (modal_name, model) in enumerate(models.items()):
+            with torch.no_grad():
+                model.module.eval()
+                images = {
+                    "input": data[:, j, :, :, :],
+                    "recon": model.module(data[:, j, :, :, :])[0]
+                }
+                for image_type, img_tensor in images.items():
+                    image_array = img_tensor.cpu().numpy()
+                    cmap = "Reds"
+                    vmin = np.min(image_array)
+                    vmax = np.max(image_array)
+                    vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                    vmin = 0
+                    # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
+                    
+                    plt.figure(figsize=(32, 16))
+                    num_images = min(image_array.shape[0], 4)
+                    for i in range(num_images):
+                        plt.subplot(1, 2, i+1)
+                        if len(image_array.shape) == 4:
+                            plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                        elif len(image_array.shape) == 3:
+                            plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                        plt.title(f"{modal_name}/{image_type} - Image {gs_val}")
+                        plt.subplots_adjust(wspace=0, hspace=0)
+
+                    if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
+                        # Save locally
+                        root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
+                        filename = "{}_gs-{:06}_e-{:06}_b-{:06}.png".format(image_type, gs_val, epoch, batch_idx) # TODO add image_type {"inputs", "recon"}
+                        path = os.path.join(root, 'initial_test', filename)
+                        os.makedirs(os.path.split(path)[0], exist_ok=True)
+                        plt.savefig(path)
+                        plt.close()
+        break
+    
 
     
     #### Init Logger
@@ -194,7 +231,11 @@ def train(rank, world_size, config, opt):
     print('Start training')
     gs = 0
     gs_val = 0
+    contrast_weight_min = training_config.contrast_weight_min
+    contrast_weight_max = training_config.contrast_weight_max
+
     for epoch in range(epochs):
+        contrast_weight = contrast_weight_max - (contrast_weight_max - contrast_weight_min) * (1 + math.cos(math.pi * epoch / training_config.epochs)) / 2
         train_sampler.set_epoch(epoch)
         for modal_name, model in models.items():
             model.module.eval()
@@ -220,7 +261,7 @@ def train(rank, world_size, config, opt):
 
             rec_loss, kl_loss = models[selected_model_name].module.calculate_loss(data[:, random_index, :, :, :])
             cor_loss = JointContrastiveLoss(models, data)
-            loss = -training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+            loss = -contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
             # print(f'{selected_model_name} loss: {loss}')
             loss.backward()
             optimizers[f"optimizer_{selected_model_name}"].step()
@@ -230,6 +271,7 @@ def train(rank, world_size, config, opt):
 
             if rank == 0:
                 loss_dict = {
+                    "contrast_weight": contrast_weight,
                     "loss": loss.detach(),
                     "rec_loss": rec_loss.detach(),
                     "kl_loss": kl_loss.detach(),
@@ -257,7 +299,7 @@ def train(rank, world_size, config, opt):
                     for j in range(len(keys_list)-1):
                         rec_loss_test, kl_loss_test = models[keys_list[j]].module.calculate_loss(data[:, j, :, :, :])
                         cor_loss_test = JointContrastiveLoss(models, data)
-                        loss_test = -training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+                        loss_test = -contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
                         
                         if rank == 0:
                             loss_dict_test = {

@@ -16,8 +16,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -38,8 +38,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -60,8 +60,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -82,8 +82,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -104,8 +104,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -126,8 +126,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -148,8 +148,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -170,8 +170,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -192,8 +192,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -214,8 +214,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -236,8 +236,8 @@ model:
         resolution: 1024
         in_channels: 1
         out_ch: 1
-        ch: 32
-        ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
@@ -304,7 +304,8 @@ training:
   epochs: 1000
   test_freq: 1000
   save_freq: 1000
-  contrast_weight: 0.1
+  contrast_weight_min: 0.1
+  contrast_weight_max: 10
   reconstruct_weight: 1
   kl_weight: 0
   img_local: True
