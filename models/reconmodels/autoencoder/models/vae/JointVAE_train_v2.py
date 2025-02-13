@@ -130,6 +130,26 @@ def train(rank, world_size, config, opt):
     save_epoch = epochs//training_config.save_freq
     
 
+    #### Init Logger
+    now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    cfg_fname = os.path.split(opt.config[0])[-1]
+    cfg_name = os.path.splitext(cfg_fname)[0]
+    name = cfg_name
+    nowname = now + "_" + name + opt.postfix
+    logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
+    ckptdir = os.path.join(logdir, 'checkpoints')
+    cfgdir = os.path.join(logdir, 'configs')
+    os.makedirs(logdir, exist_ok=True)
+    os.makedirs(ckptdir, exist_ok=True)
+    os.makedirs(cfgdir, exist_ok=True)
+
+    print("Project config")
+    print(OmegaConf.to_yaml(config))
+    OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
+
+    writer =  SummaryWriter(log_dir = logdir)
+
+
     #### Init Model
     models = {}
     optimizers = {}
@@ -205,27 +225,6 @@ def train(rank, world_size, config, opt):
                         plt.close()
         break
     
-
-    
-    #### Init Logger
-    now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-    cfg_fname = os.path.split(opt.config[0])[-1]
-    cfg_name = os.path.splitext(cfg_fname)[0]
-    name = cfg_name
-    nowname = now + "_" + name + opt.postfix
-    logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
-    ckptdir = os.path.join(logdir, 'checkpoints')
-    cfgdir = os.path.join(logdir, 'configs')
-    os.makedirs(logdir, exist_ok=True)
-    os.makedirs(ckptdir, exist_ok=True)
-    os.makedirs(cfgdir, exist_ok=True)
-
-    print("Project config")
-    print(OmegaConf.to_yaml(config))
-    OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
-
-    writer =  SummaryWriter(log_dir = logdir)
-
 
     #### Begin training 
     print('Start training')

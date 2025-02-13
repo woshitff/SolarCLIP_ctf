@@ -5,7 +5,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 from einops import rearrange
 
-def JointContrastiveLoss(models: dict = None, data: torch.Tensor = None):
+def JointContrastiveLoss(models: dict = None, data: torch.Tensor = None, modal: str = None):
 
         features = {}
         for i, (modal_name, model) in enumerate(models.items()):
@@ -18,14 +18,17 @@ def JointContrastiveLoss(models: dict = None, data: torch.Tensor = None):
             feature= feature / (feature.norm(dim=-1, keepdim=True)+1e-32)
             features.update({f"{modal_name}":feature})
 
-        inner_prod = None
-        for name, feature in features.items():
-            if inner_prod is None:
-                inner_prod = feature
-            else:
-                inner_prod = inner_prod * feature
-        inner_prod = inner_prod.sum(dim=-1)
+        # inner_prod = None
+        # for name, feature in features.items():
+        #     if inner_prod is None:
+        #         inner_prod = feature
+        #     else:
+        #         inner_prod = inner_prod * feature
+        # inner_prod = inner_prod.sum(dim=-1)
 
-        loss = torch.mean(inner_prod)
+        # loss = torch.mean(inner_prod)
+        target_feature = features[modal]  
+        other_features = {name: feature for name, feature in features.items() if name != modal}
+        loss = sum((target_feature * feature).sum(dim=-1).mean() for feature in other_features.values()) / len(other_features)
     
         return loss
