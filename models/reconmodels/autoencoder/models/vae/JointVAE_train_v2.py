@@ -259,7 +259,7 @@ def train(rank, world_size, config, opt):
             optimizers[f"optimizer_{selected_model_name}"].zero_grad()
 
             rec_loss, kl_loss = models[selected_model_name].module.calculate_loss(data[:, random_index, :, :, :])
-            cor_loss = JointContrastiveLoss(models, data)
+            cor_loss = JointContrastiveLoss(models, data, selected_model_name)
             loss = -contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
             # print(f'{selected_model_name} loss: {loss}')
             loss.backward()
@@ -297,7 +297,7 @@ def train(rank, world_size, config, opt):
                     
                     for j in range(len(keys_list)-1):
                         rec_loss_test, kl_loss_test = models[keys_list[j]].module.calculate_loss(data[:, j, :, :, :])
-                        cor_loss_test = JointContrastiveLoss(models, data)
+                        cor_loss_test = JointContrastiveLoss(models, data, modal_name)
                         loss_test = -contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
                         
                         if rank == 0:
