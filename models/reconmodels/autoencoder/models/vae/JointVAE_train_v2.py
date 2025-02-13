@@ -296,7 +296,6 @@ def train(rank, world_size, config, opt):
                                         plt.title(f"{modal_name}/{image_type} - Image {gs_val}")
                                         plt.subplots_adjust(wspace=0, hspace=0)
 
-
                                     if training_config.img_local: # TODO add img_local bool value can be read by OmegaConf
                                         # Save locally
                                         root = os.path.join(logdir, "images", f'{keys_list[j]}', 'val')
@@ -304,6 +303,8 @@ def train(rank, world_size, config, opt):
                                         path = os.path.join(root, filename)
                                         os.makedirs(os.path.split(path)[0], exist_ok=True)
                                         plt.savefig(path)
+                                        plt.close()
+
                                     else:
                                         buf = io.BytesIO()
                                         plt.savefig(buf, format='png')
