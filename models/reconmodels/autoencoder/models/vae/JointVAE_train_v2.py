@@ -293,7 +293,7 @@ def train(rank, world_size, config, opt):
                                             plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                                         elif len(image_array.shape) == 3:
                                             plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
-                                        plt.title(f"{k} - Image {i}")
+                                        plt.title(f"{modal_name}/{image_type} - Image {gs_val}")
                                         plt.subplots_adjust(wspace=0, hspace=0)
 
 
