@@ -1,6 +1,7 @@
 from functools import partial
 import importlib
 
+import torch
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, Dataset
 
@@ -31,16 +32,25 @@ class WrappedDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data[idx]
+#! bug
+def custom_collate_fn(batch, modal_list):
+    batch_dict = dict()
+    stack_batch = torch.stack(batch,dim=0)
+    for i,modal in enumerate(modal_list):
+        batch_dict[modal] = stack_batch[:,i]
+    return batch_dict
 
 class DataModuleFromConfig(pl.LightningDataModule):
     def __init__(self, batch_size, train=None, validation=None, test=None, predict=None,
                  wrap=False, num_workers=None, shuffle_test_loader=False, use_worker_init_fn=False,
-                 shuffle_val_dataloader=False):
+                 shuffle_val_dataloader=False,custom_collate_fn=custom_collate_fn):
         super().__init__()
         self.batch_size = batch_size
         self.dataset_configs = dict()
         self.num_workers = num_workers if num_workers is not None else 0
         self.use_worker_init_fn = use_worker_init_fn
+        modal_list = train.params.modal_list
+        self.custom_collate_fn = partial(custom_collate_fn, modal_list=modal_list) if custom_collate_fn is not None else None
 
         if train is not None:
             self.dataset_configs["train"] = train
@@ -77,19 +87,19 @@ class DataModuleFromConfig(pl.LightningDataModule):
         dataLoader = DataLoader(self.datasets["train"], batch_size=self.batch_size, 
                           shuffle=True, num_workers=self.num_workers)
         return DataLoader(self.datasets["train"], batch_size=self.batch_size, 
-                          shuffle=True, num_workers=self.num_workers)
+                          shuffle=True, num_workers=self.num_workers,collate_fn=self.custom_collate_fn)
 
     def _val_dataloader(self, shuffle=False):
         dataloader = DataLoader(self.datasets["validation"], batch_size=self.batch_size, 
-                          shuffle=shuffle, num_workers=self.num_workers)
+                          shuffle=shuffle, num_workers=self.num_workers,collate_fn=self.custom_collate_fn)
         self.__val_dataloader = dataloader
         return DataLoader(self.datasets["validation"], batch_size=self.batch_size, 
-                          shuffle=shuffle, num_workers=self.num_workers)
+                          shuffle=shuffle, num_workers=self.num_workers,collate_fn=self.custom_collate_fn)
 
     def _test_dataloader(self, shuffle=False):
         return DataLoader(self.datasets["test"], batch_size=self.batch_size, 
-                          shuffle=shuffle, num_workers=self.num_workers)
+                          shuffle=shuffle, num_workers=self.num_workers,collate_fn=self.custom_collate_fn)
     
     def _predict_dataloader(self):
         return DataLoader(self.datasets["predict"], batch_size=self.batch_size, 
-                          shuffle=False, num_workers=self.num_workers)
+                          shuffle=False, num_workers=self.num_workers,collate_fn=self.custom_collate_fn)

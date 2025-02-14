@@ -2,7 +2,7 @@ model:
   base_learning_rate: 1.0e-04
   base_learning_optimizer: "AdamW"
   base_learning_schedule: "CosineAnnealingLR"
-  target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+  target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
   params:
     ckpt_path: null
     vae_modal: 'aia0094_image'
@@ -12,13 +12,13 @@ model:
 
     dd_config:
       double_z: True
-      z_channels: 8
+      z_channels: 64
       resolution: 1024
-      in_channels: 1
-      out_ch: 1
-      ch: 16
-      ch_mult: [1,2,2,2] # num_down = len(ch_mult)-1
-      num_res_blocks: 4
+      in_channels: 16
+      out_ch: 16
+      ch: 32
+      ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
+      num_res_blocks: 2
       attn_resolutions: []
       dropout: 0.0
 
@@ -29,22 +29,35 @@ model:
     #     log_var_init: 0.0
     #     kl_weight: 0.000001
     #     perceptual_weight: 1.0
-
+    first_stage_config:
+      ckpt_path: ./logs/reconmodels/autoencoder/vae/ae0211_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+      vae_modal: 'aia0094_image'
+      kl_weight: 0.1
+      loss_type: 'MSE'
+      dd_config:
+        double_z: True
+        z_channels: 16
+        resolution: 1024
+        in_channels: 1
+        out_ch: 1
+        ch: 16
+        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 2
+    batch_size: 2 
     num_workers: 9
-    
     wrap: false
     train:
       target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
-          - '4500'
+          - '0211'
         load_imgs: false
-        log1p_scale: 0.1
         enhance_list:
           - 1024
           - 0.5
@@ -58,16 +71,15 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '4500'
+          - '0211'
         load_imgs: false
-        log1p_scale: 0.1
         enhance_list:
           - 1024
           - 0.5
           - 90
         time_interval: 
           - 4800
-          - 5120
+          - 5136
         time_step: 1
 
 lighting:

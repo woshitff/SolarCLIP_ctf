@@ -22,6 +22,46 @@ def nonlinearity(x):
     # swish
     return x*torch.sigmoid(x)
 
+class SelfAttention(nn.Module):
+    def __init__(self, dim):
+        
+        super(SelfAttention, self).__init__()
+        self.query = nn.Linear(dim, dim)
+        self.key = nn.Linear(dim, dim)
+        self.value = nn.Linear(dim, dim)
+        self.softmax = nn.Softmax(dim=-1)
+    
+    def forward(self, x):
+        q = self.query(x)
+        k = self.key(x)
+        v = self.value(x)
+        attn_weights = self.softmax(q @ k.transpose(-2, -1) / (x.shape[-1] ** 0.5))
+        return attn_weights @ v
+    
+class transformNetwork(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.attn = SelfAttention(dim)
+        self.norm = nn.LayerNorm(dim)  # 归一化操作
+
+    def forward(self, x):
+
+        batch_size, channels, h, w = x.shape  # 32
+        
+        # Reshape: (B, 32, 32, 32) -> (B, 32, 1024)
+        x = x.view(batch_size, channels, -1)
+        
+        # Self-Attention: (B, 32, 1024) -> (B, 32, 1024)
+        x = self.attn(x)
+
+        # Norm: 归一化 (B, 32, 1024)
+        x = self.norm(x)
+        
+        # Reshape: (B, 32, 1024) -> (B, 32, 32, 32)
+        x = x.view(batch_size, channels, h, w)
+        
+        return x
+    
 class Upsample(nn.Module):
     def __init__(self, in_channels, with_conv):
         super().__init__()
@@ -551,6 +591,7 @@ class CNN_VAE_two(pl.LightningModule):
     def __init__(self,
                  ckpt_path: str = None,
                  vae_modal: str = 'magnet_image',
+                 key: str = 'hmi',
                  kl_weight: float = 1.0,
                  loss_type: str = 'MSE',
                  dd_config: dict = None,
@@ -562,6 +603,8 @@ class CNN_VAE_two(pl.LightningModule):
         self.vae_modal = vae_modal
         self.lambda_kl = kl_weight
         self.loss_type = loss_type
+        self.list = []
+        self.key = key
         self.first_stage = CNN_VAE(**first_stage_config)
         if not train_first_stage:
             self.first_stage.eval()
@@ -594,6 +637,9 @@ class CNN_VAE_two(pl.LightningModule):
         x = self.encoder(mu) # (B, C, H, W) -> (B, C_out, H_out, W_out)
         mu, logvar = torch.chunk(x, 2, dim=1)
         logvar = torch.clamp(logvar, -30, 30)
+        # self.list.append(torch.sum(torch.abs(mu)).cpu().detach().numpy())
+        # print('*'*10,'len:',len(self.list),'*'*10)
+        # print('*'*10,'avg:',np.average(self.list),'*'*10)
         return mu, logvar
 
     def reparameterize(self, mu, logvar, scale=1.0):
@@ -630,11 +676,12 @@ class CNN_VAE_two(pl.LightningModule):
 
     def get_input(self, batch, k):
         if k == 'hmi_image':
-            x = batch[:, 0, :, :, :]
+            x = batch[self.key]
         elif k == 'aia0094_image':
-            x = batch[:, 0, :, :, :]
+            x = batch[self.key]
         else:
-            raise NotImplementedError(f"Key {k} not supported")
+            x = batch[self.key]
+            # raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
             x = x[..., None]
         x = x.to(memory_format=torch.contiguous_format).float()
@@ -733,9 +780,28 @@ class CNN_VAE_two(pl.LightningModule):
         print('Log images down')
         return log, modals
     
-
-class hmi_CNN_VAE(CNN_VAE):
-    pass
+class CNN_VAE_three(pl.LightningModule):
+    def __init__(self,vae_config,vae_train,dim,**kwargs):
+        super().__init__()
+        self.save_hyperparameters()
+        self.vae = CNN_VAE_two(**vae_config)
+        if not vae_train:
+            self.vae.eval()
+        self.transform = transformNetwork(dim)
+    
+    def forward(self,x):
+        x = self.vae.encode(x)
+        z = self.transform(x)
+        rec_x = self.vae.decode(z)
+        return z,rec_x
+    
+    def training_step(self,batch,batch_idx):
+        x = self.vae.get_input(batch,self.vae.vae_modal)
+        z,rec_x = self(x)
+        loss = F.mse_loss(rec_x,x)
+        self.log('train_loss',loss)
+        return loss
+    
 
 def disabled_train(self, mode=True):
     """Overwrite model.train with this function to make sure train/eval mode

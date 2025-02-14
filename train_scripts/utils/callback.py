@@ -180,9 +180,10 @@ class SolarImageLogger(Callback):
         cmap = "RdBu_r" if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'hmi_image' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
-        print('mode',mode)
-        mode_list_1 = ['hmi_image_vae','hmi_image_cliptoken','hmi_image']
-        mode_list_2 = ['0094_image','aia0094_image','aia0094_image_vae','aia0094_image_cliptoken_decodelrimage','aia0094_image_cliptoken']
+        # print('mode',mode)
+        # print('inputs',inputs.shape)
+        mode_list_1 = ['hmi_image_vae','hmi_image_cliptoken','hmi_image','first_stage_key_mag','cond_key_mag','hmi']
+        mode_list_2 = ['0094_image','aia0094_image','aia0094_image_vae','aia0094_image_cliptoken_decodelrimage','aia0094_image_cliptoken','first_stage_key_img','cond_key_img','0094','0131','0171','0193','0211','0304','0335','1600','1700','4500']
         if mode in mode_list_1:  # 'hmi_image_vae':
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmin = -vmax
@@ -190,12 +191,14 @@ class SolarImageLogger(Callback):
             # vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 1
             vmin = 0
+        elif mode == None:
+            pass
         else:
             raise ValueError("Unknown modal type")
         return cmap, vmin, vmax
 
     def get_target_keys(self, pl_module):
-        if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion"]:
+        if pl_module.__class__.__name__ in ["SolarLatentDiffusion", "LatentDiffusion", "LDMWrapper"]:
             target_keys = ['inputs', 'inputs_latent', 'reconstruction', 'conditioning', 'conditioning_latent', 'samples', 'samples_latent', 'diffusion_row', 'denoise_row']
 
         elif pl_module.__class__.__name__ in ["CNN_VAE", "aia0094_CNN_VAE",'CNN_VAE_two']:
@@ -247,7 +250,7 @@ class SolarImageLogger(Callback):
             cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
             
             plt.figure(figsize=(32, 16))
-            num_images = min(image_array.shape[0], 4)
+            num_images = min(image_array.shape[0], 2)
             for i in range(num_images):
                 plt.subplot(1, 2, i+1)
                 if len(image_array.shape) == 4:

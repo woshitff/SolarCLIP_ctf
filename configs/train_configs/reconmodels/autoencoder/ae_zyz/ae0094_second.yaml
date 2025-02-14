@@ -12,7 +12,7 @@ model:
 
     dd_config:
       double_z: True
-      z_channels: 16
+      z_channels: 32
       resolution: 1024
       in_channels: 8
       out_ch: 8

@@ -101,7 +101,7 @@ class TrainerSetup:
             "image_logger": {
                 "target": "train_scripts.utils.callback.SolarImageLogger",
                 "params": {
-                    "batch_frequency": 750,
+                    "batch_frequency": 75000,
                     # "batch_frequency": 1,
                     "max_images": 4,
                     "clamp": False,
@@ -153,8 +153,10 @@ class TrainerSetup:
                 }
                 }
             }
-            default_callbacks_cfg.update(default_metrics_over_trainsteps_ckpt_dict)
-            default_callbacks_cfg.update(early_stop_callbacks_dict)
+            if 'default_metrics_over_trainsteps_ckpt' not in callbacks_cfg:
+                default_callbacks_cfg.update(default_metrics_over_trainsteps_ckpt_dict)
+            if 'early_stop' not in callbacks_cfg:
+                default_callbacks_cfg.update(early_stop_callbacks_dict)
 
         callbacks_cfg = OmegaConf.merge(default_callbacks_cfg, callbacks_cfg)
         if 'ignore_keys_callback' in callbacks_cfg and hasattr(self.trainer_opt, 'resume_from_checkpoint'):
@@ -175,7 +177,7 @@ class TrainerSetup:
                 "verbose": True,
                 "save_last": False,
                 'save_top_k': -1,
-                'every_n_epochs': 1,
+                'every_n_epochs': 20,
                 'save_weights_only': True
             }
         }

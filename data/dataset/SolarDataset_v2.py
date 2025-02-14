@@ -6,16 +6,16 @@ from torchvision import transforms
 
 from ..utils import read_pt_image as read_image
 from ..utils import load_list, get_modal_dir_V2
-
+import time
 import random
 from tqdm import tqdm
 
      
-def transfer_log1p(input_array):
+def transfer_log1p(input_array, log1p_scale = 1):
     if isinstance(input_array,np.ndarray):
         return np.sign(input_array)*np.log1p(np.abs(input_array))
     elif isinstance(input_array,torch.Tensor):
-        return torch.sign(input_array)*torch.log1p(torch.abs(input_array))
+        return torch.sign(input_array)*torch.log1p(log1p_scale*torch.abs(input_array))
     else:
         raise ValueError('input_array should be numpy array or torch tensor')
 
@@ -57,10 +57,10 @@ def image_preprocess(image_list, image_size = 224, p_flip = 0.5, p_rotate = 90):
     image = torch.stack(image_list, dim=0)
     return image
 
-def enhance_funciton(image, enhance_type = 'log1p', rescale_value = 1):
+def enhance_funciton(image, enhance_type = 'log1p', rescale_value = 1, log1p_scale = 1):
     
     if enhance_type == 'log1p':
-        image = transfer_log1p(image)
+        image = transfer_log1p(image, log1p_scale)
     elif enhance_type == 'None':
         pass
     else:
@@ -111,12 +111,15 @@ class multimodal_dataset(Dataset):
                     '1600', 
                     '1700', 
                     '4500'],
+                  log1p_scale = 1,
                   load_imgs = False, 
                   enhance_list = [224,0.5,90], 
                   time_interval = [0,5400], # (2024/12/31 - 2010/05/01) = 5358 days
                   time_step = 1): #time_step = 1 means get every data
         # 定义数据集
-        self.dataset = [] 
+        self.dataset = []
+        self.modal_list = modal_list 
+        self.log1p_scale = log1p_scale
         # new version
         for name in modal_list:
             if not name in ['0094','hmi','0131', '0171', '0193', '0211', '0304', '0335', '1600', '1700', '4500']:
@@ -171,6 +174,7 @@ class multimodal_dataset(Dataset):
         return len(self.exist_idx)
     
     def __getitem__(self, idx):
+        # a = time.time()
         if self.load_imgs:
             return self.image_dic[self.exist_idx[idx]]
         else:
@@ -178,10 +182,12 @@ class multimodal_dataset(Dataset):
             for i in range(len(self.dataset)):
                 path,_ = self.dataset[i][self.exist_idx[idx]]
                 img = read_image(path)
-
                 image_list.append(img)
+            # b = time.time()
             image = image_preprocess(image_list, image_size = self.enhance_list[0], p_flip = self.enhance_list[1], p_rotate = self.enhance_list[2])
-            image = enhance_funciton(image, enhance_type = 'log1p', rescale_value = 1)
+            image = enhance_funciton(image, enhance_type = 'log1p', rescale_value = 1, log1p_scale=self.log1p_scale)
+            # c = time.time()
+            # print(f'load time: {b-a}, preprocess time: {c-b}')
             return image
 
 if __name__ == '__main__':

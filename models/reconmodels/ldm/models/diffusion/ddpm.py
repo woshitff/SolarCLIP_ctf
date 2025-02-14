@@ -30,6 +30,46 @@ def disabled_train(self, mode=True):
     does not change anymore."""
     return self
 
+class SelfAttention(nn.Module):
+    def __init__(self, dim):
+        
+        super(SelfAttention, self).__init__()
+        self.query = nn.Linear(dim, dim)
+        self.key = nn.Linear(dim, dim)
+        self.value = nn.Linear(dim, dim)
+        self.softmax = nn.Softmax(dim=-1)
+    
+    def forward(self, x):
+        q = self.query(x)
+        k = self.key(x)
+        v = self.value(x)
+        attn_weights = self.softmax(q @ k.transpose(-2, -1) / (x.shape[-1] ** 0.5))
+        return attn_weights @ v
+    
+class tramsformNetwork(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.attn = SelfAttention(dim)
+        self.norm = nn.LayerNorm(dim)  # 归一化操作
+
+    def forward(self, x):
+
+        batch_size, channels, h, w = x.shape  # 32
+        
+        # Reshape: (B, 32, 32, 32) -> (B, 32, 1024)
+        x = x.view(batch_size, channels, -1)
+        
+        # Self-Attention: (B, 32, 1024) -> (B, 32, 1024)
+        x = self.attn(x)
+
+        # Norm: 归一化 (B, 32, 1024)
+        x = self.norm(x)
+        
+        # Reshape: (B, 32, 1024) -> (B, 32, 32, 32)
+        x = x.view(batch_size, channels, h, w)
+        
+        return x
+    
 class DiffusionWrapper(pl.LightningModule):
     def __init__(self, diff_model_config, conditioning_key):
         super().__init__()
@@ -416,11 +456,11 @@ class DDPM(pl.LightningModule):
 
     def p_losses(self, x_start, t, noise=None):
         noise = default(noise, lambda: torch.randn_like(x_start))
-        print(f'noise: {noise.shape}')
+        # print(f'noise: {noise.shape}')
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
-        print(f'x_nosiy {x_noisy.shape}')
+        # print(f'x_nosiy {x_noisy.shape}')
         model_out = self.model(x_noisy, t)
-        print(f'model_out: {model_out.shape}')
+        # print(f'model_out: {model_out.shape}')
         loss_dict = {}
         if self.parameterization == "eps":
             target = noise
@@ -455,13 +495,10 @@ class DDPM(pl.LightningModule):
         return self.p_losses(x, t, *args, **kwargs)
 
     def get_input(self, batch, k):
-        # print('xxxxxxxxxxx',batch.shape,'xxxxxxxxxxxx')
-        # if k == 'hmi_image_vae' or k == 'hmi_image_cliptoken':
-        
-        if k == 'first_stage_key':
+
+        if k == 'hmi_image_vae' or k == 'hmi_image_cliptoken':
             x = batch[:, 0, :, :, :]
-        # elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
-        elif k == 'cond_key':
+        elif k == 'aia0094_image' or k == 'aia0094_image_vae' or k == 'aia0094_image_cliptoken' or k == 'aia0094_image_cliptoken_decodelrimage':
             x = batch[:, 1, :, :, :]
         else:
             raise NotImplementedError(f"Key {k} not supported")
@@ -1387,7 +1424,56 @@ class LatentDiffusion(DDPM):
         x = 2. * (x - x.min()) / (x.max() - x.min()) - 1.
         return x
     
-
+class LDMWrapper(LatentDiffusion):
+    def __init__(self, scale_factor, first_stage_key,cond_stage_key,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.first_stage_key = first_stage_key
+        self.cond_stage_key = cond_stage_key
+        self.scale_factor = scale_factor
+        self.layernorm = nn.LayerNorm(32)
+        # self.transform = tramsformNetwork(1024)
+    @torch.no_grad()
+    def get_input(self, batch, k, return_first_stage_outputs=False, force_c_encode=False,
+                  cond_key=None, return_original_cond=False, bs=None, return_x=False):
+        x = batch[self.first_stage_key]
+        xc = batch[self.cond_stage_key]
+        x = x.to(self.device)
+        xc = xc.to(self.device)
+        z = self.encode_first_stage(x)
+        # z = self.get_first_stage_encoding(x_).detach()
+        z = z * self.scale_factor
+        cond = self.cond_encode(xc)
+        out = [z, cond]
+        if return_first_stage_outputs:
+            xrec = self.decode_first_stage(z)
+            out.extend([x, xrec])
+        if return_x:
+            out.extend([x])
+        if return_original_cond:
+            out.append(xc)
+        return out
+    
+    @torch.no_grad()
+    def encode_first_stage(self, x):
+        x , _ = self.first_stage_model.encode(x)
+        return x
+    @torch.no_grad()
+    def cond_encode(self, x, is_transform=False):
+        x , _ = self.cond_stage_model.encode(x)
+        bs ,c , h , w = x.shape
+        x = x.view(bs , c, -1)
+        x = x.permute(0,2,1)
+        x = self.layernorm(x)
+        x = x.permute(0,2,1)
+        x = x.view(bs , c , h , w)
+        # if is_transform:
+        #     x = self.transform(x)
+        return x
+    @torch.no_grad()
+    def decode_first_stage(self, z):
+        z = z / self.scale_factor
+        return self.first_stage_model.decode(z)
+    
 class SolarLatentDiffusion(LatentDiffusion):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

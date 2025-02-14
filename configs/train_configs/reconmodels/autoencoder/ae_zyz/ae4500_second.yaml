@@ -59,6 +59,7 @@ data:
           # - 'magnet'
           - '4500'
         load_imgs: false
+        log1p_scale: 0.1
         enhance_list:
           - 1024
           - 0.5
@@ -74,6 +75,7 @@ data:
           # - 'magnet'
           - '4500'
         load_imgs: false
+        log1p_scale: 0.1
         enhance_list:
           - 1024
           - 0.5

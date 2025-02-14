@@ -1,24 +1,24 @@
 model:
   base_learning_rate: 1.0e-05
   base_learning_optimizer: "AdamW"
-  base_learning_schedule: 'StepLR'
+  base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/zyz_128/checkpoints/epoch=000199.ckpt
     parameterization: "eps"
     linear_start: 0.00085
     linear_end: 0.0120
     log_every_t: 40
     timesteps: 300
-    ckpt_path: 
     # add_tramsform: False
-    first_stage_key: "first_stage_key_img" # "first_stage_key_img"
-    cond_stage_key: "cond_key_img" # "cond_key_mag"
+    first_stage_key: "0131" # "first_stage_key_img"
+    cond_stage_key: "0131" # "cond_key_mag"
     # image_size: 32
     spatial_size: [32, 32]
     channels: 32
     cond_stage_trainable: false
     conditioning_key: concat
-    scale_factor: 32
+    scale_factor: 128
     monitor: val/loss_simple_ema
     use_ema: true
 
@@ -85,7 +85,7 @@ data:
   target: data.build.DataModuleFromConfig
   params:
     batch_size: 2
-    num_workers: 16
+    num_workers: 9
     wrap: false
     train:
       target: data.dataset.SolarDataset_v2.multimodal_dataset
@@ -125,13 +125,13 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 200
+    max_epochs: 400
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
-        dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/ldm/zyz/checkpoints/trainstep_checkpoints
+        dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/zyz_128/checkpoints/trainstep_checkpoints
         filename: best_val_loss_epoch
         verbose: true
         save_top_k: 1

@@ -16,3 +16,5 @@ __pycache__/
 Dockerfile
 *.fits
 *.png
+delete.py
+resize.py

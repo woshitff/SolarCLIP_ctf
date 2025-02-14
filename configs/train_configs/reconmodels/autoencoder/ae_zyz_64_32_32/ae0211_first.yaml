@@ -8,11 +8,10 @@ model:
     vae_modal: 'aia0094_image'
     kl_weight: 0.1
     loss_type: 'MSE'
-    
 
     dd_config:
       double_z: True
-      z_channels: 8
+      z_channels: 16
       resolution: 1024
       in_channels: 1
       out_ch: 1
@@ -35,16 +34,14 @@ data:
   params:
     batch_size: 2
     num_workers: 9
-    
     wrap: false
     train:
       target: data.dataset.SolarDataset_v2.multimodal_dataset
       params:
         modal_list: 
           # - 'magnet'
-          - '4500'
+          - '0211'
         load_imgs: false
-        log1p_scale: 0.1
         enhance_list:
           - 1024
           - 0.5
@@ -58,16 +55,15 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '4500'
+          - '0211'
         load_imgs: false
-        log1p_scale: 0.1
         enhance_list:
           - 1024
           - 0.5
           - 90
         time_interval: 
           - 4800
-          - 5120
+          - 5136
         time_step: 1
 
 lighting:
