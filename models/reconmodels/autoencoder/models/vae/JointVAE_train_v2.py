@@ -144,9 +144,9 @@ def train(rank, world_size, config, opt):
         os.makedirs(ckptdir, exist_ok=True)
         os.makedirs(cfgdir, exist_ok=True)
 
-    print("Project config")
-    print(OmegaConf.to_yaml(config))
-    OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
+        print("Project config")
+        print(OmegaConf.to_yaml(config))
+        OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
 
     writer =  SummaryWriter(log_dir = logdir)
 

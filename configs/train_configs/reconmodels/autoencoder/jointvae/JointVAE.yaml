@@ -3,245 +3,454 @@ model:
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/hmi/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/hmi/best_val_loss_epoch.ckpt'
       vae_modal: 'hmi'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/hmi/best_val_loss_epoch.ckpt'
+        vae_modal: 'hmi'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '0094':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/0094/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/0094/best_val_loss_epoch.ckpt'
       vae_modal: '0094'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/0094/best_val_loss_epoch.ckpt'
+        vae_modal: '0094'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '0131':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/0131/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/0131/best_val_loss_epoch.ckpt'
       vae_modal: '0131'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/0131/best_val_loss_epoch.ckpt'
+        vae_modal: '0131'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '0171':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/0171/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/0171/best_val_loss_epoch.ckpt'
       vae_modal: '0171'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/0171/best_val_loss_epoch.ckpt'
+        vae_modal: '0171'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '0193':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/0193/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/0193/best_val_loss_epoch.ckpt'
       vae_modal: '0193'
       kl_weight: 0.1
       loss_type: 'MSE'
 
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/0193/best_val_loss_epoch.ckpt'
+        vae_modal: '0193'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '0211':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/0211/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/0211/best_val_loss_epoch.ckpt'
       vae_modal: '0211'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/0211/best_val_loss_epoch.ckpt'
+        vae_modal: '0211'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '0304':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/0304/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/0304/best_val_loss_epoch.ckpt'
       vae_modal: '0304'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/0304/best_val_loss_epoch.ckpt'
+        vae_modal: '0304'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '0335':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/0335/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/0335/best_val_loss_epoch.ckpt'
       vae_modal: '0335'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/0335/best_val_loss_epoch.ckpt'
+        vae_modal: '0335'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '1600':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/1600/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/1600/best_val_loss_epoch.ckpt'
       vae_modal: '1600'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/1600/best_val_loss_epoch.ckpt'
+        vae_modal: '1600'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '1700':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/1700/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/1700/best_val_loss_epoch.ckpt'
       vae_modal: '1700'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/1700/best_val_loss_epoch.ckpt'
+        vae_modal: '1700'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
   '4500':
     base_learning_rate: 1.0e-06
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
-    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE
+    target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
     params:
-      ckpt_path: 'checkpoints/reconmodels/ae/4500/best_val_loss_epoch.ckpt'
+      ckpt_path: 'checkpoints/reconmodels/ae/two_stage/4500/best_val_loss_epoch.ckpt'
       vae_modal: '4500'
       kl_weight: 0.1
       loss_type: 'MSE'
-
       dd_config:
         double_z: True
-        z_channels: 8
+        z_channels: 32
         resolution: 1024
-        in_channels: 1
-        out_ch: 1
-        ch: 16
-        ch_mult: [1,2,2,2]  # num_down = len(ch_mult)-1
+        in_channels: 8
+        out_ch: 8
+        ch: 32
+        ch_mult: [1,2,2]  # num_down = len(ch_mult)-1
         num_res_blocks: 2
         attn_resolutions: []
         dropout: 0.0
-
+      first_stage_config:
+        ckpt_path: 'checkpoints/reconmodels/ae/one_stage/4500/best_val_loss_epoch.ckpt'
+        vae_modal: '4500'
+        kl_weight: 0.1
+        loss_type: MSE
+        dd_config:
+          double_z: true
+          z_channels: 8
+          resolution: 1024
+          in_channels: 1
+          out_ch: 1
+          ch: 16
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
 
 data:
   target: data.build.DataModuleFromConfig

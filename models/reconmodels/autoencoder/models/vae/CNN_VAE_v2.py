@@ -640,6 +640,25 @@ class CNN_VAE_two(pl.LightningModule):
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
     
+    def calculate_loss(self, x):
+        """
+        a method to get the loss only from input x
+        """
+        recon_x, mu, logvar = self(x)
+        if self.loss_type == 'MSE':
+            with torch.no_grad():
+                RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
+            RECON_LOSS_weighted = F.mse_loss(recon_x, x, reduction='none')
+            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+        elif self.loss_type == 'BCE':
+            RECON_LOSS = F.binary_cross_entropy(recon_x, x, reduction='sum')
+        else:
+            raise ValueError(f"loss_type {self.loss_type} is not supported")
+        KLD = (-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))/mu.numel()
+
+        return RECON_LOSS_weighted, KLD
+    
+
     def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):
         if self.loss_type == 'MSE':
             with torch.no_grad():
