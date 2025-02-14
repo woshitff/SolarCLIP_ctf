@@ -373,8 +373,8 @@ def train(rank, world_size, config, opt):
                     torch.save({'model': model.module.state_dict(), 'optimizer': optimizers[f"optimizer_{modal_name}"].state_dict(),
                             'scheduler': schedulers[f"scheduler_{modal_name}"].state_dict(), 'epoch': epoch},
                         f'{ckptdir}/{modal_name}/epoch_{epoch+1}.pt')
-
-    writer.close()
+    if rank == 0:
+        writer.close()
 
 if __name__ == "__main__":
     # ckpt_paths should have same order with data make config yaml can be load from cli.
