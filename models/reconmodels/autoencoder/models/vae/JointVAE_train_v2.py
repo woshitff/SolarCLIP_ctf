@@ -131,15 +131,15 @@ def train(rank, world_size, config, opt):
     
 
     #### Init Logger
-    now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-    cfg_fname = os.path.split(opt.config[0])[-1]
-    cfg_name = os.path.splitext(cfg_fname)[0]
-    name = cfg_name
-    nowname = now + "_" + name + opt.postfix
-    logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
-    ckptdir = os.path.join(logdir, 'checkpoints')
-    cfgdir = os.path.join(logdir, 'configs')
     if rank == 0:
+        now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        cfg_fname = os.path.split(opt.config[0])[-1]
+        cfg_name = os.path.splitext(cfg_fname)[0]
+        name = cfg_name
+        nowname = now + "_" + name + opt.postfix
+        logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
+        ckptdir = os.path.join(logdir, 'checkpoints')
+        cfgdir = os.path.join(logdir, 'configs')
         os.makedirs(logdir, exist_ok=True)
         os.makedirs(ckptdir, exist_ok=True)
         os.makedirs(cfgdir, exist_ok=True)
@@ -148,7 +148,7 @@ def train(rank, world_size, config, opt):
         print(OmegaConf.to_yaml(config))
         OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
 
-    writer =  SummaryWriter(log_dir = logdir)
+        writer =  SummaryWriter(log_dir = logdir)
 
 
     #### Init Model
@@ -203,7 +203,7 @@ def train(rank, world_size, config, opt):
                         cmap = "Reds"
                         vmin = np.min(image_array)
                         vmax = np.max(image_array)
-                        vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                        # vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
                         vmin = 0
                         # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
                         
@@ -324,7 +324,7 @@ def train(rank, world_size, config, opt):
                                 cmap = "Reds"
                                 vmin = np.min(image_array)
                                 vmax = np.max(image_array)
-                                vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
+                                # vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
                                 vmin = 0
                                 # cmap, vmin, vmax = self.get_cmap_and_limits(image_array, modal)
                                 
