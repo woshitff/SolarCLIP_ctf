@@ -483,11 +483,16 @@ class CNN_VAE(pl.LightningModule):
         return recon_x, mu, logvar
 
     def get_input(self, batch, k):
-        if k == 'hmi_image':
-            x = batch[:, 0, :, :, :]
-        elif k == 'aia0094_image':
-            # x = batch[:, 1, :, :, :]
-            x = batch[:, 0, :, :, :]
+        # if k == 'hmi_image':
+        #     x = batch[:, 0, :, :, :]
+        # elif k == 'aia0094_image':
+        #     # x = batch[:, 1, :, :, :]
+        #     x = batch[:, 0, :, :, :]
+            
+        # else:
+        #     x = batch[k]
+        if k is not None:
+            x = batch[k]
         else:
             raise NotImplementedError(f"Key {k} not supported")
         if len(x.shape) == 3:
