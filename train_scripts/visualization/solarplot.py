@@ -63,11 +63,13 @@ def get_header(modal: str,
 def solarplot(data: np.array,
               modal: str,
               time: str,
-              save_path: str
+              save_path: str,
+              figsize = (10,8)
               ):
     header = get_header(modal, time)
     mymap = sunpy.map.Map((data, header))
 
+    plt.figure(figsize=figsize)
     mymap.plot()
     # plt.colorbar()
     plt.savefig(save_path)
