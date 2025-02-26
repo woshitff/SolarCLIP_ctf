@@ -1,3 +1,4 @@
+import wandb
 import argparse
 import datetime, os, sys, glob
 # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -8,9 +9,14 @@ from omegaconf import OmegaConf
 import pytorch_lightning as pl
 from pytorch_lightning.trainer import Trainer
 from pytorch_lightning import seed_everything
+from pytorch_lightning.loggers import WandbLogger
 
 from models.reconmodels.autoencoder.util import instantiate_from_config
 from train_scripts.utils.util import TrainerSetup
+
+
+
+
 def get_parser(**parser_kwargs):
     def str2bool(v):
         if isinstance(v, bool):
@@ -112,7 +118,8 @@ def nondefault_trainer_args(opt):
 
 if __name__ == "__main__":
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-
+    wandb.login(key="f6d44d5a6b73088b1f0e73e0c60a50a6d85999e2")
+    wandb_logger = WandbLogger(project="nankai_remote", log_model="all")
     sys.path.append(os.getcwd())
 
     parser = get_parser()
@@ -198,7 +205,8 @@ if __name__ == "__main__":
         trainer_setup = TrainerSetup(config, lightning_config, trainer_config, opt, now, logdir, cfgdir, ckptdir, model)
         trainer_config, trainer_kwargs = trainer_setup.trainer_config, trainer_setup.trainer_kwargs
         print(f'before trainer init {trainer_config}')
-        trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
+        # trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
+        trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=wandb_logger, callbacks=trainer_kwargs["callbacks"])
 
         #### run training
         try:
