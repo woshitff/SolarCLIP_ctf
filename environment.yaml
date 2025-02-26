@@ -1,16 +1,19 @@
-# channels:
-#   # - https://pypi.tuna.tsinghua.edu.cn/simple
-#   # - https://mirrors.aliyun.com/pypi/simple/
-#   # - https://repo.anaconda.com/pkgs/main
-#   # - conda-forge
-#   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
-#   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
-#   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free
-#   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
-#   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/pro
-#   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
-#   - pytorch
-#   - defaults
+channels:
+  # - https://pypi.tuna.tsinghua.edu.cn/simple
+  # - https://mirrors.aliyun.com/pypi/simple/
+  - https://repo.anaconda.com/pkgs/main
+  - conda-forge
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/pro
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
+  - pytorch
+  - defaults
+
+name: ctf_test
+
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu

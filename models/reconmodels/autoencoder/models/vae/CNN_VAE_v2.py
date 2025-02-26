@@ -806,6 +806,10 @@ class CNN_VAE_three(pl.LightningModule):
         loss = F.mse_loss(rec_x,x)
         self.log('train_loss',loss)
         return loss
+    def encode(self,x):
+        return self.vae.encode(x)
+    def decode(self,z):
+        return self.vae.decode(z)
     
 
 def disabled_train(self, mode=True):

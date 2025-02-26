@@ -18,3 +18,5 @@ Dockerfile
 *.png
 delete.py
 resize.py
+make_data.py
+test.sh

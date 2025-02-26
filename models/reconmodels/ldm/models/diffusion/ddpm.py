@@ -1423,10 +1423,26 @@ class LatentDiffusion(DDPM):
         x = nn.functional.conv2d(x, weight=self.colorize)
         x = 2. * (x - x.min()) / (x.max() - x.min()) - 1.
         return x
-    
+
+
+name_list  = [
+    'cond_stage_model.transform.attn.query.weight',
+    'cond_stage_model.transform.attn.query.bias',
+    'cond_stage_model.transform.attn.key.weight',
+    'cond_stage_model.transform.attn.key.bias',
+    'cond_stage_model.transform.attn.value.weight',
+    'cond_stage_model.transform.attn.value.bias',
+    'cond_stage_model.transform.norm.weight',
+    'cond_stage_model.transform.norm.bias',
+]
 class LDMWrapper(LatentDiffusion):
-    def __init__(self, scale_factor, first_stage_key,cond_stage_key,*args, **kwargs):
+    def __init__(self, scale_factor, first_stage_key,cond_stage_key,train_ldm=True,*args, **kwargs):
         super().__init__(*args, **kwargs)
+        if not train_ldm:
+            for name, param in self.named_parameters():
+                if name not in name_list:
+                    param.grad = None
+                    
         self.first_stage_key = first_stage_key
         self.cond_stage_key = cond_stage_key
         self.scale_factor = scale_factor
@@ -1458,7 +1474,7 @@ class LDMWrapper(LatentDiffusion):
         x , _ = self.first_stage_model.encode(x)
         return x
     @torch.no_grad()
-    def cond_encode(self, x, is_transform=False):
+    def cond_encode(self, x):
         x , _ = self.cond_stage_model.encode(x)
         bs ,c , h , w = x.shape
         x = x.view(bs , c, -1)
@@ -1466,8 +1482,6 @@ class LDMWrapper(LatentDiffusion):
         x = self.layernorm(x)
         x = x.permute(0,2,1)
         x = x.view(bs , c , h , w)
-        # if is_transform:
-        #     x = self.transform(x)
         return x
     @torch.no_grad()
     def decode_first_stage(self, z):
