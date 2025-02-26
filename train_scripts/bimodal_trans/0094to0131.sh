@@ -1,0 +1,1 @@
+python train_scripts/train.py --base /home/home_node7/zyz/SolarCLIP_ctf/configs/train_configs/reconmodels/ldm/mainconfig/bimodal_trans/0094to0131.yaml

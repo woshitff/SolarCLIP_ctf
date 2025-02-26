@@ -8,7 +8,7 @@
 /try.py
 /models/reconmodels/DiT/**
 __pycache__/
-**.sh
+# *.sh
 *.ipynb
 *.pth
 *.tar
