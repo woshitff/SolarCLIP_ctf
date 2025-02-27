@@ -4,7 +4,7 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: null
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ldm0094/checkpoints/trainstep_checkpoints/LDM_009420094_best_val_loss_epoch.ckpt
     train_ldm: False
     parameterization: "eps"
     linear_start: 0.00085
@@ -12,8 +12,8 @@ model:
     log_every_t: 40
     timesteps: 300
     # add_tramsform: False
-    first_stage_key: "0131" # "first_stage_key_img"
-    cond_stage_key: "0094" # "cond_key_mag"
+    first_stage_key: "0094" # "first_stage_key_img"
+    cond_stage_key: "0131" # "cond_key_mag"
     # image_size: 32
     spatial_size: [32, 32]
     channels: 32
@@ -46,7 +46,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
-        ckpt_path: Null
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
         vae_modal: aia0094_image
         kl_weight: 0.1
         loss_type: 'MSE'
@@ -63,7 +63,7 @@ model:
           attn_resolutions: []
           dropout: 0.0
         first_stage_config:
-          ckpt_path: Null
+          ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
           vae_modal: 'aia0094_image'
           kl_weight: 0.1
           loss_type: 'MSE'
@@ -85,7 +85,7 @@ model:
           dim: 1024
           vae_train: False
           vae_config:
-            ckpt_path: Null
+            ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0131_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
             vae_modal: aia0094_image
             kl_weight: 0.1
             loss_type: 'MSE'
@@ -102,7 +102,8 @@ model:
               attn_resolutions: []
               dropout: 0.0
             first_stage_config:
-              ckpt_path: Null
+              ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0131_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+              vae_modal: '0131'
               vae_modal: 'aia0094_image'
               kl_weight: 0.1
               loss_type: 'MSE'
@@ -122,7 +123,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 1
+    batch_size: 2
     num_workers: 1
     wrap: false
     train:
@@ -130,8 +131,8 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0131'
           - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024
@@ -146,8 +147,8 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0131'
           - '0094'
+          - '0131'
         load_imgs: false
         enhance_list:
           - 1024
@@ -170,7 +171,7 @@ lightning:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: ./checkpoints
-        filename: LDM_0094to0131_best_val_loss_epoch
+        filename: LDM_0131to0094_best_val_loss_epoch
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema

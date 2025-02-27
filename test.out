@@ -12,13 +12,12 @@ distributed_backend=nccl
 All distributed processes registered. Starting with 1 processes
 ----------------------------------------------------------------------------------------------------
 
-wandb: creating run
 wandb: Tracking run with wandb version 0.19.7
-wandb: Run data is saved locally in ./wandb/run-20250226_200625-4w6m6udj
+wandb: Run data is saved locally in ./wandb/run-20250226_202445-yw4a5a3y
 wandb: Run `wandb offline` to turn off syncing.
-wandb: Syncing run olive-universe-1
+wandb: Syncing run denim-oath-1
 wandb: ⭐️ View project at https://wandb.ai/chuyu666-nankai-university/nankai_remote
-wandb: 🚀 View run at https://wandb.ai/chuyu666-nankai-university/nankai_remote/runs/4w6m6udj
+wandb: 🚀 View run at https://wandb.ai/chuyu666-nankai-university/nankai_remote/runs/yw4a5a3y
 /home/home_node7/zyz/miniconda3/envs/ctf_test/lib/python3.12/site-packages/pytorch_lightning/callbacks/model_checkpoint.py:654: Checkpoint directory /home/home_node7/zyz/SolarCLIP_ctf/logs/reconmodels/autoencoder/vae/test_ldm/checkpoints exists and is not empty.
 /home/home_node7/zyz/miniconda3/envs/ctf_test/lib/python3.12/site-packages/pytorch_lightning/callbacks/model_checkpoint.py:654: Checkpoint directory /home/home_node7/zyz/SolarCLIP_ctf/checkpoints exists and is not empty.
 LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
@@ -252,257 +251,103 @@ Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:01, 43.46it/s][A
-DDIM Sampler:  22%|██▏       | 11/50 [00:00<00:00, 52.16it/s][A
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 56.05it/s][A
-DDIM Sampler:  50%|█████     | 25/50 [00:00<00:00, 57.76it/s][A
-DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 59.41it/s][A
-DDIM Sampler:  78%|███████▊  | 39/50 [00:00<00:00, 60.90it/s][A
-DDIM Sampler:  92%|█████████▏| 46/50 [00:00<00:00, 61.76it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.17it/s]
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 46.01it/s][A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 55.68it/s][A
+DDIM Sampler:  38%|███▊      | 19/50 [00:00<00:00, 58.57it/s][A
+DDIM Sampler:  52%|█████▏    | 26/50 [00:00<00:00, 59.87it/s][A
+DDIM Sampler:  66%|██████▌   | 33/50 [00:00<00:00, 60.71it/s][A
+DDIM Sampler:  80%|████████  | 40/50 [00:00<00:00, 61.37it/s][A
+DDIM Sampler:  94%|█████████▍| 47/50 [00:00<00:00, 61.07it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.70it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 63.09it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 63.26it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 63.61it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 62.72it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 63.20it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 63.41it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 63.58it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 63.29it/s]
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 62.06it/s][A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.83it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.15it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.56it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.93it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 62.10it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 62.00it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.81it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 62.77it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 63.10it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 63.14it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 63.03it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 63.09it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 63.05it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 63.05it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 62.96it/s]
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.29it/s][A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.61it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.83it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.54it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.64it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.72it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 61.71it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.60it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 62.68it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 62.65it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 62.72it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 62.75it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.89it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 62.16it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 62.07it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 62.15it/s]
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.34it/s][A
+DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 60.07it/s][A
+DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 60.66it/s][A
+DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 60.69it/s][A
+DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 60.03it/s][A
+DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 59.86it/s][A
+DDIM Sampler:  94%|█████████▍| 47/50 [00:00<00:00, 59.66it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.88it/s]
 Warning: No modal type provided for samples_x0_quantized. Skipping.
 Warning: No modal type provided for samples_inpainting. Skipping.
 Warning: No modal type provided for mask. Skipping.
 Warning: No modal type provided for samples_outpainting. Skipping.
-Sanity Checking DataLoader 0:  50%|█████     | 1/2 [00:10<00:10,  0.10it/s]Sanity Checking DataLoader 0: 100%|██████████| 2/2 [00:10<00:00,  0.19it/s]                                                                           /home/home_node7/zyz/miniconda3/envs/ctf_test/lib/python3.12/site-packages/pytorch_lightning/trainer/connectors/data_connector.py:424: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=27` in the `DataLoader` to improve performance.
+Sanity Checking DataLoader 0:  50%|█████     | 1/2 [00:10<00:10,  0.09it/s]Sanity Checking DataLoader 0: 100%|██████████| 2/2 [00:10<00:00,  0.19it/s]                                                                           /home/home_node7/zyz/miniconda3/envs/ctf_test/lib/python3.12/site-packages/pytorch_lightning/trainer/connectors/data_connector.py:424: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=27` in the `DataLoader` to improve performance.
 /home/home_node7/zyz/miniconda3/envs/ctf_test/lib/python3.12/site-packages/pytorch_lightning/loops/fit_loop.py:298: The number of training batches (10) is smaller than the logging interval Trainer(log_every_n_steps=50). Set a lower value for log_every_n_steps if you want to see logs for the training epoch.
 Training: |          | 0/? [00:00<?, ?it/s]Training:   0%|          | 0/10 [00:00<?, ?it/s]Epoch 0:   0%|          | 0/10 [00:00<?, ?it/s] enter if circle
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.16it/s][A
-DDIM Sampler:  22%|██▏       | 11/50 [00:00<00:00, 53.10it/s][A
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 57.10it/s][A
-DDIM Sampler:  50%|█████     | 25/50 [00:00<00:00, 59.00it/s][A
-DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 60.01it/s][A
-DDIM Sampler:  78%|███████▊  | 39/50 [00:00<00:00, 60.59it/s][A
-DDIM Sampler:  92%|█████████▏| 46/50 [00:00<00:00, 60.91it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.25it/s]
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.05it/s][A
+DDIM Sampler:  22%|██▏       | 11/50 [00:00<00:00, 51.86it/s][A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 55.98it/s][A
+DDIM Sampler:  50%|█████     | 25/50 [00:00<00:00, 57.93it/s][A
+DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 58.98it/s][A
+DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 58.84it/s][A
+DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 59.52it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 57.98it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.29it/s][A
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.11it/s][A
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.24it/s][A
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.04it/s][A
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.18it/s][A
-DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.12it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.07it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.14it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.11it/s]
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.90it/s][A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.85it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.85it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.34it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.53it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.70it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.83it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.67it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 57.45it/s][A
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 58.19it/s][A
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 58.47it/s][A
-DDIM Sampler:  50%|█████     | 25/50 [00:00<00:00, 59.52it/s][A
-DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 60.00it/s][A
-DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 59.51it/s][A
-DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 59.93it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.59it/s]
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.70it/s][A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 58.56it/s][A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 58.70it/s][A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.20it/s][A
+DDIM Sampler:  62%|██████▏   | 31/50 [00:00<00:00, 59.56it/s][A
+DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 59.82it/s][A
+DDIM Sampler:  88%|████████▊ | 44/50 [00:00<00:00, 59.63it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.52it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.83it/s][A
-DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 60.20it/s][A
-DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 60.48it/s][A
-DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 60.78it/s][A
-DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 60.78it/s][A
-DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 60.00it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.94it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.05it/s]
-Warning: No modal type provided for samples_x0_quantized. Skipping.
-Warning: No modal type provided for samples_inpainting. Skipping.
-Warning: No modal type provided for mask. Skipping.
-Warning: No modal type provided for samples_outpainting. Skipping.
-Epoch 0:  10%|█         | 1/10 [00:10<01:34,  0.10it/s]Epoch 0:  10%|█         | 1/10 [00:10<01:34,  0.10it/s, v_num=6udj, train/loss_simple_step=1.140, train/loss_vlb_step=0.00881, train/loss_step=1.140, global_step=0.000]Epoch 0:  20%|██        | 2/10 [00:10<00:42,  0.19it/s, v_num=6udj, train/loss_simple_step=1.140, train/loss_vlb_step=0.00881, train/loss_step=1.140, global_step=0.000]Epoch 0:  20%|██        | 2/10 [00:10<00:42,  0.19it/s, v_num=6udj, train/loss_simple_step=1.120, train/loss_vlb_step=0.0134, train/loss_step=1.120, global_step=1.000] Epoch 0:  30%|███       | 3/10 [00:10<00:25,  0.28it/s, v_num=6udj, train/loss_simple_step=1.120, train/loss_vlb_step=0.0134, train/loss_step=1.120, global_step=1.000]Epoch 0:  30%|███       | 3/10 [00:10<00:25,  0.28it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00795, train/loss_step=1.110, global_step=2.000]Epoch 0:  40%|████      | 4/10 [00:10<00:16,  0.36it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00795, train/loss_step=1.110, global_step=2.000]Epoch 0:  40%|████      | 4/10 [00:10<00:16,  0.36it/s, v_num=6udj, train/loss_simple_step=1.120, train/loss_vlb_step=0.288, train/loss_step=1.120, global_step=3.000]  Epoch 0:  50%|█████     | 5/10 [00:11<00:11,  0.45it/s, v_num=6udj, train/loss_simple_step=1.120, train/loss_vlb_step=0.288, train/loss_step=1.120, global_step=3.000]Epoch 0:  50%|█████     | 5/10 [00:11<00:11,  0.45it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00781, train/loss_step=1.110, global_step=4.000]Epoch 0:  60%|██████    | 6/10 [00:11<00:07,  0.53it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00781, train/loss_step=1.110, global_step=4.000]Epoch 0:  60%|██████    | 6/10 [00:11<00:07,  0.53it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=5.000]Epoch 0:  70%|███████   | 7/10 [00:11<00:04,  0.61it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=5.000]Epoch 0:  70%|███████   | 7/10 [00:11<00:04,  0.61it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00858, train/loss_step=1.110, global_step=6.000]Epoch 0:  80%|████████  | 8/10 [00:11<00:02,  0.68it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00858, train/loss_step=1.110, global_step=6.000]Epoch 0:  80%|████████  | 8/10 [00:11<00:02,  0.68it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00995, train/loss_step=1.100, global_step=7.000]Epoch 0:  90%|█████████ | 9/10 [00:11<00:01,  0.76it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00995, train/loss_step=1.100, global_step=7.000]Epoch 0:  90%|█████████ | 9/10 [00:11<00:01,  0.76it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00777, train/loss_step=1.100, global_step=8.000]Epoch 0: 100%|██████████| 10/10 [00:12<00:00,  0.83it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00777, train/loss_step=1.100, global_step=8.000]Epoch 0: 100%|██████████| 10/10 [00:12<00:00,  0.83it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000]
-Validation: |          | 0/? [00:00<?, ?it/s][A
-Validation:   0%|          | 0/10 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|          | 0/10 [00:00<?, ?it/s][Aenter if circle
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.28it/s][A[A
-
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.13it/s][A[A
-
-DDIM Sampler:  32%|███▏      | 16/50 [00:00<00:00, 49.40it/s][A[A
-
-DDIM Sampler:  46%|████▌     | 23/50 [00:00<00:00, 53.96it/s][A[A
-
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 56.77it/s][A[A
-
-DDIM Sampler:  74%|███████▍  | 37/50 [00:00<00:00, 58.47it/s][A[A
-
-DDIM Sampler:  88%|████████▊ | 44/50 [00:00<00:00, 59.30it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 56.54it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.86it/s][A[A
-
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.85it/s][A[A
-
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.75it/s][A[A
-
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.75it/s][A[A
-
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.69it/s][A[A
-
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.34it/s][A[A
-
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 61.10it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.30it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.80it/s][A[A
-
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.89it/s][A[A
-
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.93it/s][A[A
-
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.94it/s][A[A
-
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.90it/s][A[A
-
-DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.51it/s][A[A
-
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.22it/s][A[A
-
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.41it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.48it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.75it/s][A[A
-
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.54it/s][A[A
-
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.49it/s][A[A
-
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.52it/s][A[A
-
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.44it/s][A[A
-
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.41it/s][A[A
-
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.41it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.37it/s]
-Warning: No modal type provided for samples_x0_quantized. Skipping.
-Warning: No modal type provided for samples_inpainting. Skipping.
-Warning: No modal type provided for mask. Skipping.
-Warning: No modal type provided for samples_outpainting. Skipping.
-
-Validation DataLoader 0:  10%|█         | 1/10 [00:09<01:28,  0.10it/s][A
-Validation DataLoader 0:  20%|██        | 2/10 [00:09<00:39,  0.20it/s][A
-Validation DataLoader 0:  30%|███       | 3/10 [00:10<00:23,  0.30it/s][A
-Validation DataLoader 0:  40%|████      | 4/10 [00:10<00:15,  0.39it/s][A
-Validation DataLoader 0:  50%|█████     | 5/10 [00:10<00:10,  0.48it/s][A
-Validation DataLoader 0:  60%|██████    | 6/10 [00:10<00:06,  0.57it/s][A
-Validation DataLoader 0:  70%|███████   | 7/10 [00:10<00:04,  0.66it/s][A
-Validation DataLoader 0:  80%|████████  | 8/10 [00:10<00:02,  0.75it/s][A
-Validation DataLoader 0:  90%|█████████ | 9/10 [00:10<00:01,  0.83it/s][A
-Validation DataLoader 0: 100%|██████████| 10/10 [00:10<00:00,  0.92it/s][A
-                                                                        [AEpoch 0: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000]Average Epoch time: 23.07 seconds
-Average Peak memory 2568.14MiB
-Average Reserved memory 3076.00MiB
-Epoch 0: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Metric val/loss_simple_ema improved. New best score: 1.101
-Epoch 0, global step 10: 'val/loss_simple_ema' reached 1.10133 (best 1.10133), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v1.ckpt' as top 1
-Epoch 0:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]         Epoch 1:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]enter if circle
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.65it/s][A
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 48.50it/s][A
-DDIM Sampler:  32%|███▏      | 16/50 [00:00<00:00, 52.02it/s][A
-DDIM Sampler:  46%|████▌     | 23/50 [00:00<00:00, 55.56it/s][A
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 57.47it/s][A
-DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 58.24it/s][A
-DDIM Sampler:  86%|████████▌ | 43/50 [00:00<00:00, 58.89it/s][A
-DDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.47it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 57.03it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.08it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.19it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.35it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 59.87it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.04it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.16it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.20it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.13it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.62it/s][A
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.48it/s][A
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.68it/s][A
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.38it/s][A
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.11it/s][A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.71it/s][A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.06it/s][A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.19it/s][A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 58.58it/s][A
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.02it/s][A
 DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.30it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.29it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.44it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.39it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.88it/s][A
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.92it/s][A
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.79it/s][A
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.73it/s][A
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.51it/s][A
-DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.44it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.60it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.71it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.63it/s]
+DDIM Sampler:  86%|████████▌ | 43/50 [00:00<00:00, 59.62it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 59.32it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.17it/s]
 Warning: No modal type provided for samples_x0_quantized. Skipping.
 Warning: No modal type provided for samples_inpainting. Skipping.
 Warning: No modal type provided for mask. Skipping.
 Warning: No modal type provided for samples_outpainting. Skipping.
-Epoch 1:  10%|█         | 1/10 [00:12<01:53,  0.08it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  10%|█         | 1/10 [00:12<01:53,  0.08it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=10.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  20%|██        | 2/10 [00:12<00:50,  0.16it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=10.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  20%|██        | 2/10 [00:12<00:50,  0.16it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00826, train/loss_step=1.100, global_step=11.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  30%|███       | 3/10 [00:12<00:30,  0.23it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00826, train/loss_step=1.100, global_step=11.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  30%|███       | 3/10 [00:12<00:30,  0.23it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00984, train/loss_step=1.100, global_step=12.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  40%|████      | 4/10 [00:13<00:19,  0.31it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00984, train/loss_step=1.100, global_step=12.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  40%|████      | 4/10 [00:13<00:19,  0.31it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.0082, train/loss_step=1.100, global_step=13.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110] Epoch 1:  50%|█████     | 5/10 [00:13<00:13,  0.38it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.0082, train/loss_step=1.100, global_step=13.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  50%|█████     | 5/10 [00:13<00:13,  0.38it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00771, train/loss_step=1.080, global_step=14.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  60%|██████    | 6/10 [00:13<00:08,  0.45it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00771, train/loss_step=1.080, global_step=14.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  60%|██████    | 6/10 [00:13<00:08,  0.45it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.0079, train/loss_step=1.110, global_step=15.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110] Epoch 1:  70%|███████   | 7/10 [00:13<00:05,  0.51it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.0079, train/loss_step=1.110, global_step=15.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  70%|███████   | 7/10 [00:13<00:05,  0.51it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00809, train/loss_step=1.110, global_step=16.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  80%|████████  | 8/10 [00:13<00:03,  0.58it/s, v_num=6udj, train/loss_simple_step=1.110, train/loss_vlb_step=0.00809, train/loss_step=1.110, global_step=16.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  80%|████████  | 8/10 [00:13<00:03,  0.58it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00804, train/loss_step=1.100, global_step=17.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  90%|█████████ | 9/10 [00:13<00:01,  0.64it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00804, train/loss_step=1.100, global_step=17.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  90%|█████████ | 9/10 [00:13<00:01,  0.64it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00805, train/loss_step=1.080, global_step=18.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1: 100%|██████████| 10/10 [00:14<00:00,  0.71it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00805, train/loss_step=1.080, global_step=18.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1: 100%|██████████| 10/10 [00:14<00:00,  0.71it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110] 
+Epoch 0:  10%|█         | 1/10 [00:10<01:34,  0.10it/s]Epoch 0:  10%|█         | 1/10 [00:10<01:34,  0.10it/s, v_num=5a3y, train/loss_simple_step=1.140, train/loss_vlb_step=0.00881, train/loss_step=1.140, global_step=0.000]Epoch 0:  20%|██        | 2/10 [00:10<00:42,  0.19it/s, v_num=5a3y, train/loss_simple_step=1.140, train/loss_vlb_step=0.00881, train/loss_step=1.140, global_step=0.000]Epoch 0:  20%|██        | 2/10 [00:10<00:42,  0.19it/s, v_num=5a3y, train/loss_simple_step=1.120, train/loss_vlb_step=0.0134, train/loss_step=1.120, global_step=1.000] Epoch 0:  30%|███       | 3/10 [00:10<00:25,  0.28it/s, v_num=5a3y, train/loss_simple_step=1.120, train/loss_vlb_step=0.0134, train/loss_step=1.120, global_step=1.000]Epoch 0:  30%|███       | 3/10 [00:10<00:25,  0.28it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00795, train/loss_step=1.110, global_step=2.000]Epoch 0:  40%|████      | 4/10 [00:11<00:16,  0.36it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00795, train/loss_step=1.110, global_step=2.000]Epoch 0:  40%|████      | 4/10 [00:11<00:16,  0.36it/s, v_num=5a3y, train/loss_simple_step=1.120, train/loss_vlb_step=0.288, train/loss_step=1.120, global_step=3.000]  Epoch 0:  50%|█████     | 5/10 [00:11<00:11,  0.45it/s, v_num=5a3y, train/loss_simple_step=1.120, train/loss_vlb_step=0.288, train/loss_step=1.120, global_step=3.000]Epoch 0:  50%|█████     | 5/10 [00:11<00:11,  0.45it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00781, train/loss_step=1.110, global_step=4.000]Epoch 0:  60%|██████    | 6/10 [00:11<00:07,  0.53it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00781, train/loss_step=1.110, global_step=4.000]Epoch 0:  60%|██████    | 6/10 [00:11<00:07,  0.53it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=5.000]Epoch 0:  70%|███████   | 7/10 [00:11<00:04,  0.60it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=5.000]Epoch 0:  70%|███████   | 7/10 [00:11<00:04,  0.60it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00858, train/loss_step=1.110, global_step=6.000]Epoch 0:  80%|████████  | 8/10 [00:11<00:02,  0.68it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00858, train/loss_step=1.110, global_step=6.000]Epoch 0:  80%|████████  | 8/10 [00:11<00:02,  0.68it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00995, train/loss_step=1.100, global_step=7.000]Epoch 0:  90%|█████████ | 9/10 [00:11<00:01,  0.75it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00995, train/loss_step=1.100, global_step=7.000]Epoch 0:  90%|█████████ | 9/10 [00:11<00:01,  0.75it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00777, train/loss_step=1.100, global_step=8.000]Epoch 0: 100%|██████████| 10/10 [00:12<00:00,  0.82it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00777, train/loss_step=1.100, global_step=8.000]Epoch 0: 100%|██████████| 10/10 [00:12<00:00,  0.82it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000]
 Validation: |          | 0/? [00:00<?, ?it/s][A
 Validation:   0%|          | 0/10 [00:00<?, ?it/s][A
 Validation DataLoader 0:   0%|          | 0/10 [00:00<?, ?it/s][Aenter if circle
@@ -512,230 +357,80 @@ Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.65it/s][A[A
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 46.38it/s][A[A
 
-DDIM Sampler:  22%|██▏       | 11/50 [00:00<00:00, 53.90it/s][A[A
+DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 46.49it/s][A[A
 
-DDIM Sampler:  34%|███▍      | 17/50 [00:00<00:00, 56.27it/s][A[A
+DDIM Sampler:  32%|███▏      | 16/50 [00:00<00:00, 49.00it/s][A[A
 
-DDIM Sampler:  46%|████▌     | 23/50 [00:00<00:00, 57.63it/s][A[A
+DDIM Sampler:  46%|████▌     | 23/50 [00:00<00:00, 53.71it/s][A[A
 
-DDIM Sampler:  58%|█████▊    | 29/50 [00:00<00:00, 58.35it/s][A[A
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 56.12it/s][A[A
 
-DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.81it/s][A[A
+DDIM Sampler:  74%|███████▍  | 37/50 [00:00<00:00, 57.68it/s][A[A
 
-DDIM Sampler:  86%|████████▌ | 43/50 [00:00<00:00, 60.28it/s][A[A
+DDIM Sampler:  88%|████████▊ | 44/50 [00:00<00:00, 58.73it/s][A[A
 
-DDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.62it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 58.72it/s]
+DDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.07it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 55.96it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.97it/s][A[A
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.49it/s][A[A
 
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.43it/s][A[A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.46it/s][A[A
 
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.87it/s][A[A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.51it/s][A[A
 
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.51it/s][A[A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.69it/s][A[A
 
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.89it/s][A[A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.73it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.73it/s][A[A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.79it/s][A[A
 
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.72it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.68it/s]
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.79it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.63it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 58.33it/s][A[A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.91it/s][A[A
 
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 57.94it/s][A[A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 58.84it/s][A[A
 
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 58.41it/s][A[A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 58.96it/s][A[A
 
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 58.09it/s][A[A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.09it/s][A[A
 
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 58.76it/s][A[A
+DDIM Sampler:  62%|██████▏   | 31/50 [00:00<00:00, 59.55it/s][A[A
 
-DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 58.67it/s][A[A
+DDIM Sampler:  74%|███████▍  | 37/50 [00:00<00:00, 58.99it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.10it/s][A[A
+DDIM Sampler:  86%|████████▌ | 43/50 [00:00<00:00, 59.03it/s][A[A
 
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 58.89it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 58.63it/s]
+DDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.55it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.28it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.82it/s][A[A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.54it/s][A[A
 
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 59.97it/s][A[A
+DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 59.96it/s][A[A
 
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.39it/s][A[A
+DDIM Sampler:  38%|███▊      | 19/50 [00:00<00:00, 59.64it/s][A[A
 
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.16it/s][A[A
+DDIM Sampler:  50%|█████     | 25/50 [00:00<00:00, 59.49it/s][A[A
 
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.38it/s][A[A
+DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 59.80it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.83it/s][A[A
+DDIM Sampler:  78%|███████▊  | 39/50 [00:00<00:00, 59.96it/s][A[A
 
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.70it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.85it/s]
-Warning: No modal type provided for samples_x0_quantized. Skipping.
-Warning: No modal type provided for samples_inpainting. Skipping.
-Warning: No modal type provided for mask. Skipping.
-Warning: No modal type provided for samples_outpainting. Skipping.
-
-Validation DataLoader 0:  10%|█         | 1/10 [00:10<01:31,  0.10it/s][A
-Validation DataLoader 0:  20%|██        | 2/10 [00:10<00:41,  0.19it/s][A
-Validation DataLoader 0:  30%|███       | 3/10 [00:10<00:24,  0.29it/s][A
-Validation DataLoader 0:  40%|████      | 4/10 [00:10<00:15,  0.38it/s][A
-Validation DataLoader 0:  50%|█████     | 5/10 [00:10<00:10,  0.47it/s][A
-Validation DataLoader 0:  60%|██████    | 6/10 [00:10<00:07,  0.56it/s][A
-Validation DataLoader 0:  70%|███████   | 7/10 [00:10<00:04,  0.64it/s][A
-Validation DataLoader 0:  80%|████████  | 8/10 [00:11<00:02,  0.73it/s][A
-Validation DataLoader 0:  90%|█████████ | 9/10 [00:11<00:01,  0.81it/s][A
-Validation DataLoader 0: 100%|██████████| 10/10 [00:11<00:00,  0.89it/s][A
-                                                                        [AEpoch 1: 100%|██████████| 10/10 [00:25<00:00,  0.39it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Average Epoch time: 25.52 seconds
-Average Peak memory 2565.15MiB
-Average Reserved memory 3076.00MiB
-Epoch 1: 100%|██████████| 10/10 [00:25<00:00,  0.39it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Metric val/loss_simple_ema improved by 0.015 >= min_delta = 0.0. New best score: 1.086
-Epoch 1, global step 20: 'val/loss_simple_ema' reached 1.08621 (best 1.08621), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v1.ckpt' as top 1
-Epoch 1:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]         Epoch 2:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]enter if circle
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.58it/s][A
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 48.53it/s][A
-DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 48.38it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 49.80it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 54.05it/s][A
-DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 55.84it/s][A
-DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 58.27it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 58.96it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 55.54it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.55it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 62.09it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.88it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 62.35it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 62.27it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 62.05it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 62.04it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.98it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.68it/s][A
-DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 61.24it/s][A
-DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 61.22it/s][A
-DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 61.40it/s][A
-DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 61.63it/s][A
-DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 61.05it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 60.38it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.83it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 62.25it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.98it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.58it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.47it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.89it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.86it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.64it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.68it/s]
-Warning: No modal type provided for samples_x0_quantized. Skipping.
-Warning: No modal type provided for samples_inpainting. Skipping.
-Warning: No modal type provided for mask. Skipping.
-Warning: No modal type provided for samples_outpainting. Skipping.
-Epoch 2:  10%|█         | 1/10 [00:10<01:30,  0.10it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  10%|█         | 1/10 [00:10<01:30,  0.10it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00779, train/loss_step=1.100, global_step=20.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  20%|██        | 2/10 [00:10<00:40,  0.20it/s, v_num=6udj, train/loss_simple_step=1.100, train/loss_vlb_step=0.00779, train/loss_step=1.100, global_step=20.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  20%|██        | 2/10 [00:10<00:40,  0.20it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0115, train/loss_step=1.090, global_step=21.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100] Epoch 2:  30%|███       | 3/10 [00:10<00:24,  0.29it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0115, train/loss_step=1.090, global_step=21.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  30%|███       | 3/10 [00:10<00:24,  0.29it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00774, train/loss_step=1.090, global_step=22.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  40%|████      | 4/10 [00:10<00:15,  0.38it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00774, train/loss_step=1.090, global_step=22.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  40%|████      | 4/10 [00:10<00:15,  0.38it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0079, train/loss_step=1.070, global_step=23.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100] Epoch 2:  50%|█████     | 5/10 [00:10<00:10,  0.47it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0079, train/loss_step=1.070, global_step=23.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  50%|█████     | 5/10 [00:10<00:10,  0.47it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00884, train/loss_step=1.080, global_step=24.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  60%|██████    | 6/10 [00:10<00:07,  0.55it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00884, train/loss_step=1.080, global_step=24.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  60%|██████    | 6/10 [00:10<00:07,  0.55it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00986, train/loss_step=1.090, global_step=25.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  70%|███████   | 7/10 [00:11<00:04,  0.63it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00986, train/loss_step=1.090, global_step=25.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  70%|███████   | 7/10 [00:11<00:04,  0.63it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0138, train/loss_step=1.090, global_step=26.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100] Epoch 2:  80%|████████  | 8/10 [00:11<00:02,  0.71it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0138, train/loss_step=1.090, global_step=26.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  80%|████████  | 8/10 [00:11<00:02,  0.71it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.0083, train/loss_step=1.080, global_step=27.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  90%|█████████ | 9/10 [00:11<00:01,  0.79it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.0083, train/loss_step=1.080, global_step=27.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  90%|█████████ | 9/10 [00:11<00:01,  0.79it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0161, train/loss_step=1.070, global_step=28.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2: 100%|██████████| 10/10 [00:11<00:00,  0.86it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0161, train/loss_step=1.070, global_step=28.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2: 100%|██████████| 10/10 [00:11<00:00,  0.86it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]
-Validation: |          | 0/? [00:00<?, ?it/s][A
-Validation:   0%|          | 0/10 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|          | 0/10 [00:00<?, ?it/s][Aenter if circle
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.37it/s][A[A
-
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 48.47it/s][A[A
-
-DDIM Sampler:  32%|███▏      | 16/50 [00:00<00:00, 53.55it/s][A[A
-
-DDIM Sampler:  46%|████▌     | 23/50 [00:00<00:00, 57.54it/s][A[A
-
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 58.57it/s][A[A
-
-DDIM Sampler:  74%|███████▍  | 37/50 [00:00<00:00, 59.99it/s][A[A
-
-DDIM Sampler:  88%|████████▊ | 44/50 [00:00<00:00, 60.24it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 58.33it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.55it/s][A[A
-
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.76it/s][A[A
-
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.06it/s][A[A
-
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.20it/s][A[A
-
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.68it/s][A[A
-
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.23it/s][A[A
-
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 61.59it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.38it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.40it/s][A[A
-
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.83it/s][A[A
-
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.31it/s][A[A
-
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.50it/s][A[A
-
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.07it/s][A[A
-
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.39it/s][A[A
-
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 61.01it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.16it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
-
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.88it/s][A[A
-
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.28it/s][A[A
-
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.40it/s][A[A
-
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.94it/s][A[A
-
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.71it/s][A[A
-
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.17it/s][A[A
-
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.88it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.80it/s]
+DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 59.38it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.53it/s]
 Warning: No modal type provided for samples_x0_quantized. Skipping.
 Warning: No modal type provided for samples_inpainting. Skipping.
 Warning: No modal type provided for mask. Skipping.
@@ -743,70 +438,71 @@ Warning: No modal type provided for samples_outpainting. Skipping.
 
 Validation DataLoader 0:  10%|█         | 1/10 [00:09<01:29,  0.10it/s][A
 Validation DataLoader 0:  20%|██        | 2/10 [00:10<00:40,  0.20it/s][A
-Validation DataLoader 0:  30%|███       | 3/10 [00:10<00:23,  0.30it/s][A
+Validation DataLoader 0:  30%|███       | 3/10 [00:10<00:23,  0.29it/s][A
 Validation DataLoader 0:  40%|████      | 4/10 [00:10<00:15,  0.39it/s][A
 Validation DataLoader 0:  50%|█████     | 5/10 [00:10<00:10,  0.48it/s][A
 Validation DataLoader 0:  60%|██████    | 6/10 [00:10<00:07,  0.57it/s][A
 Validation DataLoader 0:  70%|███████   | 7/10 [00:10<00:04,  0.66it/s][A
 Validation DataLoader 0:  80%|████████  | 8/10 [00:10<00:02,  0.74it/s][A
-Validation DataLoader 0:  90%|█████████ | 9/10 [00:10<00:01,  0.83it/s][A
-Validation DataLoader 0: 100%|██████████| 10/10 [00:10<00:00,  0.91it/s][A
-                                                                        [AEpoch 2: 100%|██████████| 10/10 [00:22<00:00,  0.44it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Average Epoch time: 22.74 seconds
-Average Peak memory 2565.15MiB
+Validation DataLoader 0:  90%|█████████ | 9/10 [00:10<00:01,  0.82it/s][A
+Validation DataLoader 0: 100%|██████████| 10/10 [00:11<00:00,  0.91it/s][A
+                                                                        [AEpoch 0: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000]Average Epoch time: 23.27 seconds
+Average Peak memory 2568.14MiB
 Average Reserved memory 3076.00MiB
-Epoch 2: 100%|██████████| 10/10 [00:22<00:00,  0.44it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090] Metric val/loss_simple_ema improved by 0.002 >= min_delta = 0.0. New best score: 1.084
-Epoch 2, global step 30: 'val/loss_simple_ema' reached 1.08430 (best 1.08430), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v1.ckpt' as top 1
-Epoch 2:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]         Epoch 3:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]enter if circle
+Epoch 0: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Metric val/loss_simple_ema improved. New best score: 1.101
+Epoch 0, global step 10: 'val/loss_simple_ema' reached 1.10133 (best 1.10133), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v2.ckpt' as top 1
+Epoch 0:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]         Epoch 1:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]enter if circle
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.15it/s][A
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 48.15it/s][A
-DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 48.08it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 49.74it/s][A
-DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 53.18it/s][A
-DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 55.97it/s][A
-DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 58.05it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 58.84it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 55.28it/s]
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.13it/s][A
+DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.94it/s][A
+DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 47.99it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 50.98it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 54.67it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 56.76it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 58.00it/s][A
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 58.58it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 55.50it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 58.95it/s][A
-DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 59.94it/s][A
-DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 60.40it/s][A
-DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 61.28it/s][A
-DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 61.32it/s][A
-DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 61.61it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 61.79it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.26it/s]
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.71it/s][A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.22it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.46it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.40it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.24it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.44it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.08it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.20it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.28it/s][A
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.45it/s][A
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.55it/s][A
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.69it/s][A
-DDIM Sampler:  62%|██████▏   | 31/50 [00:00<00:00, 60.18it/s][A
-DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 60.40it/s][A
-DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 60.63it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.17it/s]
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.36it/s][A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 58.76it/s][A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.00it/s][A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.24it/s][A
+DDIM Sampler:  62%|██████▏   | 31/50 [00:00<00:00, 59.85it/s][A
+DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 60.05it/s][A
+DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 60.09it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.78it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 62.18it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.70it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.12it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.28it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.15it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.05it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.60it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.48it/s]
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.58it/s][A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.43it/s][A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 58.97it/s][A
+DDIM Sampler:  50%|█████     | 25/50 [00:00<00:00, 59.61it/s][A
+DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 59.78it/s][A
+DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 59.81it/s][A
+DDIM Sampler:  88%|████████▊ | 44/50 [00:00<00:00, 59.69it/s][A
+DDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.45it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.50it/s]
 Warning: No modal type provided for samples_x0_quantized. Skipping.
 Warning: No modal type provided for samples_inpainting. Skipping.
 Warning: No modal type provided for mask. Skipping.
 Warning: No modal type provided for samples_outpainting. Skipping.
-Epoch 3:  10%|█         | 1/10 [00:10<01:32,  0.10it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  10%|█         | 1/10 [00:10<01:32,  0.10it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00757, train/loss_step=1.080, global_step=30.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  20%|██        | 2/10 [00:10<00:41,  0.19it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00757, train/loss_step=1.080, global_step=30.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  20%|██        | 2/10 [00:10<00:41,  0.19it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00795, train/loss_step=1.090, global_step=31.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  30%|███       | 3/10 [00:10<00:24,  0.28it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00795, train/loss_step=1.090, global_step=31.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  30%|███       | 3/10 [00:10<00:24,  0.28it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00925, train/loss_step=1.090, global_step=32.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  40%|████      | 4/10 [00:10<00:16,  0.37it/s, v_num=6udj, train/loss_simple_step=1.090, train/loss_vlb_step=0.00925, train/loss_step=1.090, global_step=32.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  40%|████      | 4/10 [00:10<00:16,  0.37it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.0322, train/loss_step=1.080, global_step=33.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090] Epoch 3:  50%|█████     | 5/10 [00:11<00:11,  0.45it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.0322, train/loss_step=1.080, global_step=33.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  50%|█████     | 5/10 [00:11<00:11,  0.45it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00932, train/loss_step=1.080, global_step=34.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  60%|██████    | 6/10 [00:11<00:07,  0.54it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00932, train/loss_step=1.080, global_step=34.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  60%|██████    | 6/10 [00:11<00:07,  0.54it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00908, train/loss_step=1.080, global_step=35.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  70%|███████   | 7/10 [00:11<00:04,  0.62it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00908, train/loss_step=1.080, global_step=35.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  70%|███████   | 7/10 [00:11<00:04,  0.62it/s, v_num=6udj, train/loss_simple_step=1.060, train/loss_vlb_step=0.00745, train/loss_step=1.060, global_step=36.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  80%|████████  | 8/10 [00:11<00:02,  0.69it/s, v_num=6udj, train/loss_simple_step=1.060, train/loss_vlb_step=0.00745, train/loss_step=1.060, global_step=36.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  80%|████████  | 8/10 [00:11<00:02,  0.69it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00761, train/loss_step=1.080, global_step=37.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  90%|█████████ | 9/10 [00:11<00:01,  0.77it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00761, train/loss_step=1.080, global_step=37.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  90%|█████████ | 9/10 [00:11<00:01,  0.77it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00775, train/loss_step=1.080, global_step=38.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3: 100%|██████████| 10/10 [00:11<00:00,  0.84it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00775, train/loss_step=1.080, global_step=38.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3: 100%|██████████| 10/10 [00:11<00:00,  0.84it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]
+Epoch 1:  10%|█         | 1/10 [00:12<01:55,  0.08it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00768, train/loss_step=1.090, global_step=9.000, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  10%|█         | 1/10 [00:12<01:55,  0.08it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=10.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  20%|██        | 2/10 [00:12<00:51,  0.15it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00773, train/loss_step=1.100, global_step=10.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  20%|██        | 2/10 [00:12<00:51,  0.15it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00826, train/loss_step=1.100, global_step=11.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  30%|███       | 3/10 [00:13<00:30,  0.23it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00826, train/loss_step=1.100, global_step=11.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  30%|███       | 3/10 [00:13<00:30,  0.23it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00984, train/loss_step=1.100, global_step=12.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  40%|████      | 4/10 [00:13<00:19,  0.30it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00984, train/loss_step=1.100, global_step=12.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  40%|████      | 4/10 [00:13<00:19,  0.30it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.0082, train/loss_step=1.100, global_step=13.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110] Epoch 1:  50%|█████     | 5/10 [00:13<00:13,  0.37it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.0082, train/loss_step=1.100, global_step=13.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  50%|█████     | 5/10 [00:13<00:13,  0.37it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00771, train/loss_step=1.080, global_step=14.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  60%|██████    | 6/10 [00:13<00:09,  0.44it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00771, train/loss_step=1.080, global_step=14.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  60%|██████    | 6/10 [00:13<00:09,  0.44it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.0079, train/loss_step=1.110, global_step=15.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110] Epoch 1:  70%|███████   | 7/10 [00:13<00:05,  0.50it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.0079, train/loss_step=1.110, global_step=15.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  70%|███████   | 7/10 [00:13<00:05,  0.50it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00809, train/loss_step=1.110, global_step=16.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  80%|████████  | 8/10 [00:14<00:03,  0.57it/s, v_num=5a3y, train/loss_simple_step=1.110, train/loss_vlb_step=0.00809, train/loss_step=1.110, global_step=16.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  80%|████████  | 8/10 [00:14<00:03,  0.57it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00804, train/loss_step=1.100, global_step=17.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  90%|█████████ | 9/10 [00:14<00:01,  0.63it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00804, train/loss_step=1.100, global_step=17.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1:  90%|█████████ | 9/10 [00:14<00:01,  0.63it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00805, train/loss_step=1.080, global_step=18.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1: 100%|██████████| 10/10 [00:14<00:00,  0.69it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00805, train/loss_step=1.080, global_step=18.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Epoch 1: 100%|██████████| 10/10 [00:14<00:00,  0.69it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110] 
 Validation: |          | 0/? [00:00<?, ?it/s][A
 Validation:   0%|          | 0/10 [00:00<?, ?it/s][A
 Validation DataLoader 0:   0%|          | 0/10 [00:00<?, ?it/s][Aenter if circle
@@ -816,82 +512,243 @@ Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.39it/s][A[A
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 46.95it/s][A[A
 
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.22it/s][A[A
+DDIM Sampler:  22%|██▏       | 11/50 [00:00<00:00, 52.31it/s][A[A
 
-DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 47.22it/s][A[A
+DDIM Sampler:  34%|███▍      | 17/50 [00:00<00:00, 55.67it/s][A[A
 
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 48.96it/s][A[A
+DDIM Sampler:  46%|████▌     | 23/50 [00:00<00:00, 57.04it/s][A[A
 
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 53.29it/s][A[A
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 58.24it/s][A[A
 
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 55.76it/s][A[A
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 58.45it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 57.48it/s][A[A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 58.83it/s][A[A
 
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 58.60it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 54.76it/s]
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.13it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 57.59it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.36it/s][A[A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.52it/s][A[A
 
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.17it/s][A[A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.52it/s][A[A
 
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.01it/s][A[A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.43it/s][A[A
 
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.31it/s][A[A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.37it/s][A[A
 
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.56it/s][A[A
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.55it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.78it/s][A[A
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.39it/s][A[A
 
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.49it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.64it/s]
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.33it/s][A[A
+
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.44it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.40it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.99it/s][A[A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 58.83it/s][A[A
 
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.53it/s][A[A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.26it/s][A[A
 
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.52it/s][A[A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.57it/s][A[A
 
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.32it/s][A[A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.02it/s][A[A
 
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.51it/s][A[A
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.21it/s][A[A
 
-DDIM Sampler:  74%|███████▍  | 37/50 [00:00<00:00, 59.70it/s][A[A
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.04it/s][A[A
 
-DDIM Sampler:  88%|████████▊ | 44/50 [00:00<00:00, 59.93it/s][A[A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 58.96it/s][A[A
 
-DDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.75it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.65it/s]
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.05it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.06it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.93it/s][A[A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.14it/s][A[A
 
-DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.65it/s][A[A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.08it/s][A[A
 
-DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.78it/s][A[A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.19it/s][A[A
 
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.47it/s][A[A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.05it/s][A[A
 
-DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.56it/s][A[A
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 58.73it/s][A[A
 
-DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.69it/s][A[A
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 58.96it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.38it/s][A[A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 58.87it/s][A[A
 
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 59.91it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.68it/s]
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 59.13it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 58.91it/s]
+Warning: No modal type provided for samples_x0_quantized. Skipping.
+Warning: No modal type provided for samples_inpainting. Skipping.
+Warning: No modal type provided for mask. Skipping.
+Warning: No modal type provided for samples_outpainting. Skipping.
+
+Validation DataLoader 0:  10%|█         | 1/10 [00:10<01:34,  0.10it/s][A
+Validation DataLoader 0:  20%|██        | 2/10 [00:10<00:42,  0.19it/s][A
+Validation DataLoader 0:  30%|███       | 3/10 [00:10<00:24,  0.28it/s][A
+Validation DataLoader 0:  40%|████      | 4/10 [00:10<00:16,  0.37it/s][A
+Validation DataLoader 0:  50%|█████     | 5/10 [00:10<00:10,  0.46it/s][A
+Validation DataLoader 0:  60%|██████    | 6/10 [00:11<00:07,  0.54it/s][A
+Validation DataLoader 0:  70%|███████   | 7/10 [00:11<00:04,  0.63it/s][A
+Validation DataLoader 0:  80%|████████  | 8/10 [00:11<00:02,  0.71it/s][A
+Validation DataLoader 0:  90%|█████████ | 9/10 [00:11<00:01,  0.79it/s][A
+Validation DataLoader 0: 100%|██████████| 10/10 [00:11<00:00,  0.87it/s][A
+                                                                        [AEpoch 1: 100%|██████████| 10/10 [00:26<00:00,  0.38it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.110, train/loss_vlb_epoch=0.0367, train/loss_epoch=1.110]Average Epoch time: 26.09 seconds
+Average Peak memory 2565.15MiB
+Average Reserved memory 3076.00MiB
+Epoch 1: 100%|██████████| 10/10 [00:26<00:00,  0.38it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Metric val/loss_simple_ema improved by 0.015 >= min_delta = 0.0. New best score: 1.086
+Epoch 1, global step 20: 'val/loss_simple_ema' reached 1.08621 (best 1.08621), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v2.ckpt' as top 1
+Epoch 1:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]         Epoch 2:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]enter if circle
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.26it/s][A
+DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.10it/s][A
+DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 47.19it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 49.66it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 53.72it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 56.39it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 57.68it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 58.98it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 55.11it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.91it/s][A
+DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 60.68it/s][A
+DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 61.13it/s][A
+DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 61.23it/s][A
+DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 60.39it/s][A
+DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 60.75it/s][A
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 60.20it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.47it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.75it/s][A
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.88it/s][A
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.76it/s][A
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.22it/s][A
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 58.99it/s][A
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 58.38it/s][A
+DDIM Sampler:  86%|████████▌ | 43/50 [00:00<00:00, 59.20it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 59.22it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.16it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 59.90it/s][A
+DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 59.33it/s][A
+DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 59.51it/s][A
+DDIM Sampler:  52%|█████▏    | 26/50 [00:00<00:00, 59.46it/s][A
+DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 59.23it/s][A
+DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 59.30it/s][A
+DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 59.53it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.48it/s]
+Warning: No modal type provided for samples_x0_quantized. Skipping.
+Warning: No modal type provided for samples_inpainting. Skipping.
+Warning: No modal type provided for mask. Skipping.
+Warning: No modal type provided for samples_outpainting. Skipping.
+Epoch 2:  10%|█         | 1/10 [00:10<01:31,  0.10it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0078, train/loss_step=1.090, global_step=19.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  10%|█         | 1/10 [00:10<01:31,  0.10it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00779, train/loss_step=1.100, global_step=20.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  20%|██        | 2/10 [00:10<00:41,  0.19it/s, v_num=5a3y, train/loss_simple_step=1.100, train/loss_vlb_step=0.00779, train/loss_step=1.100, global_step=20.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  20%|██        | 2/10 [00:10<00:41,  0.19it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0115, train/loss_step=1.090, global_step=21.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100] Epoch 2:  30%|███       | 3/10 [00:10<00:24,  0.28it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0115, train/loss_step=1.090, global_step=21.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  30%|███       | 3/10 [00:10<00:24,  0.28it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00774, train/loss_step=1.090, global_step=22.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  40%|████      | 4/10 [00:10<00:16,  0.37it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00774, train/loss_step=1.090, global_step=22.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  40%|████      | 4/10 [00:10<00:16,  0.37it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.0079, train/loss_step=1.070, global_step=23.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100] Epoch 2:  50%|█████     | 5/10 [00:10<00:10,  0.46it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.0079, train/loss_step=1.070, global_step=23.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  50%|█████     | 5/10 [00:10<00:10,  0.46it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00884, train/loss_step=1.080, global_step=24.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  60%|██████    | 6/10 [00:11<00:07,  0.54it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00884, train/loss_step=1.080, global_step=24.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  60%|██████    | 6/10 [00:11<00:07,  0.54it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00986, train/loss_step=1.090, global_step=25.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  70%|███████   | 7/10 [00:11<00:04,  0.62it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00986, train/loss_step=1.090, global_step=25.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  70%|███████   | 7/10 [00:11<00:04,  0.62it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0138, train/loss_step=1.090, global_step=26.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100] Epoch 2:  80%|████████  | 8/10 [00:11<00:02,  0.70it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0138, train/loss_step=1.090, global_step=26.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  80%|████████  | 8/10 [00:11<00:02,  0.70it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.0083, train/loss_step=1.080, global_step=27.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  90%|█████████ | 9/10 [00:11<00:01,  0.77it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.0083, train/loss_step=1.080, global_step=27.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2:  90%|█████████ | 9/10 [00:11<00:01,  0.77it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.0161, train/loss_step=1.070, global_step=28.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2: 100%|██████████| 10/10 [00:11<00:00,  0.85it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.0161, train/loss_step=1.070, global_step=28.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Epoch 2: 100%|██████████| 10/10 [00:11<00:00,  0.85it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]
+Validation: |          | 0/? [00:00<?, ?it/s][A
+Validation:   0%|          | 0/10 [00:00<?, ?it/s][A
+Validation DataLoader 0:   0%|          | 0/10 [00:00<?, ?it/s][Aenter if circle
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
+
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 46.77it/s][A[A
+
+DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.80it/s][A[A
+
+DDIM Sampler:  32%|███▏      | 16/50 [00:00<00:00, 53.01it/s][A[A
+
+DDIM Sampler:  44%|████▍     | 22/50 [00:00<00:00, 55.49it/s][A[A
+
+DDIM Sampler:  58%|█████▊    | 29/50 [00:00<00:00, 57.33it/s][A[A
+
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 57.98it/s][A[A
+
+DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 58.44it/s][A[A
+
+DDIM Sampler:  94%|█████████▍| 47/50 [00:00<00:00, 58.60it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 56.63it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
+
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.01it/s][A[A
+
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 59.27it/s][A[A
+
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 59.54it/s][A[A
+
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 59.22it/s][A[A
+
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 59.38it/s][A[A
+
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 59.13it/s][A[A
+
+DDIM Sampler:  86%|████████▌ | 43/50 [00:00<00:00, 59.49it/s][A[A
+
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 59.31it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.25it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
+
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 57.77it/s][A[A
+
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 57.84it/s][A[A
+
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 58.11it/s][A[A
+
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 58.15it/s][A[A
+
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 58.31it/s][A[A
+
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 58.16it/s][A[A
+
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 58.11it/s][A[A
+
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 57.73it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 57.92it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
+
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 57.53it/s][A[A
+
+DDIM Sampler:  24%|██▍       | 12/50 [00:00<00:00, 57.60it/s][A[A
+
+DDIM Sampler:  36%|███▌      | 18/50 [00:00<00:00, 57.71it/s][A[A
+
+DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 57.44it/s][A[A
+
+DDIM Sampler:  60%|██████    | 30/50 [00:00<00:00, 57.89it/s][A[A
+
+DDIM Sampler:  72%|███████▏  | 36/50 [00:00<00:00, 57.69it/s][A[A
+
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 57.68it/s][A[A
+
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 57.36it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 57.47it/s]
 Warning: No modal type provided for samples_x0_quantized. Skipping.
 Warning: No modal type provided for samples_inpainting. Skipping.
 Warning: No modal type provided for mask. Skipping.
@@ -907,62 +764,62 @@ Warning: No modal type provided for samples_outpainting. Skipping.
 Validation DataLoader 0:  80%|████████  | 8/10 [00:10<00:02,  0.73it/s][A
 Validation DataLoader 0:  90%|█████████ | 9/10 [00:11<00:01,  0.81it/s][A
 Validation DataLoader 0: 100%|██████████| 10/10 [00:11<00:00,  0.89it/s][A
-                                                                        [AEpoch 3: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Average Epoch time: 23.25 seconds
+                                                                        [AEpoch 2: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.100, train/loss_vlb_epoch=0.00816, train/loss_epoch=1.100]Average Epoch time: 23.17 seconds
 Average Peak memory 2565.15MiB
 Average Reserved memory 3076.00MiB
-Epoch 3: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Metric val/loss_simple_ema improved by 0.014 >= min_delta = 0.0. New best score: 1.070
-Epoch 3, global step 40: 'val/loss_simple_ema' reached 1.06986 (best 1.06986), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v1.ckpt' as top 1
-Epoch 3:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]         Epoch 4:   0%|          | 0/10 [00:00<?, ?it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]enter if circle
+Epoch 2: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090] Metric val/loss_simple_ema improved by 0.002 >= min_delta = 0.0. New best score: 1.084
+Epoch 2, global step 30: 'val/loss_simple_ema' reached 1.08430 (best 1.08430), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v2.ckpt' as top 1
+Epoch 2:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]         Epoch 3:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]enter if circle
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.19it/s][A
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 48.25it/s][A
-DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 48.23it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 51.28it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 55.19it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 57.81it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 59.07it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 59.79it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 56.24it/s]
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.52it/s][A
+DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.59it/s][A
+DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 47.59it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 51.17it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 55.26it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 57.39it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 58.77it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 59.29it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 55.83it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.98it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.01it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.94it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.67it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.79it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.14it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 61.49it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.14it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.92it/s][A
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.24it/s][A
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.54it/s][A
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.43it/s][A
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.92it/s][A
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.78it/s][A
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.63it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.83it/s]
-Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
-Running DDIM Sampling with 50 timesteps
-
-DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
-DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.99it/s][A
-DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 60.85it/s][A
-DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 60.52it/s][A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.64it/s][A
+DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 60.76it/s][A
+DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 60.79it/s][A
 DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 60.65it/s][A
-DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 61.04it/s][A
-DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 61.13it/s][A
-DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 61.14it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.85it/s]
+DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 60.63it/s][A
+DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 61.06it/s][A
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 61.20it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.91it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.34it/s][A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.49it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.77it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.94it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.84it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.83it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.34it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.54it/s]
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.28it/s][A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.48it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 61.21it/s][A
+DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.38it/s][A
+DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.10it/s][A
+DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.39it/s][A
+DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 60.77it/s][ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.87it/s]
 Warning: No modal type provided for samples_x0_quantized. Skipping.
 Warning: No modal type provided for samples_inpainting. Skipping.
 Warning: No modal type provided for mask. Skipping.
 Warning: No modal type provided for samples_outpainting. Skipping.
-Epoch 4:  10%|█         | 1/10 [00:10<01:30,  0.10it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  10%|█         | 1/10 [00:10<01:30,  0.10it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00812, train/loss_step=1.080, global_step=40.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  20%|██        | 2/10 [00:10<00:40,  0.20it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.00812, train/loss_step=1.080, global_step=40.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  20%|██        | 2/10 [00:10<00:40,  0.20it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0193, train/loss_step=1.070, global_step=41.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080] Epoch 4:  30%|███       | 3/10 [00:10<00:24,  0.29it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0193, train/loss_step=1.070, global_step=41.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  30%|███       | 3/10 [00:10<00:24,  0.29it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00776, train/loss_step=1.070, global_step=42.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  40%|████      | 4/10 [00:10<00:15,  0.38it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00776, train/loss_step=1.070, global_step=42.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  40%|████      | 4/10 [00:10<00:15,  0.38it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0076, train/loss_step=1.070, global_step=43.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080] Epoch 4:  50%|█████     | 5/10 [00:10<00:10,  0.47it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0076, train/loss_step=1.070, global_step=43.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  50%|█████     | 5/10 [00:10<00:10,  0.47it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00923, train/loss_step=1.070, global_step=44.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  60%|██████    | 6/10 [00:10<00:07,  0.55it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00923, train/loss_step=1.070, global_step=44.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  60%|██████    | 6/10 [00:10<00:07,  0.55it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0182, train/loss_step=1.070, global_step=45.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080] Epoch 4:  70%|███████   | 7/10 [00:11<00:04,  0.63it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.0182, train/loss_step=1.070, global_step=45.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  70%|███████   | 7/10 [00:11<00:04,  0.63it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00913, train/loss_step=1.070, global_step=46.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  80%|████████  | 8/10 [00:11<00:02,  0.71it/s, v_num=6udj, train/loss_simple_step=1.070, train/loss_vlb_step=0.00913, train/loss_step=1.070, global_step=46.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  80%|████████  | 8/10 [00:11<00:02,  0.71it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.0176, train/loss_step=1.080, global_step=47.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080] Epoch 4:  90%|█████████ | 9/10 [00:11<00:01,  0.79it/s, v_num=6udj, train/loss_simple_step=1.080, train/loss_vlb_step=0.0176, train/loss_step=1.080, global_step=47.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4:  90%|█████████ | 9/10 [00:11<00:01,  0.79it/s, v_num=6udj, train/loss_simple_step=1.050, train/loss_vlb_step=0.0074, train/loss_step=1.050, global_step=48.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4: 100%|██████████| 10/10 [00:11<00:00,  0.86it/s, v_num=6udj, train/loss_simple_step=1.050, train/loss_vlb_step=0.0074, train/loss_step=1.050, global_step=48.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Epoch 4: 100%|██████████| 10/10 [00:11<00:00,  0.86it/s, v_num=6udj, train/loss_simple_step=1.050, train/loss_vlb_step=0.00779, train/loss_step=1.050, global_step=49.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]
+Epoch 3:  10%|█         | 1/10 [00:10<01:30,  0.10it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.0131, train/loss_step=1.090, global_step=29.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  10%|█         | 1/10 [00:10<01:30,  0.10it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00757, train/loss_step=1.080, global_step=30.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  20%|██        | 2/10 [00:10<00:40,  0.20it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00757, train/loss_step=1.080, global_step=30.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  20%|██        | 2/10 [00:10<00:40,  0.20it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00795, train/loss_step=1.090, global_step=31.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  30%|███       | 3/10 [00:10<00:24,  0.29it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00795, train/loss_step=1.090, global_step=31.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  30%|███       | 3/10 [00:10<00:24,  0.29it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00925, train/loss_step=1.090, global_step=32.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  40%|████      | 4/10 [00:10<00:15,  0.38it/s, v_num=5a3y, train/loss_simple_step=1.090, train/loss_vlb_step=0.00925, train/loss_step=1.090, global_step=32.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  40%|████      | 4/10 [00:10<00:15,  0.38it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.0322, train/loss_step=1.080, global_step=33.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090] Epoch 3:  50%|█████     | 5/10 [00:10<00:10,  0.46it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.0322, train/loss_step=1.080, global_step=33.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  50%|█████     | 5/10 [00:10<00:10,  0.46it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00932, train/loss_step=1.080, global_step=34.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  60%|██████    | 6/10 [00:10<00:07,  0.55it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00932, train/loss_step=1.080, global_step=34.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  60%|██████    | 6/10 [00:10<00:07,  0.55it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00908, train/loss_step=1.080, global_step=35.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  70%|███████   | 7/10 [00:11<00:04,  0.63it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00908, train/loss_step=1.080, global_step=35.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  70%|███████   | 7/10 [00:11<00:04,  0.63it/s, v_num=5a3y, train/loss_simple_step=1.060, train/loss_vlb_step=0.00745, train/loss_step=1.060, global_step=36.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  80%|████████  | 8/10 [00:11<00:02,  0.71it/s, v_num=5a3y, train/loss_simple_step=1.060, train/loss_vlb_step=0.00745, train/loss_step=1.060, global_step=36.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  80%|████████  | 8/10 [00:11<00:02,  0.71it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00761, train/loss_step=1.080, global_step=37.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  90%|█████████ | 9/10 [00:11<00:01,  0.78it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00761, train/loss_step=1.080, global_step=37.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3:  90%|█████████ | 9/10 [00:11<00:01,  0.78it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00775, train/loss_step=1.080, global_step=38.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3: 100%|██████████| 10/10 [00:11<00:00,  0.86it/s, v_num=5a3y, train/loss_simple_step=1.080, train/loss_vlb_step=0.00775, train/loss_step=1.080, global_step=38.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Epoch 3: 100%|██████████| 10/10 [00:11<00:00,  0.86it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]
 Validation: |          | 0/? [00:00<?, ?it/s][A
 Validation:   0%|          | 0/10 [00:00<?, ?it/s][A
 Validation DataLoader 0:   0%|          | 0/10 [00:00<?, ?it/s][Aenter if circle
@@ -972,96 +829,107 @@ Running DDIM Sampling with 50 timesteps
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 48.29it/s][A[A
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.45it/s][A[A
 
-DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 48.16it/s][A[A
+DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.43it/s][A[A
 
-DDIM Sampler:  34%|███▍      | 17/50 [00:00<00:00, 54.07it/s][A[A
+DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 47.45it/s][A[A
 
-DDIM Sampler:  48%|████▊     | 24/50 [00:00<00:00, 56.70it/s][A[A
+DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 48.21it/s][A[A
 
-DDIM Sampler:  62%|██████▏   | 31/50 [00:00<00:00, 58.67it/s][A[A
+DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 52.84it/s][A[A
 
-DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 59.90it/s][A[A
+DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 55.82it/s][A[A
 
-DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 60.31it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 58.22it/s]
+DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 57.35it/s][A[A
+
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 58.76it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 54.85it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.72it/s][A[A
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.89it/s][A[A
 
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.97it/s][A[A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 60.26it/s][A[A
 
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 62.02it/s][A[A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 59.99it/s][A[A
 
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 61.16it/s][A[A
+DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 59.84it/s][A[A
 
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.81it/s][A[A
+DDIM Sampler:  66%|██████▌   | 33/50 [00:00<00:00, 59.85it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.69it/s][A[A
+DDIM Sampler:  80%|████████  | 40/50 [00:00<00:00, 60.36it/s][A[A
 
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 62.04it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.80it/s]
+DDIM Sampler:  94%|█████████▍| 47/50 [00:00<00:00, 60.17it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.19it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.71it/s][A[A
+DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 60.73it/s][A[A
 
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.15it/s][A[A
+DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 59.98it/s][A[A
 
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.64it/s][A[A
+DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 59.95it/s][A[A
 
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.62it/s][A[A
+DDIM Sampler:  52%|█████▏    | 26/50 [00:00<00:00, 59.51it/s][A[A
 
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 60.68it/s][A[A
+DDIM Sampler:  64%|██████▍   | 32/50 [00:00<00:00, 59.29it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 60.84it/s][A[A
+DDIM Sampler:  76%|███████▌  | 38/50 [00:00<00:00, 59.09it/s][A[A
 
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 61.23it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.92it/s]
+DDIM Sampler:  90%|█████████ | 45/50 [00:00<00:00, 59.76it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 59.62it/s]
 Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
 Running DDIM Sampling with 50 timesteps
 
 
 DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A[A
 
-DDIM Sampler:  14%|█▍        | 7/50 [00:00<00:00, 61.77it/s][A[A
+DDIM Sampler:  12%|█▏        | 6/50 [00:00<00:00, 59.67it/s][A[A
 
-DDIM Sampler:  28%|██▊       | 14/50 [00:00<00:00, 61.40it/s][A[A
+DDIM Sampler:  26%|██▌       | 13/50 [00:00<00:00, 60.47it/s][A[A
 
-DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 60.69it/s][A[A
+DDIM Sampler:  40%|████      | 20/50 [00:00<00:00, 60.44it/s][A[A
 
-DDIM Sampler:  56%|█████▌    | 28/50 [00:00<00:00, 60.69it/s][A[A
+DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 60.50it/s][A[A
 
-DDIM Sampler:  70%|███████   | 35/50 [00:00<00:00, 61.06it/s][A[A
+DDIM Sampler:  68%|██████▊   | 34/50 [00:00<00:00, 60.34it/s][A[A
 
-DDIM Sampler:  84%|████████▍ | 42/50 [00:00<00:00, 61.13it/s][A[A
+DDIM Sampler:  82%|████████▏ | 41/50 [00:00<00:00, 60.31it/s][A[A
 
-DDIM Sampler:  98%|█████████▊| 49/50 [00:00<00:00, 61.14it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 61.00it/s]
+DDIM Sampler:  96%|█████████▌| 48/50 [00:00<00:00, 60.50it/s][A[ADDIM Sampler: 100%|██████████| 50/50 [00:00<00:00, 60.31it/s]
 Warning: No modal type provided for samples_x0_quantized. Skipping.
 Warning: No modal type provided for samples_inpainting. Skipping.
 Warning: No modal type provided for mask. Skipping.
 Warning: No modal type provided for samples_outpainting. Skipping.
 
-Validation DataLoader 0:  10%|█         | 1/10 [00:12<01:53,  0.08it/s][A
-Validation DataLoader 0:  20%|██        | 2/10 [00:12<00:51,  0.16it/s][A
-Validation DataLoader 0:  30%|███       | 3/10 [00:12<00:30,  0.23it/s][A
-Validation DataLoader 0:  40%|████      | 4/10 [00:13<00:19,  0.31it/s][A
-Validation DataLoader 0:  50%|█████     | 5/10 [00:13<00:13,  0.38it/s][A
-Validation DataLoader 0:  60%|██████    | 6/10 [00:13<00:08,  0.45it/s][A
-Validation DataLoader 0:  70%|███████   | 7/10 [00:13<00:05,  0.52it/s][A
-Validation DataLoader 0:  80%|████████  | 8/10 [00:13<00:03,  0.59it/s][A
-Validation DataLoader 0:  90%|█████████ | 9/10 [00:13<00:01,  0.66it/s][A
-Validation DataLoader 0: 100%|██████████| 10/10 [00:13<00:00,  0.73it/s][A
-                                                                        [AEpoch 4: 100%|██████████| 10/10 [00:25<00:00,  0.39it/s, v_num=6udj, train/loss_simple_step=1.050, train/loss_vlb_step=0.00779, train/loss_step=1.050, global_step=49.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Average Epoch time: 25.47 seconds
+Validation DataLoader 0:  10%|█         | 1/10 [00:10<01:31,  0.10it/s][A
+Validation DataLoader 0:  20%|██        | 2/10 [00:10<00:41,  0.19it/s][A
+Validation DataLoader 0:  30%|███       | 3/10 [00:10<00:24,  0.29it/s][A
+Validation DataLoader 0:  40%|████      | 4/10 [00:10<00:15,  0.38it/s][A
+Validation DataLoader 0:  50%|█████     | 5/10 [00:10<00:10,  0.47it/s][A
+Validation DataLoader 0:  60%|██████    | 6/10 [00:10<00:07,  0.56it/s][A
+Validation DataLoader 0:  70%|███████   | 7/10 [00:10<00:04,  0.64it/s][A
+Validation DataLoader 0:  80%|████████  | 8/10 [00:11<00:02,  0.72it/s][A
+Validation DataLoader 0:  90%|█████████ | 9/10 [00:11<00:01,  0.80it/s][A
+Validation DataLoader 0: 100%|██████████| 10/10 [00:11<00:00,  0.88it/s][A
+                                                                        [AEpoch 3: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.090, train/loss_vlb_epoch=0.0105, train/loss_epoch=1.090]Average Epoch time: 23.15 seconds
 Average Peak memory 2565.15MiB
 Average Reserved memory 3076.00MiB
-Epoch 4: 100%|██████████| 10/10 [00:25<00:00,  0.39it/s, v_num=6udj, train/loss_simple_step=1.050, train/loss_vlb_step=0.00779, train/loss_step=1.050, global_step=49.00, train/loss_simple_epoch=1.070, train/loss_vlb_epoch=0.0112, train/loss_epoch=1.070]Metric val/loss_simple_ema improved by 0.005 >= min_delta = 0.0. New best score: 1.065
-Epoch 4, global step 50: 'val/loss_simple_ema' reached 1.06516 (best 1.06516), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v1.ckpt' as top 1
-`Trainer.fit` stopped: `max_epochs=5` reached.
-Epoch 4: 100%|██████████| 10/10 [00:42<00:00,  0.24it/s, v_num=6udj, train/loss_simple_step=1.050, train/loss_vlb_step=0.00779, train/loss_step=1.050, global_step=49.00, train/loss_simple_epoch=1.070, train/loss_vlb_epoch=0.0112, train/loss_epoch=1.070]
-slurmstepd: error: *** JOB 34253 ON node8 CANCELLED AT 2025-02-26T20:11:44 ***
+Epoch 3: 100%|██████████| 10/10 [00:23<00:00,  0.43it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]Metric val/loss_simple_ema improved by 0.014 >= min_delta = 0.0. New best score: 1.070
+Epoch 3, global step 40: 'val/loss_simple_ema' reached 1.06986 (best 1.06986), saving model to '/home/home_node7/zyz/SolarCLIP_ctf/checkpoints/LDM_009420094_best_val_loss_epoch-v2.ckpt' as top 1
+Epoch 3:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]         Epoch 4:   0%|          | 0/10 [00:00<?, ?it/s, v_num=5a3y, train/loss_simple_step=1.070, train/loss_vlb_step=0.00868, train/loss_step=1.070, global_step=39.00, train/loss_simple_epoch=1.080, train/loss_vlb_epoch=0.0107, train/loss_epoch=1.080]enter if circle
+Data shape for DDIM sampling is (1, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+
+DDIM Sampler:   0%|          | 0/50 [00:00<?, ?it/s][A
+DDIM Sampler:  10%|█         | 5/50 [00:00<00:00, 47.70it/s][A
+DDIM Sampler:  20%|██        | 10/50 [00:00<00:00, 47.44it/s][A
+DDIM Sampler:  30%|███       | 15/50 [00:00<00:00, 47.39it/s][A
+DDIM Sampler:  42%|████▏     | 21/50 [00:00<00:00, 50.72it/s][A[rank: 0] Received SIGTERM: 15
+Bypassing SIGTERM: 15
+
+DDIM Sampler:  54%|█████▍    | 27/50 [00:00<00:00, 53.43it/s][A
