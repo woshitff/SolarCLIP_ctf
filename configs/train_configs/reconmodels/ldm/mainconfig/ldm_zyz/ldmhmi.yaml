@@ -4,7 +4,7 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: null
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ldmhmi/checkpoints/trainstep_checkpoints/LDM_hmi_2_hmi_best_val_loss_epoch.ckpt
     parameterization: "eps"
     linear_start: 0.00085
     linear_end: 0.0120
@@ -45,7 +45,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
-        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/aehmi_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_hmi.pt
         vae_modal: 'hmi'
         kl_weight: 0.1
         loss_type: 'MSE'
@@ -62,7 +62,7 @@ model:
           attn_resolutions: []
           dropout: 0.0
         first_stage_config:
-          ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/aehmi_first/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+          ckpt_path: null
           vae_modal: 'hmi'
           kl_weight: 0.1
           loss_type: 'MSE'
@@ -131,7 +131,7 @@ lightning:
     default_metrics_over_trainsteps_ckpt:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
-        dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ldmhmi/checkpoints/trainstep_checkpoints
+        dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints
         filename: LDM_hmi_2_hmi_best_val_loss_epoch
         verbose: true
         save_top_k: 1
