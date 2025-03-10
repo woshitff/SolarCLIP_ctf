@@ -4,7 +4,7 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ldm0131/checkpoints/trainstep_checkpoints/LDM_0131_2_0131_best_val_loss_epoch.ckpt
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/LDM_0131_2_0131_best_val_loss_epoch.ckpt
     parameterization: "eps"
     linear_start: 0.00085
     linear_end: 0.0120

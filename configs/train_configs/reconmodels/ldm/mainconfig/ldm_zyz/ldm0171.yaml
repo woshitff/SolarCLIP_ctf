@@ -4,7 +4,7 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ldm0171/checkpoints/trainstep_checkpoints/LDM_009420094_best_val_loss_epoch.ckpt
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/LDM_0171_2_0171_best_val_loss_epoch.ckpt
     parameterization: "eps"
     linear_start: 0.00085
     linear_end: 0.0120
@@ -142,7 +142,7 @@ lightning:
       target: pytorch_lightning.callbacks.EarlyStopping
       params:
         monitor: val/loss_simple_ema
-        patience: 30
+        patience: 100
         verbose: true
         mode: min
   # logger:
