@@ -1,1 +1,1 @@
-python train_scripts/train.py --base configs/train_configs/reconmodels/ldm/mainconfig/bimodal_trans/0131to0094.yaml
+python train_scripts/train.py --base configs/train_configs/reconmodels/ldm/mainconfig/bimodal_trans/0131_other/0131to0094.yaml
