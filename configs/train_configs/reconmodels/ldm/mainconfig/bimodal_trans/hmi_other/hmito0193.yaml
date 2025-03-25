@@ -4,7 +4,7 @@ model:
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ldm0094/checkpoints/trainstep_checkpoints/ldm_self/LDM_009420094_best_val_loss_epoch-v1.ckpt
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ldm0094/checkpoints/trainstep_checkpoints/ldm_self/LDM_0193_2_0193_best_val_loss_epoch-v1.ckpt
     train_ldm: False
     parameterization: "eps"
     linear_start: 0.00085
@@ -12,8 +12,8 @@ model:
     log_every_t: 40
     timesteps: 300
     # add_tramsform: False
-    first_stage_key: "0094" # "first_stage_key_img"
-    cond_stage_key: "0131" # "cond_key_mag"
+    first_stage_key: "0193" # "first_stage_key_img"
+    cond_stage_key: "hmi" # "cond_key_mag"
     # image_size: 32
     spatial_size: [32, 32]
     channels: 32
@@ -46,7 +46,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
-        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_0094.pt
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_0193.pt
         vae_modal: aia0094_image
         kl_weight: 0.1
         loss_type: 'MSE'
@@ -85,7 +85,7 @@ model:
           dim: 1024
           vae_train: False
           vae_config:
-            ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_0131.pt
+            ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_hmi.pt
             vae_modal: aia0094_image
             kl_weight: 0.1
             loss_type: 'MSE'
@@ -103,6 +103,7 @@ model:
               dropout: 0.0
             first_stage_config:
               ckpt_path: 
+              vae_modal: '0131'
               vae_modal: 'aia0094_image'
               kl_weight: 0.1
               loss_type: 'MSE'
@@ -130,8 +131,8 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
-          - '0131'
+          - '0193'
+          - 'hmi'
         load_imgs: false
         enhance_list:
           - 1024
@@ -146,8 +147,8 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
-          - '0131'
+          - '0193'
+          - 'hmi'
         load_imgs: false
         enhance_list:
           - 1024
@@ -169,8 +170,8 @@ lightning:
     default_metrics_over_trainsteps_ckpt:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
-        dirpath: ./checkpoints/trans/0131_other
-        filename: LDM_0131to0094_best_val_loss_epoch
+        dirpath: ./checkpoints/trans/hmi_other
+        filename: LDM_hmito0193_best_val_loss_epoch
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema

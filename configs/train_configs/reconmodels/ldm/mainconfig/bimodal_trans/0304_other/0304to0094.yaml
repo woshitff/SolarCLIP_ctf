@@ -13,7 +13,7 @@ model:
     timesteps: 300
     # add_tramsform: False
     first_stage_key: "0094" # "first_stage_key_img"
-    cond_stage_key: "0131" # "cond_key_mag"
+    cond_stage_key: "0335" # "cond_key_mag"
     # image_size: 32
     spatial_size: [32, 32]
     channels: 32
@@ -85,7 +85,7 @@ model:
           dim: 1024
           vae_train: False
           vae_config:
-            ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_0131.pt
+            ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_0335.pt
             vae_modal: aia0094_image
             kl_weight: 0.1
             loss_type: 'MSE'
@@ -103,6 +103,7 @@ model:
               dropout: 0.0
             first_stage_config:
               ckpt_path: 
+              vae_modal: '0131'
               vae_modal: 'aia0094_image'
               kl_weight: 0.1
               loss_type: 'MSE'
@@ -131,7 +132,7 @@ data:
         modal_list: 
           # - 'magnet'
           - '0094'
-          - '0131'
+          - '0335'
         load_imgs: false
         enhance_list:
           - 1024
@@ -147,7 +148,7 @@ data:
         modal_list: 
           # - 'magnet'
           - '0094'
-          - '0131'
+          - '0335'
         load_imgs: false
         enhance_list:
           - 1024
@@ -169,8 +170,8 @@ lightning:
     default_metrics_over_trainsteps_ckpt:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
-        dirpath: ./checkpoints/trans/0131_other
-        filename: LDM_0131to0094_best_val_loss_epoch
+        dirpath: ./checkpoints/trans/0335_other
+        filename: LDM_0335to0094_best_val_loss_epoch
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema
