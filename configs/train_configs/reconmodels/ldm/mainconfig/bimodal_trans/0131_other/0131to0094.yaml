@@ -122,7 +122,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 4
+    batch_size: 8
     num_workers: 1
     wrap: false
     train:
@@ -163,7 +163,7 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 20
+    max_epochs: 2
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
