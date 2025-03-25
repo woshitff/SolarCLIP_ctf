@@ -103,6 +103,7 @@ model:
               dropout: 0.0
             first_stage_config:
               ckpt_path: 
+              
               vae_modal: 'aia0094_image'
               kl_weight: 0.1
               loss_type: 'MSE'
@@ -122,7 +123,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 8
+    batch_size: 4
     num_workers: 1
     wrap: false
     train:
