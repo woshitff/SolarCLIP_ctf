@@ -164,13 +164,13 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 20
+    max_epochs: 200
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
-        dirpath: ./checkpoints/trans/0335_other
+        dirpath: ./checkpoints/ldm_trans/0335_other
         filename: LDM_0335to0094_best_val_loss_epoch
         verbose: true
         save_top_k: 1
