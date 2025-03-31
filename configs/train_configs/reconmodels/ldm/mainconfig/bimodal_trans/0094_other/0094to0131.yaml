@@ -12,7 +12,7 @@ model:
     log_every_t: 40
     timesteps: 300
     # add_tramsform: False
-    first_stage_key: "?" # "first_stage_key_img"
+    first_stage_key: "0131" # "first_stage_key_img"
     cond_stage_key: "0094" # "cond_key_mag"
     # image_size: 32
     spatial_size: [32, 32]
@@ -46,7 +46,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
-        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_?.pt
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_0131.pt
         vae_modal: aia0094_image
         kl_weight: 0.1
         loss_type: 'MSE'
@@ -131,7 +131,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '?'
+          - '0131'
           - '0094'
         load_imgs: false
         enhance_list:
@@ -147,7 +147,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '?'
+          - '0131'
           - '0094'
         load_imgs: false
         enhance_list:
