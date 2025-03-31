@@ -43,7 +43,15 @@ class transformNetwork(nn.Module):
         super().__init__()
         self.attn = SelfAttention(dim)
         self.norm = nn.LayerNorm(dim)  # 归一化操作
-
+        #零初始化
+        
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.zeros_(m.weight)
+            elif isinstance(m, nn.LayerNorm):
+                nn.init.zeros_(m.weight)
+                nn.init.zeros_(m.bias)
+                
     def forward(self, x):
 
         batch_size, channels, h, w = x.shape  # 32
@@ -52,7 +60,7 @@ class transformNetwork(nn.Module):
         x = x.view(batch_size, channels, -1)
         
         # Self-Attention: (B, 32, 1024) -> (B, 32, 1024)
-        x = self.attn(x)
+        x = self.attn(x) + x
 
         # Norm: 归一化 (B, 32, 1024)
         x = self.norm(x)
