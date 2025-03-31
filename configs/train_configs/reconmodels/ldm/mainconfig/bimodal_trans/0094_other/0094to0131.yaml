@@ -1,5 +1,5 @@
 model:
-  base_learning_rate: 1.0e-06
+  base_learning_rate: 1.0e-04
   base_learning_optimizer: "AdamW"
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
@@ -164,7 +164,7 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 200
+    max_epochs: 500
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
@@ -181,7 +181,7 @@ lightning:
       target: pytorch_lightning.callbacks.EarlyStopping
       params:
         monitor: val/loss_simple_ema
-        patience: 15
+        patience: 100
         verbose: true
         mode: min
   # logger:
