@@ -171,7 +171,7 @@ lightning:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: ./checkpoints/ldm_trans/0094_other
-        filename: LDM_0094to?_best_val_loss_epoch
+        filename: LDM_0094to0131_best_val_loss_epoch
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema
