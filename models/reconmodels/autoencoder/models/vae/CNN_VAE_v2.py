@@ -37,6 +37,24 @@ class SelfAttention(nn.Module):
         v = self.value(x)
         attn_weights = self.softmax(q @ k.transpose(-2, -1) / (x.shape[-1] ** 0.5))
         return attn_weights @ v
+class FFN(nn.Module):
+    def __init__(self, dim=32*32*32):
+        super(FFN, self).__init__()
+        self.linear1 = nn.Linear(dim, dim*2)
+        self.activation = nn.GELU()
+        self.linear2 = nn.Linear(dim*2, dim*2)
+        self.linear3 = nn.Linear(dim*2, dim)
+
+    def forward(self, x):
+        x = x.view(x.shape[0], -1)  # Flatten the input
+        x1 = self.linear1(x)
+        x1 = self.activation(x1)
+        x1 = self.linear2(x)
+        x1 = self.activation(x1)
+        x1 = self.linear3(x1)
+        x1 = self.activation(x1)
+        x1 = x1.view(x1.shape[0], 32, 32, 32)
+        return x + x1
     
 class transformNetwork(nn.Module):
     def __init__(self, dim):
@@ -801,10 +819,11 @@ class CNN_VAE_three(pl.LightningModule):
         if not vae_train:
             self.vae.eval()
         self.transform = transformNetwork(dim)
+        self.ffn = FFN()
     
     def forward(self,x):
         x = self.vae.encode(x)
-        z = self.transform(x)
+        z = self.ffn(x)
         rec_x = self.vae.decode(z)
         return z,rec_x
     
@@ -814,8 +833,12 @@ class CNN_VAE_three(pl.LightningModule):
         loss = F.mse_loss(rec_x,x)
         self.log('train_loss',loss)
         return loss
+    
     def encode(self,x):
-        return self.vae.encode(x)
+        x = self.vae.encode(x)
+        x = self.ffn(x)
+        return x
+    
     def decode(self,z):
         return self.vae.decode(z)
     
