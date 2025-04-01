@@ -1426,21 +1426,14 @@ class LatentDiffusion(DDPM):
 
 
 name_list  = [
-    'cond_stage_model.transform.attn.query.weight',
-    'cond_stage_model.transform.attn.query.bias',
-    'cond_stage_model.transform.attn.key.weight',
-    'cond_stage_model.transform.attn.key.bias',
-    'cond_stage_model.transform.attn.value.weight',
-    'cond_stage_model.transform.attn.value.bias',
-    'cond_stage_model.transform.norm.weight',
-    'cond_stage_model.transform.norm.bias',
+    'cond_stage_mode.ffn',
 ]
 class LDMWrapper(LatentDiffusion):
     def __init__(self, scale_factor, first_stage_key,cond_stage_key,train_ldm=True,*args, **kwargs):
         super().__init__(*args, **kwargs)
         if not train_ldm:
             for name, param in self.named_parameters():
-                if name not in name_list:
+                if not name.startswith("cond_stage_mode.ffn"):
                     param.grad = None
                     
         self.first_stage_key = first_stage_key
@@ -1483,6 +1476,7 @@ class LDMWrapper(LatentDiffusion):
         x = x.permute(0,2,1)
         x = x.view(bs , c , h , w)
         return x
+    
     @torch.no_grad()
     def decode_first_stage(self, z):
         z = z / self.scale_factor
