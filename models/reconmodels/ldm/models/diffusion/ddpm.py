@@ -1473,7 +1473,7 @@ class LDMWrapper(LatentDiffusion):
     def encode_first_stage(self, x):
         x , _ = self.first_stage_model.encode(x)
         return x
-    @torch.no_grad()
+    
     def cond_encode(self, x):
         x , _ = self.cond_stage_model.encode(x)
         bs ,c , h , w = x.shape
