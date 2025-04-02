@@ -54,6 +54,7 @@ class FFN(nn.Module):
         x1 = self.linear3(x1)
         x1 = self.activation(x1)
         x1 = x1.view(x1.shape[0], 32, 32, 32)
+        x = x.view(x.shape[0], 32, 32, 32)
         return x + x1
     
 class transformNetwork(nn.Module):
