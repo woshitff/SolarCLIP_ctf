@@ -49,7 +49,7 @@ class FFN(nn.Module):
         x = x.view(x.shape[0], -1)  # Flatten the input
         x1 = self.linear1(x)
         x1 = self.activation(x1)
-        x1 = self.linear2(x)
+        x1 = self.linear2(x1)
         x1 = self.activation(x1)
         x1 = self.linear3(x1)
         x1 = self.activation(x1)
