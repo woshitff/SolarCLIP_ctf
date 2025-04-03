@@ -164,7 +164,7 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 2
+    max_epochs: 200
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
@@ -177,13 +177,13 @@ lightning:
         monitor: val/loss_simple_ema
         every_n_epochs: 1
         save_weights_only: true
-    early_stop:
-      target: pytorch_lightning.callbacks.EarlyStopping
-      params:
-        monitor: val/loss_simple_ema
-        patience: 100
-        verbose: true
-        mode: min
+    # early_stop:
+    #   target: pytorch_lightning.callbacks.EarlyStopping
+    #   params:
+    #     monitor: val/loss_simple_ema
+    #     patience: 100
+    #     verbose: true
+    #     mode: min
   # logger:
   #   target: pytorch_lightning.loggers.TensorBoardLogger
   #   params:
