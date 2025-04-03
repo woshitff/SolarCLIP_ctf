@@ -142,21 +142,21 @@ class TrainerSetup:
                      }
                      }
             }
-            early_stop_callbacks_dict = {
-                'early_stop':
-                {'target':'pytorch_lightning.callbacks.EarlyStopping',
-                 'params':{
-                        'monitor':"val/loss_epoch",   
-                        'patience':30,           
-                        'verbose':True,         
-                        'mode':"min"  
-                }
-                }
-            }
+            # early_stop_callbacks_dict = {
+            #     'early_stop':
+            #     {'target':'pytorch_lightning.callbacks.EarlyStopping',
+            #      'params':{
+            #             'monitor':"val/loss_epoch",   
+            #             'patience':30,           
+            #             'verbose':True,         
+            #             'mode':"min"  
+            #     }
+            #     }
+            # }
             if 'default_metrics_over_trainsteps_ckpt' not in callbacks_cfg:
                 default_callbacks_cfg.update(default_metrics_over_trainsteps_ckpt_dict)
-            if 'early_stop' not in callbacks_cfg:
-                default_callbacks_cfg.update(early_stop_callbacks_dict)
+            # if 'early_stop' not in callbacks_cfg:
+            #     default_callbacks_cfg.update(early_stop_callbacks_dict)
 
         callbacks_cfg = OmegaConf.merge(default_callbacks_cfg, callbacks_cfg)
         if 'ignore_keys_callback' in callbacks_cfg and hasattr(self.trainer_opt, 'resume_from_checkpoint'):
