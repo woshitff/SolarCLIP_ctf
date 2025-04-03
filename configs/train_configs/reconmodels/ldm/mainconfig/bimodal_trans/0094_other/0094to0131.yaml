@@ -164,7 +164,7 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 500
+    max_epochs: 2
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
