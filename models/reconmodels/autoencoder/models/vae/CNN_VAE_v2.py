@@ -644,6 +644,8 @@ class CNN_VAE_two(pl.LightningModule):
         self.decoder = Decoder(**dd_config)
 
         if ckpt_path is not None:
+            print('11111111111',self.state_dict.keys())
+            print('22222222222',torch.load(ckpt_path).keys())
             self.init_from_ckpt(ckpt_path)
 
     def init_from_ckpt(self, ckpt_path):
