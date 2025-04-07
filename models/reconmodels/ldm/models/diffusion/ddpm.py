@@ -1440,6 +1440,7 @@ class LDMWrapper(LatentDiffusion):
         self.cond_stage_key = cond_stage_key
         self.scale_factor = scale_factor
         self.layernorm = nn.LayerNorm(32)
+        self.first_stage_model.eval()
         # self.transform = tramsformNetwork(1024)
     @torch.no_grad()
     def get_input(self, batch, k, return_first_stage_outputs=False, force_c_encode=False,

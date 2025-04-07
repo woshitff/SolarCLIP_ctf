@@ -1,11 +1,11 @@
 model:
-  base_learning_rate: 1.0e-04
+  base_learning_rate: 6.7e-05
   base_learning_optimizer: "AdamW"
   base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
     ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_hmi_2_hmi_best_val_loss_epoch-v1.ckpt
-    train_ldm: False
+    train_ldm: True
     parameterization: "eps"
     linear_start: 0.00085
     linear_end: 0.0120
@@ -164,11 +164,11 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 200
+    max_epochs: 300
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
-      target: pytorch_lightning.callbacks.ModelCheckpoint
+      #target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: ./checkpoints/ldm_trans/0211_other
         filename: LDM_0211tohmi_best_val_loss_epoch
@@ -177,15 +177,15 @@ lightning:
         monitor: val/loss_simple_ema
         every_n_epochs: 1
         save_weights_only: true
-    early_stop:
-      target: pytorch_lightning.callbacks.EarlyStopping
-      params:
-        monitor: val/loss_simple_ema
-        patience: 15
-        verbose: true
-        mode: min
+    #early_stop:
+      #target: pytorch_lightning.callbacks.#earlyStopping
+      #params:
+#        monitor: val/loss_simple_ema
+        #patience: 15
+        #verbose: true
+#       mode: min
   # logger:
-  #   target: pytorch_lightning.loggers.TensorBoardLogger
+  #   #target: pytorch_lightning.loggers.TensorBoardLogger
   #   params:
   #     name: tensorboard_logs
   #     save_dir: logs
