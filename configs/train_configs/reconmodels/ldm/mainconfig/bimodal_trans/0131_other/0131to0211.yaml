@@ -168,7 +168,7 @@ lightning:
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
-      #target: pytorch_lightning.callbacks.ModelCheckpoint
+      target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: ./checkpoints/ldm_trans/0131_other
         filename: LDM_0131to0211_best_val_loss_epoch
