@@ -1,7 +1,7 @@
 model:
-  base_learning_rate: 6.7e-05
-  base_learning_optimizer: "AdamW"
-  base_learning_schedule: "CosineAnnealingLR"
+  # base_learning_rate: 6.7e-05
+  # base_learning_optimizer: "AdamW"
+  # base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
     ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_0131_2_0131_best_val_loss_epoch.ckpt
