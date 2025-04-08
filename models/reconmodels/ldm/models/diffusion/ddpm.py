@@ -1483,6 +1483,11 @@ class LDMWrapper(LatentDiffusion):
         z = z / self.scale_factor
         return self.first_stage_model.decode(z)
     
+    def configure_optimizers(self):
+        opt = torch.optim.AdamW(self.parameters(), lr=6.7e-5)
+        scheduler = torch.optim.lr_scheduler.StepLR(opt, step_size=1000, gamma=0.95)
+        return [opt], [scheduler]
+    
 class SolarLatentDiffusion(LatentDiffusion):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
