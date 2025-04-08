@@ -187,9 +187,9 @@ if __name__ == "__main__":
         #### init model
         model = instantiate_from_config(config.model)
         #model.learning_rate, model.learning_optimizer, model.learning_schedule = config.model.base_learning_rate, config.model.base_learning_optimizer, config.model.base_learning_schedule
-        print(f"Setting learning rate to {model.learning_rate:.2e}")
-        print(f"Setting learning optimizer to {model.learning_optimizer}")
-        print(f"Setting learning schedule to {model.learning_schedule}")
+        # print(f"Setting learning rate to {model.learning_rate:.2e}")
+        # print(f"Setting learning optimizer to {model.learning_optimizer}")
+        # print(f"Setting learning schedule to {model.learning_schedule}")
 
 
         #### init data
