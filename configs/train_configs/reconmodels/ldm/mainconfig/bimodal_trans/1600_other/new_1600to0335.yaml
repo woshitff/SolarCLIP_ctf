@@ -1,0 +1,191 @@
+model:
+  # base_learning_rate: 6.7e-05
+  # base_learning_optimizer: "AdamW"
+  # base_learning_schedule: "CosineAnnealingLR"
+  target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
+  params:
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_0335_2_0335_best_val_loss_epoch-v1.ckpt
+    train_ldm: True
+    parameterization: "eps"
+    linear_start: 0.00085
+    linear_end: 0.0120
+    log_every_t: 40
+    timesteps: 300
+    # add_tramsform: False
+    first_stage_key: "0335" # "first_stage_key_img"
+    cond_stage_key: "1600" # "cond_key_mag"
+    # image_size: 32
+    spatial_size: [32, 32]
+    channels: 32
+    cond_stage_trainable: false
+    conditioning_key: concat
+    scale_factor: 128
+    monitor: val/loss_simple_ema
+    use_ema: False
+
+    unet_config:
+      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
+      params:
+        ch: 384
+        out_ch: 32
+        ch_mult:
+          - 1
+          - 2
+          - 4
+          - 4
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+        resamp_with_conv: true
+        in_channels: 64
+        resolution: 64
+        use_timestep: true
+        use_linear_attn: false
+        attn_type: "vanilla"
+    
+    first_stage_config:
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
+      params:
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_0335.pt
+        vae_modal: aia0094_image
+        kl_weight: 0.1
+        loss_type: 'MSE'
+
+        dd_config:
+          double_z: True
+          z_channels: 32
+          resolution: 1024
+          in_channels: 8
+          out_ch: 8
+          ch: 32
+          ch_mult: [1,2,2]
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        first_stage_config:
+          ckpt_path: 
+          vae_modal: 'aia0094_image'
+          kl_weight: 0.1
+          loss_type: 'MSE'
+          dd_config:
+            double_z: True
+            z_channels: 8
+            resolution: 1024
+            in_channels: 1
+            out_ch: 1
+            ch: 16
+            ch_mult: [1,2,2,2]
+            num_res_blocks: 2
+            attn_resolutions: []
+            dropout: 0.0
+
+    cond_stage_config: 
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_three
+      params:
+          dim: 1024
+          vae_train: False
+          vae_config:
+            ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/joint_1600.pt
+            vae_modal: aia0094_image
+            kl_weight: 0.1
+            loss_type: 'MSE'
+
+            dd_config:
+              double_z: True
+              z_channels: 32
+              resolution: 1024
+              in_channels: 8
+              out_ch: 8
+              ch: 32
+              ch_mult: [1,2,2]
+              num_res_blocks: 2
+              attn_resolutions: []
+              dropout: 0.0
+            first_stage_config:
+              ckpt_path: 
+              
+              vae_modal: 'aia0094_image'
+              kl_weight: 0.1
+              loss_type: 'MSE'
+              dd_config:
+                double_z: True
+                z_channels: 8
+                resolution: 1024
+                in_channels: 1
+                out_ch: 1
+                ch: 16
+                ch_mult: [1,2,2,2]
+                num_res_blocks: 2
+                attn_resolutions: []
+                dropout: 0.0
+
+
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 4
+    num_workers: 1
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list: 
+          # - 'magnet'
+          - '0335'
+          - '1600'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 4800
+        time_step: 1
+    validation:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list: 
+          # - 'magnet'
+          - '0335'
+          - '1600'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 4800
+          - 5265
+        time_step: 1
+
+lightning:
+  trainer:
+    # strategy: "ddp"
+    accelerator: "gpu"
+    # devices: 2
+    max_epochs: 300
+    # benchmark: True
+  callbacks:
+    default_metrics_over_trainsteps_ckpt:
+      target: pytorch_lightning.callbacks.ModelCheckpoint
+      params:
+        dirpath: ./checkpoints/ldm_trans/1600_other
+        filename: LDM_1600to0335_best_val_loss_epoch
+        verbose: true
+        save_top_k: 1
+        monitor: val/loss_simple_ema
+        every_n_epochs: 1
+        save_weights_only: true
+    #early_stop:
+      #target: pytorch_lightning.callbacks.#earlyStopping
+      #params:
+#        monitor: val/loss_simple_ema
+        #patience: 15
+        #verbose: true
+#       mode: min
+  # logger:
+  #   #target: pytorch_lightning.loggers.TensorBoardLogger
+  #   params:
+  #     name: tensorboard_logs
+  #     save_dir: logs

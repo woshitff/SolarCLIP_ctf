@@ -1484,7 +1484,7 @@ class LDMWrapper(LatentDiffusion):
         return self.first_stage_model.decode(z)
     
     def configure_optimizers(self):
-        opt = torch.optim.AdamW(self.parameters(), lr=6.7e-5)
+        opt = torch.optim.AdamW(self.parameters(), lr=1.0e-4)
         scheduler = torch.optim.lr_scheduler.StepLR(opt, step_size=4, gamma=0.95)
         return [opt], [scheduler]
     
