@@ -65,7 +65,7 @@ def get_parser(**parser_kwargs):
     parser.add_argument(
         "--logdir",
         type=str,
-        default="logs/reconmodels/autoencoder/vae",
+        default="logs_trans_ldm",
         help="log directory",
     )
     parser.add_argument(
