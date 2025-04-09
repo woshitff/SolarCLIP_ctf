@@ -41,7 +41,7 @@ def get_parser(**parser_kwargs):
         "-r",
         "--resume",
         type=str,
-        const=True,
+        const=False,
         default="",
         nargs="?",
         help="resume from logdir or checkpoint in logdir",
