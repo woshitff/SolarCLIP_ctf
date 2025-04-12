@@ -57,3 +57,6 @@ if __name__ == '__main__':
     time = 202502281200
     output = modal_transfer(args.time, input_modal=args.input_modal, output_modal=args.output_modal, save_dir=args.save_dir)
     print(output.shape)
+
+    from train_scripts.visualization import solarplot
+    solarplot(output, args.output_modal, time, args.save_dir)
