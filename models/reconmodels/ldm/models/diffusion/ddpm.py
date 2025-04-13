@@ -1470,7 +1470,7 @@ class LDMWrapper(LatentDiffusion):
         return x
     
     def cond_encode(self, x):
-        x  = self.cond_stage_model.encode(x)
+        x , _= self.cond_stage_model.encode(x)
         bs ,c , h , w = x.shape
         x = x.view(bs , c, -1)
         x = x.permute(0,2,1)

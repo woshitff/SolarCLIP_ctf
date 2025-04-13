@@ -836,9 +836,9 @@ class CNN_VAE_three(pl.LightningModule):
         return loss
     
     def encode(self,x):
-        x = self.vae.encode(x)[0]
+        x , v = self.vae.encode(x)
         x = self.ffn(x)
-        return x
+        return x , v
     
     def decode(self,z):
         return self.vae.decode(z)
