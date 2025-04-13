@@ -1,10 +1,10 @@
 model:
   base_learning_rate: 1.0e-05
-  base_learning_optimizer: "AdamW"
-  base_learning_schedule: "CosineAnnealingLR"
+  # base_learning_optimizer: "AdamW"
+  # base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/LDM_009420094_best_val_loss_epoch.ckpt
+    ckpt_path: #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/LDM_009420094_best_val_loss_epoch.ckpt
     linear_start: 0.00085
     linear_end: 0.0120
     log_every_t: 40
@@ -16,7 +16,7 @@ model:
     spatial_size: [32, 32]
     channels: 32
     cond_stage_trainable: false
-    conditioning_key: concat
+    conditioning_key: crossattn
     scale_factor: 128
     monitor: val/loss_simple_ema
     use_ema: true
@@ -131,7 +131,7 @@ lightning:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints
-        filename: LDM_009420094_best_val_loss_epoch
+        filename: LDM_009420094_best_val_loss_epoch_cosattn
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema
