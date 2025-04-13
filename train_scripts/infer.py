@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import importlib
 
 import torch
@@ -24,7 +27,8 @@ def get_obj_from_str(string, reload=False):
 def parse_args():
     parser = argparse.ArgumentParser(description="Modal Transfer Script")
     
-    parser.add_argument('--config_path', type=str, default=r'configs\train_configs\reconmodels\ldm\mainconfig\bimodal_trans\0094_other\new_0094to0131.yaml',
+    parser.add_argument('--config_path', type=str, default='configs/train_configs/reconmodels/ldm/mainconfig/bimodal_trans/0094_other/new_0094to0131.yaml'
+,
                         help='Path to the YAML config file.')
     parser.add_argument('--time', type=int, default=202502281200,
                         help='Timestamp to process. Format: YYYYMMDDHHMM')
@@ -68,8 +72,10 @@ def modal_transfer(time: int, input_modal: str, output_modal: str, save_dir: str
     return output_data
 
 if __name__ == '__main__':
+    print(1)
     args = parse_args()
     config = OmegaConf.load(args.config_path)  
+    print(2)
 
     load_model(config)  
     
