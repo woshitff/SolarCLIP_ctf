@@ -18,11 +18,11 @@ def read_image(path):
 
 def get_url_from_time(time :int,
                       modal: str):
-    year = time // 10000000000
-    month = (time // 100000000) % 100
-    day = (time // 1000000) % 100
-    hour = (time // 10000) % 100
-    minute = (time // 100) % 100
+    year = time // 100000000
+    month = (time // 1000000) % 100
+    day = (time // 10000) % 100
+    hour = (time // 100) % 100
+    minute = (time // 1) % 100
 
     if modal == 'hmi':
         url = f'https://jsoc1.stanford.edu/data/hmi/fits/{year:04d}/{month:02d}/{day:02d}/hmi.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.fits'
@@ -32,13 +32,13 @@ def get_url_from_time(time :int,
     
     return url
 
-def get_path_from_time(time :int,
+def get_path_from_time(time :int, 
                        modal: str):
-    year = time // 10000000000
-    month = (time // 100000000) % 100
-    day = (time // 1000000) % 100
-    hour = (time // 10000) % 100
-    minute = (time // 100) % 100
+    year = time // 100000000
+    month = (time // 1000000) % 100
+    day = (time // 10000) % 100
+    hour = (time // 100) % 100
+    minute = (time // 1) % 100
 
     if modal == 'hmi':
         path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_fits/{modal}.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.fits"
@@ -55,7 +55,7 @@ def get_image_from_time(time: int = 202502281200,
     
     path_fits, path_pt = get_path_from_time(time, modal)
 
-    if path_pt or path_fits:
+    if os.path.isfile(path_pt) or os.path.isfile(path_fits):
         img = read_image(path_pt)
         return img
     else:
@@ -69,6 +69,7 @@ def get_image_from_time(time: int = 202502281200,
             if not os.path.exists(pt_dir):
                 os.makedirs(pt_dir)
             torch.save(pt_img, path_pt)
+            print(f'{path_pt} download sucessfully!')
             return pt_img
 
         except Exception as e:
@@ -76,3 +77,7 @@ def get_image_from_time(time: int = 202502281200,
 
     # img = torch.rand(1, 1024, 1024)
     # return img # shape: 1, 1024, 1024
+
+if __name__ == '__main__':
+    t = 202502281200
+    img = get_image_from_time(time=t, modal='0094')

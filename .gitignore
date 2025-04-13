@@ -22,3 +22,4 @@ make_data.py
 test.sh
 test.out
 /wandb
+/infer_results
