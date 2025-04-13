@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime
+
 
 import sunpy.map
 from astropy.io import fits
@@ -59,6 +61,16 @@ def get_header(modal: str,
     header['CROTA2'] = 0.0
 
     return header
+
+def format_timestamp(time_int: int) -> str:
+    # 解析整数时间格式：YYYYMMDDHHMM
+    dt = datetime.strptime(str(time_int), '%Y%m%d%H%M')
+    
+    # 加上固定的秒和毫秒（可根据需要自定义）
+    formatted = dt.strftime('%Y-%m-%dT%H:%M:%S') + '.14'
+    
+    return formatted
+
 
 def solarplot(data: np.array,
               modal: str,

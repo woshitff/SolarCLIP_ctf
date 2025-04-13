@@ -86,10 +86,10 @@ if __name__ == '__main__':
     output = modal_transfer(args.time, input_modal=args.input_modal, output_modal=args.output_modal, save_dir=args.save_dir)
     print(output.shape)
 
-    from train_scripts.visualization import solarplot
+    from train_scripts.visualization.solarplot import solarplot
     if args.save_dir is not None:
         os.makedirs(args.save_dir, exist_ok=True)
         filename = f"{args.time}_{args.output_modal}.png"
         save_path = os.path.join(args.save_dir, filename)
         print(f"[INFO] Output saved to {save_path}")
-    solarplot(output, args.output_modal, args.time, args.save_dir)
+    solarplot(output.squeeze(0).squeeze(0).cpu().numpy(), args.output_modal, '2010-06-03T00:00:08.14', save_path)
