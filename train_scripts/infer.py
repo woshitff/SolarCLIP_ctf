@@ -68,7 +68,10 @@ def modal_transfer(time: int, input_modal: str, output_modal: str, save_dir: str
     
     if save_dir is not None:
         os.makedirs(save_dir, exist_ok=True)
-        torch.save(output_data, os.path.join(save_dir, 'output.pt'))
+        filename = f"{time}_{output_modal}.pt"
+        save_path = os.path.join(save_dir, filename)
+        torch.save(output_data, save_path)
+        print(f"[INFO] Output saved to {save_path}")
     
     return output_data
 
@@ -83,5 +86,10 @@ if __name__ == '__main__':
     output = modal_transfer(args.time, input_modal=args.input_modal, output_modal=args.output_modal, save_dir=args.save_dir)
     print(output.shape)
 
-    # from train_scripts.visualization import solarplot
-    # solarplot(output, args.output_modal, args.time, args.save_dir)
+    from train_scripts.visualization import solarplot
+    if args.save_dir is not None:
+        os.makedirs(args.save_dir, exist_ok=True)
+        filename = f"{args.time}_{args.output_modal}.png"
+        save_path = os.path.join(args.save_dir, filename)
+        print(f"[INFO] Output saved to {save_path}")
+    solarplot(output, args.output_modal, args.time, args.save_dir)
