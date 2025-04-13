@@ -22,12 +22,19 @@ def get_obj_from_str(string, reload=False):
     return getattr(importlib.import_module(module, package=None), cls)
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', type=str, default='config.yaml', help='Path to configuration file')
-    parser.add_argument('--time', type=int, required=True, help='Timestamp for modal transfer')
-    parser.add_argument('--input_modal', type=str, required=True, help='Input modal type')
-    parser.add_argument('--output_modal', type=str, required=True, help='Output modal type')
-    parser.add_argument('--save_dir', type=str, default=None, help='Directory to save output')
+    parser = argparse.ArgumentParser(description="Modal Transfer Script")
+    
+    parser.add_argument('--config_path', type=str, default='configs\train_configs\reconmodels\ldm\mainconfig\bimodal_trans\0094_other\new_0094to0131.yaml',
+                        help='Path to the YAML config file.')
+    parser.add_argument('--time', type=int, default=202502281200,
+                        help='Timestamp to process. Format: YYYYMMDDHHMM')
+    parser.add_argument('--input_modal', type=str, default='0094',
+                        help='Name of the input modality.')
+    parser.add_argument('--output_modal', type=str, default='0131',
+                        help='Name of the output modality.')
+    parser.add_argument('--save_dir', type=str, default='./results',
+                        help='Directory to save output.')
+
     return parser.parse_args()
 
 if torch.cuda.is_available():
@@ -66,9 +73,8 @@ if __name__ == '__main__':
 
     load_model(config)  
     
-    time = 202502281200
     output = modal_transfer(args.time, input_modal=args.input_modal, output_modal=args.output_modal, save_dir=args.save_dir)
     print(output.shape)
 
-    from train_scripts.visualization import solarplot
-    solarplot(output, args.output_modal, time, args.save_dir)
+    # from train_scripts.visualization import solarplot
+    # solarplot(output, args.output_modal, args.time, args.save_dir)
