@@ -23,3 +23,6 @@ test.sh
 test.out
 /wandb
 /infer_results
+*.ckpt
+logs/
+logs_trans_ldm/
