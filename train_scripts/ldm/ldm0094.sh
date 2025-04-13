@@ -1,1 +1,1 @@
-python train_scripts/train.py --b '/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm0094.yaml'
+python train_scripts/train.py --b '/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm0094_crossattn.yaml'
