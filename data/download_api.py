@@ -55,7 +55,7 @@ def get_image_from_time(time: int = 202502281200,
     
     path_fits, path_pt = get_path_from_time(time, modal)
 
-    if path_pt or path_fits:
+    if os.path.isfile(path_pt) or os.path.isfile(path_fits):
         img = read_image(path_pt)
         return img
     else:
@@ -76,3 +76,7 @@ def get_image_from_time(time: int = 202502281200,
 
     # img = torch.rand(1, 1024, 1024)
     # return img # shape: 1, 1024, 1024
+
+if __name__ == '__main__':
+    t = 202502281200
+    img = get_image_from_time(time=t, modal='0094')
