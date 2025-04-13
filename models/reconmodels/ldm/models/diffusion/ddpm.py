@@ -1428,6 +1428,7 @@ class LatentDiffusion(DDPM):
 name_list  = [
     'cond_stage_mode.ffn',
 ]
+
 class LDMWrapper(LatentDiffusion):
     def __init__(self, scale_factor, first_stage_key,cond_stage_key,train_ldm=True,*args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1482,6 +1483,22 @@ class LDMWrapper(LatentDiffusion):
     def decode_first_stage(self, z):
         z = z / self.scale_factor
         return self.first_stage_model.decode(z)
+    
+
+    def infer(self, xc, ddim_steps=50, ddim_eta=0., use_ema_scope=True):
+        ema_scope = self.ema_scope if use_ema_scope else nullcontext
+        use_ddim = ddim_steps is not None
+
+        cond = self.cond_encode(xc)
+
+        with ema_scope("Sampling"):
+            samples, z_denoise_row = self.sample_log(cond=cond, batch_size=1, ddim=use_ddim,
+                                                        ddim_steps=ddim_steps, eta=ddim_eta)
+                # samples, z_denoise_row = self.sample(cond=c, batch_size=N, return_intermediates=True)
+            x_samples = self.decode_first_stage(samples)
+
+        print(f'samples shape: {x_samples.shape}')
+        return x_samples
     
     def configure_optimizers(self):
         opt = torch.optim.AdamW(self.parameters(), lr=1.0e-4)
