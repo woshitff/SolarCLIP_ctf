@@ -69,6 +69,7 @@ def get_image_from_time(time: int = 202502281200,
             if not os.path.exists(pt_dir):
                 os.makedirs(pt_dir)
             torch.save(pt_img, path_pt)
+            print(f'{path_pt} download sucessfully!')
             return pt_img
 
         except Exception as e:
