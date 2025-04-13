@@ -18,11 +18,11 @@ def read_image(path):
 
 def get_url_from_time(time :int,
                       modal: str):
-    year = time // 10000000000
-    month = (time // 100000000) % 100
-    day = (time // 1000000) % 100
-    hour = (time // 10000) % 100
-    minute = (time // 100) % 100
+    year = time // 100000000
+    month = (time // 1000000) % 100
+    day = (time // 10000) % 100
+    hour = (time // 100) % 100
+    minute = (time // 1) % 100
 
     if modal == 'hmi':
         url = f'https://jsoc1.stanford.edu/data/hmi/fits/{year:04d}/{month:02d}/{day:02d}/hmi.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.fits'
@@ -32,13 +32,13 @@ def get_url_from_time(time :int,
     
     return url
 
-def get_path_from_time(time :int,
+def get_path_from_time(time :int, 
                        modal: str):
-    year = time // 10000000000
-    month = (time // 100000000) % 100
-    day = (time // 1000000) % 100
-    hour = (time // 10000) % 100
-    minute = (time // 100) % 100
+    year = time // 100000000
+    month = (time // 1000000) % 100
+    day = (time // 10000) % 100
+    hour = (time // 100) % 100
+    minute = (time // 1) % 100
 
     if modal == 'hmi':
         path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_fits/{modal}.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.fits"
