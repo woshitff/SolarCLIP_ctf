@@ -36,7 +36,7 @@ def parse_args():
                         help='Name of the input modality.')
     parser.add_argument('--output_modal', type=str, default='0131',
                         help='Name of the output modality.')
-    parser.add_argument('--save_dir', type=str, default='./results',
+    parser.add_argument('--save_dir', type=str, default='./infer_results',
                         help='Directory to save output.')
 
     return parser.parse_args()
@@ -63,6 +63,7 @@ def modal_transfer(time: int, input_modal: str, output_modal: str, save_dir: str
         raise ValueError("Model is not loaded. Please call load_model first.")
     
     input_data = get_image_from_time(time, input_modal)
+    input_data = input_data.unsqueeze(0).unsqueeze(0)
     output_data = model.infer(input_data)
     
     if save_dir is not None:
