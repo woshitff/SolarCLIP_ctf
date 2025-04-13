@@ -73,23 +73,26 @@ def modal_transfer(time: int, input_modal: str, output_modal: str, save_dir: str
         torch.save(output_data, save_path)
         print(f"[INFO] Output saved to {save_path}")
     
-    return output_data
+    return output_data, input_data
 
 if __name__ == '__main__':
-    print(1)
     args = parse_args()
     config = OmegaConf.load(args.config_path)  
-    print(2)
 
     load_model(config)  
     
-    output = modal_transfer(args.time, input_modal=args.input_modal, output_modal=args.output_modal, save_dir=args.save_dir)
-    print(output.shape)
+    output, input = modal_transfer(args.time, input_modal=args.input_modal, output_modal=args.output_modal, save_dir=args.save_dir)
 
-    from train_scripts.visualization.solarplot import solarplot
+    from train_scripts.visualization.solarplot import solarplot, format_timestamp
     if args.save_dir is not None:
         os.makedirs(args.save_dir, exist_ok=True)
-        filename = f"{args.time}_{args.output_modal}.png"
-        save_path = os.path.join(args.save_dir, filename)
-        print(f"[INFO] Output saved to {save_path}")
-    solarplot(output.squeeze(0).squeeze(0).cpu().numpy(), args.output_modal, '2010-06-03T00:00:08.14', save_path)
+        output_name = f"{args.time}_{args.output_modal}.png"
+        output_path = os.path.join(args.save_dir, output_name)
+        print(f"[INFO] Output saved to {output_path}")
+
+        input_name = f"{args.time}_{args.input_modal}.png"
+        input_path = os.path.join(args.save_dir, input_name)
+        print(f"[INFO] Output saved to {input_path}")
+        
+    solarplot(output.squeeze(0).squeeze(0).cpu().numpy(), args.output_modal, format_timestamp(args.time), output_path)
+    solarplot(input.squeeze(0).squeeze(0).cpu().numpy(), args.input_modal, format_timestamp(args.time), input_path)

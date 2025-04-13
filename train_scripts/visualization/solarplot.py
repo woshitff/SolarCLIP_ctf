@@ -86,5 +86,5 @@ def solarplot(data: np.array,
     # plt.colorbar()
     plt.savefig(save_path)
 
-    
+
                 
