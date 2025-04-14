@@ -2,6 +2,7 @@ import pickle
 import wget
 import os 
 import time
+import requests
 
 import numpy as np
 import torch
@@ -61,7 +62,14 @@ def get_image_from_time(time: int = 202502281200,
     else:
         try:
             url = get_url_from_time(time, modal)
-            wget.download(url, path_fits)
+            print(f'Downloading {url}...')
+            # wget.download(url, path_fits)
+            response = requests.get(url, stream=True)
+            if response.status_code == 200:
+                with open(path_fits, 'wb') as f:
+                    f.write(response.content)
+            else:
+                print(f"{url}下载失败，状态码：{response.status_code}")
             fits_img = read_image(path_fits)
             fits_img = np.nan_to_num(fits_img, nan=0.0)
             pt_img = torch.tensor(fits_img,dtype=torch.float32)
@@ -79,5 +87,5 @@ def get_image_from_time(time: int = 202502281200,
     # return img # shape: 1, 1024, 1024
 
 if __name__ == '__main__':
-    t = 202502281200
-    img = get_image_from_time(time=t, modal='0094')
+    t = 202304121200
+    img = get_image_from_time(time=t, modal='hmi')

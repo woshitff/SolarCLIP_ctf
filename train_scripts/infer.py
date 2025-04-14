@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--config_path', type=str, default='configs/train_configs/reconmodels/ldm/mainconfig/bimodal_trans/0094_other/new_0094to0131.yaml'
 ,
                         help='Path to the YAML config file.')
-    parser.add_argument('--time', type=int, default=202502281200,
+    parser.add_argument('--time', type=int, default=202504011200,
                         help='Timestamp to process. Format: YYYYMMDDHHMM')
     parser.add_argument('--input_modal', type=str, default='0094',
                         help='Name of the input modality.')
