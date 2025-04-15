@@ -1501,8 +1501,8 @@ class LDMWrapper(LatentDiffusion):
         return x_samples
     
     def configure_optimizers(self):
-        opt = torch.optim.AdamW(self.parameters(), lr=1.0e-4)
-        scheduler = torch.optim.lr_scheduler.StepLR(opt, step_size=100, gamma=0.95)
+        opt = torch.optim.AdamW(self.parameters(), lr=1.0e-5)
+        scheduler = torch.optim.lr_scheduler.StepLR(opt, step_size=10, gamma=0.95)
         return [opt], [scheduler]
     
 class SolarLatentDiffusion(LatentDiffusion):
