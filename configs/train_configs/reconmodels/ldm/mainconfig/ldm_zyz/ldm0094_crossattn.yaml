@@ -4,7 +4,7 @@ model:
   # base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_009420094_best_val_loss_epoch.ckpt
+    ckpt_path: #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_009420094_best_val_loss_epoch.ckpt
     linear_start: 0.00085
     linear_end: 0.0120
     log_every_t: 40
@@ -17,7 +17,7 @@ model:
     channels: 32
     cond_stage_trainable: false
     conditioning_key: crossattn
-    scale_factor: 128
+    scale_factor: 256
     monitor: val/loss_simple_ema
     use_ema: true
 
@@ -124,7 +124,7 @@ lightning:
     # strategy: "ddp"
     accelerator: "gpu"
     # devices: 2
-    max_epochs: 200
+    max_epochs: 300
     # benchmark: True
   callbacks:
     default_metrics_over_trainsteps_ckpt:
@@ -137,13 +137,13 @@ lightning:
         monitor: val/loss_simple_ema
         every_n_epochs: 1
         save_weights_only: true
-    early_stop:
-      target: pytorch_lightning.callbacks.EarlyStopping
-      params:
-        monitor: val/loss_simple_ema
-        patience: 100
-        verbose: true
-        mode: min
+    # early_stop:
+    #   target: pytorch_lightning.callbacks.EarlyStopping
+    #   params:
+    #     monitor: val/loss_simple_ema
+    #     patience: 100
+    #     verbose: true
+    #     mode: min
   # logger:
   #   target: pytorch_lightning.loggers.TensorBoardLogger
   #   params:
