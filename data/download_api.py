@@ -42,8 +42,13 @@ def get_path_from_time(time :int,
     minute = (time // 1) % 100
 
     if modal == 'hmi':
-        path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_fits/{modal}.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.fits"
-        path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_pt/{modal}.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.pt"
+        if (year, month, day) < (2025, 4, 11):
+            path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_fits/{modal}.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.fits"
+            path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_pt/{modal}.M_720s.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.pt"
+        else:
+            path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_fits/{modal}.M_720s_nrt.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.fits"
+            path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/hmi/{modal}_pt/{modal}.M_720s_nrt.{year:04d}{month:02d}{day:02d}_{hour:02d}0000_TAI.pt"
+
     else:
         path_fits = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_fits/AIA{year:04d}{month:02d}{day:02d}_{hour:02d}{minute:02d}_{modal}.fits"
         path_pt = f"/mnt/tianwen-tianqing-nas/tianwen/ctf/data/aia/{modal}_pt/AIA{year:04d}{month:02d}{day:02d}_{hour:02d}{minute:02d}_{modal}.pt"
