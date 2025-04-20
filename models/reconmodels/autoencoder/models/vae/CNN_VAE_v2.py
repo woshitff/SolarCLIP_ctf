@@ -628,7 +628,9 @@ class CNN_VAE_two(pl.LightningModule):
                  loss_type: str = 'MSE',
                  dd_config: dict = None,
                  first_stage_config: dict = None,
-                 train_first_stage: bool = False):
+                 train_first_stage: bool = False,
+                 norm:bool  = True,
+                 **kwargs):
         super().__init__()
         self.save_hyperparameters()
 
@@ -640,6 +642,7 @@ class CNN_VAE_two(pl.LightningModule):
         self.first_stage = CNN_VAE(**first_stage_config)
         if not train_first_stage:
             self.first_stage.eval()
+        self.norm = norm
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
 
@@ -668,6 +671,8 @@ class CNN_VAE_two(pl.LightningModule):
         # x = self.first_stage.reparameterize(mu, logvar)
         x = self.encoder(mu) # (B, C, H, W) -> (B, C_out, H_out, W_out)
         mu, logvar = torch.chunk(x, 2, dim=1)
+        if self.norm:
+            mu = mu / (mu.norm(dim=1, keepdim=True)+1e-32)
         logvar = torch.clamp(logvar, -30, 30)
         # self.list.append(torch.sum(torch.abs(mu)).cpu().detach().numpy())
         # print('*'*10,'len:',len(self.list),'*'*10)

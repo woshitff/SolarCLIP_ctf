@@ -121,6 +121,9 @@ if __name__ == "__main__":
     epochs = training_config.epochs
     test_epoch = epochs//training_config.test_freq
     save_epoch = epochs//training_config.save_freq
+    contrast_weight_min = training_config.contrast_weight_min
+    contrast_weight_max = training_config.contrast_weight_max
+    contrast_weigit_increase = (contrast_weight_max - contrast_weight_min) / (epochs-1)
     
 
     #### Init Model
@@ -210,7 +213,7 @@ if __name__ == "__main__":
 
             rec_loss, kl_loss = models[selected_model_name].calculate_loss(data[:, random_index, :, :, :])
             cor_loss = JointContrastiveLoss(models,data)
-            loss = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+            loss = (contrast_weight_min+contrast_weigit_increase*epoch)*cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
             print(f'{selected_model_name} loss: {loss}')
             loss.backward()
             optimizers[f"optimizer_{selected_model_name}"].step()
@@ -246,7 +249,7 @@ if __name__ == "__main__":
                     for j in range(len(keys_list)-1):
                         rec_loss_test, kl_loss_test = models[keys_list[j]].calculate_loss(data[:, j, :, :, :])
                         cor_loss_test = JointContrastiveLoss(models,data)
-                        loss_test = training_config.contrast_weight *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
+                        loss_test = (contrast_weight_min+contrast_weigit_increase*epoch) *cor_loss + training_config.reconstruct_weight*rec_loss + training_config.kl_weight*kl_loss
 
                         loss_dict_test = {
                             "loss": loss_test.detach(),

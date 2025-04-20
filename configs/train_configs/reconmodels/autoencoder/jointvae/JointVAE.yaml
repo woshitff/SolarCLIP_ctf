@@ -513,8 +513,8 @@ training:
   epochs: 1000
   test_freq: 1000
   save_freq: 1000
-  contrast_weight_min: 0.1
-  contrast_weight_max: 10
+  contrast_weight_min: 0.0
+  contrast_weight_max: 10.0
   reconstruct_weight: 1
   kl_weight: 0
   img_local: True
