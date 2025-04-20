@@ -1,1 +1,1 @@
-python train_scripts/train.py --b 'configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm0094_crossattn_1.yaml'
+python train_scripts/train.py --b 'configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm0094_crossattn_2.yaml'
