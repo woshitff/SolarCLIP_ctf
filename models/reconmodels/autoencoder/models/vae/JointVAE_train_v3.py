@@ -262,9 +262,9 @@ def latent_painting(image_array, modal, title = None):
     return fig
 
 class MultiCheckpoint(ModelCheckpoint):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.save_image_local = kwargs.get("save_image_local", False)
+    def __init__(self, save_image_local = False, **kwargs):
+        super().__init__(**kwargs)
+        self.save_image_local =save_image_local
 
     def _save_model(self, trainer: pl.trainer, pl_module: pl.LightningModule, file_path: str):
         super()._save_model(trainer, pl_module, file_path) # Call the original save model method
