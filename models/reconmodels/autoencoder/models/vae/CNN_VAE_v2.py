@@ -488,7 +488,7 @@ class CNN_VAE(pl.LightningModule):
 
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
-        self.feature_spatial = dd_config['resolution'] / math.prod(dd_config['ch_mult'])
+        self.feature_spatial = dd_config['resolution'] // math.prod(dd_config['ch_mult'])
         self.feature_dim = dd_config['z_channels']
         self.if_classify = if_classify
         if if_classify:
@@ -703,7 +703,7 @@ class CNN_VAE_two(pl.LightningModule):
         self.norm = norm
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
-        self.feature_spatial = self.first_stage.feature_spatial / math.prod(dd_config['ch_mult'])
+        self.feature_spatial = self.first_stage.feature_spatial // math.prod(dd_config['ch_mult'])
         self.feature_dim = dd_config['z_channels']
         self.if_classify = if_classify
         if if_classify:
