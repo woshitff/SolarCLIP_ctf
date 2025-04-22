@@ -279,11 +279,12 @@ class MultiCheckpoint(ModelCheckpoint):
                 data = data.to(trainer.root_gpu)  #  (b, c, h, w)
             else:
                 data = None
-            print(f"Saving model to {file_path}")
+            print(f"current model to {file_path}")
             for name, model in pl_module.models.items():
                 # save multi model checkpoints
                 save_path = os.path.join(os.path.dirname(file_path), name)
                 os.makedirs(save_path, exist_ok=True)
+                print(f"Saving model to {save_path}")
                 torch.save({
                     "model": model.state_dict(),
                     "optimizer": trainer.optimizers[pl_module.modal_to_id[name]].state_dict(),
@@ -397,6 +398,7 @@ def train(config, opt):
         logger=logger,
         callbacks=[checkpoint_callback],
         log_every_n_steps=1,
+        check_val_every_n_epoch = test_epoch,
     )
     #### training
     print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
@@ -407,9 +409,9 @@ def train(config, opt):
             dirs = sorted(dirs, key=lambda x: int(x.split("_")[1]))
             resume_path = os.path.join(resume_path, dirs[-1])
         print(f"Resume from {resume_path}")
-        trainer.fit(model, train_dataloader, val_dataloader, ckpt_path=resume_path,check_val_every_n_epoch = test_epoch)
+        trainer.fit(model, train_dataloader, val_dataloader, ckpt_path=resume_path)
     else:
-        trainer.fit(model, train_dataloader, val_dataloader, check_val_every_n_epoch = test_epoch)
+        trainer.fit(model, train_dataloader, val_dataloader)
 
 
 
