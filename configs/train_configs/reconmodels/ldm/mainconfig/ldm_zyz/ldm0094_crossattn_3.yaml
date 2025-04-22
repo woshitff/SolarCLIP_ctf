@@ -44,7 +44,7 @@ model:
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
-        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0094_new.pt
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/ctf_105/SolarCLIP_ctf/logs/reconmodels/autoencoder/jointvae/2025-04-20T20-49-24_JointVAE/checkpoints/0094/epoch_66.pt
         vae_modal: aia0094_image
         kl_weight: 0.1
         loss_type: 'MSE'
