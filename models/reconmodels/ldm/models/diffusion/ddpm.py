@@ -1255,7 +1255,7 @@ class LatentDiffusion(DDPM):
 
     @torch.no_grad()
     def log_images(self, batch, N=8, n_row=4, sample=True, ddim_steps=50, ddim_eta=0., return_keys=None,
-                   quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=False,
+                   quantize_denoised=True, inpaint=True, plot_denoise_rows=False, plot_progressive_rows=True,
                    plot_diffusion_rows=True, unconditional_guidance_scale=1., unconditional_guidance_label=None,
                    use_ema_scope=True,
                    **kwargs):
@@ -1393,6 +1393,7 @@ class LatentDiffusion(DDPM):
         modal['conditioning'] = self.cond_stage_key
         modal['conditioning_latent'] = "latent"
         modal['samples'] = self.first_stage_key
+        modal['progressive_row'] = self.first_stage_key
 
         return log, modal
 
