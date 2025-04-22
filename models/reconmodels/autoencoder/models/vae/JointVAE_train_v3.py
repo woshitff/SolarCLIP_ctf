@@ -271,6 +271,7 @@ class MultiCheckpoint(ModelCheckpoint):
 
         if trainer.is_global_zero:
             # prepare for plotting
+            print("Saving model and plotting images...")
             if trainer.val_dataloaders is not None:
                 val_loader = trainer.val_dataloaders[0]
                 random_batch_idx = torch.randint(0, len(val_loader), (1,)).item()
@@ -278,7 +279,7 @@ class MultiCheckpoint(ModelCheckpoint):
                 data = data.to(trainer.root_gpu)  #  (b, c, h, w)
             else:
                 data = None
-
+            print(f"Saving model to {file_path}")
             for name, model in pl_module.models.items():
                 # save multi model checkpoints
                 save_path = os.path.join(os.path.dirname(file_path), name)
@@ -289,7 +290,7 @@ class MultiCheckpoint(ModelCheckpoint):
                     "scheduler": trainer.lr_schedulers[pl_module.modal_to_id[name]].state_dict(),
                     "epoch": trainer.current_epoch,
                 }, os.path.join(save_path, f"epoch_{trainer.current_epoch}.pt"))
-
+                print(f"Saved model to {os.path.join(save_path, f'epoch_{trainer.current_epoch}.pt')}")
                 # plot images
                 if data is not None:
                     with torch.no_grad():
@@ -310,11 +311,11 @@ class MultiCheckpoint(ModelCheckpoint):
                     plt.close(input_fig)
                     plt.close(rec_fig)
                     plt.close(latent_fig)
+                print(f"Saved images to {os.path.join(save_path, f'epoch_{trainer.current_epoch}.png')}")
+                
+            if torch.distributed.is_initialized():
+                torch.distributed.barrier()
                         
-
-
-                        
-
 
 
 def train(config, opt):
@@ -353,13 +354,16 @@ def train(config, opt):
     logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
     ckptdir = os.path.join(logdir, 'checkpoints')
     cfgdir = os.path.join(logdir, 'configs')
+    print(f"Logdir: {logdir}, ckptdir: {ckptdir}, cfgdir: {cfgdir}")
     os.makedirs(logdir, exist_ok=True)
     os.makedirs(ckptdir, exist_ok=True)
     os.makedirs(cfgdir, exist_ok=True)
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
 
     print("Project config")
     print(OmegaConf.to_yaml(config))
     OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
 
     if opt.logger == 'wandb':
         logger = None # TODO add wandb logger
@@ -376,7 +380,9 @@ def train(config, opt):
         filename="{epoch:02d}",
         save_top_k=-1,
         every_n_epochs=save_epoch,
+        save_image_local=True,
     )
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
 
     #### init model
 
@@ -393,6 +399,7 @@ def train(config, opt):
         log_every_n_steps=1,
     )
     #### training
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
     if opt.resume:
         resume_path = os.path.join(ckptdir, opt.resume)
         if os.path.isdir(resume_path):
@@ -400,9 +407,9 @@ def train(config, opt):
             dirs = sorted(dirs, key=lambda x: int(x.split("_")[1]))
             resume_path = os.path.join(resume_path, dirs[-1])
         print(f"Resume from {resume_path}")
-        trainer.fit(model, train_dataloader, val_dataloader, ckpt_path=resume_path)
+        trainer.fit(model, train_dataloader, val_dataloader, ckpt_path=resume_path,check_val_every_n_epoch = test_epoch)
     else:
-        trainer.fit(model, train_dataloader, val_dataloader)
+        trainer.fit(model, train_dataloader, val_dataloader, check_val_every_n_epoch = test_epoch)
 
 
 
