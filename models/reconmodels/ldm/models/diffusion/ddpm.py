@@ -1021,6 +1021,8 @@ class LatentDiffusion(DDPM):
         loss_dict.update({f'{prefix}/loss_vlb': loss_vlb})
         loss += (self.original_elbo_weight * loss_vlb)
         loss_dict.update({f'{prefix}/loss': loss})
+        loss_dict.update({f'{prefix}/z.mean': x_start.mean().item()})
+        loss_dict.update({f'{prefix}/z.std': x_start.std().item()})
 
         return loss, loss_dict
 
@@ -1316,6 +1318,7 @@ class LatentDiffusion(DDPM):
                 samples, z_denoise_row = self.sample_log(cond=c, batch_size=N, ddim=use_ddim,
                                                          ddim_steps=ddim_steps, eta=ddim_eta)
                 # samples, z_denoise_row = self.sample(cond=c, batch_size=N, return_intermediates=True)
+            print('sample_mean_std',samples.mean().item(), samples.std().item())
             x_samples = self.decode_first_stage(samples)
             log["samples_latent"] = samples
             log["samples"] = x_samples # what we want to generate
