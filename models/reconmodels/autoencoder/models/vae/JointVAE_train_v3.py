@@ -359,12 +359,12 @@ def train(config, opt):
     os.makedirs(logdir, exist_ok=True)
     os.makedirs(ckptdir, exist_ok=True)
     os.makedirs(cfgdir, exist_ok=True)
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir, '\n 1\n')
 
     print("Project config")
     # print(OmegaConf.to_yaml(config))
     OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir,'\n 2\n')
 
     if opt.logger == 'wandb':
         logger = None # TODO add wandb logger
@@ -383,7 +383,7 @@ def train(config, opt):
         every_n_epochs=save_epoch,
         save_image_local=config.training.img_local,
     )
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir,'\n 3\n')
 
     #### init model
 
@@ -401,7 +401,7 @@ def train(config, opt):
         check_val_every_n_epoch = test_epoch,
     )
     #### training
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
+    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir,'\n 4\n')
     if opt.resume:
         resume_path = os.path.join(ckptdir, opt.resume)
         if os.path.isdir(resume_path):
