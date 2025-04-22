@@ -1486,7 +1486,7 @@ class LDMWrapper(LatentDiffusion):
         return x
     
     @torch.no_grad()
-    def decode_first_stage(self, z):
+    def decode_first_stage(self, z, **kwargs):
         z = z / self.scale_factor
         return self.first_stage_model.decode(z)
     
