@@ -158,23 +158,25 @@ class multi_model(pl.LightningModule):
         contrast_weight = self.config.training.contrast_weight_min + (self.config.training.contrast_weight_max - self.config.training.contrast_weight_min) * math.sin(math.pi/2 * current_epoch / self.config.training.epochs) # increase contrast weight from min to max
 
         training_id = random.randint(0, len(self.models) - 1)  # randomly select a model to train
-        self.models[training_id].train()  # set the selected model to train mode
+        training_modal = self.id_to_modal[training_id]  # get the training modal name
+        self.models[training_modal].train()  # set the selected model to train mode
 
         # loss for the selected model
-        data_id = self.data_modal_to_id[self.id_to_modal[training_id]]  # get the data id for the selected model
-        rec_loss, kld_loss, mu, _, _ = self.models[training_id].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
+        data_id = self.data_modal_to_id[training_modal]  # get the data id for the selected model
+        rec_loss, kld_loss, mu, _, _ = self.models[training_modal].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
 
         # contrastive loss
         contrast_loss = 0
         label = torch.arange(batch.shape[0]).to(batch.device)  # (b,)
-        logit = self.models[training_id].get_logit(mu)  # (b, c)
+        logit = self.models[training_modal].get_logit(mu)  # (b, c)
         logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
         for i in range(len(self.models)):
             if i != training_id:
-                self.models[i].eval()  # set the other models to eval mode
-                data_id = self.data_modal_to_id[self.id_to_modal[i]]  # get the data id for the other model
+                compare_modal = self.id_to_modal[i]  # get the compare modal name
+                self.models[compare_modal].eval()  # set the other models to eval mode
+                data_id = self.data_modal_to_id[compare_modal]  # get the data id for the other model
                 with torch.no_grad():
-                    other_logit = self.models[i].get_logit(self.models[i].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
+                    other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
                     other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                     cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
                     contrast_loss += F.cross_entropy(cor_matrix, label)
@@ -202,16 +204,18 @@ class multi_model(pl.LightningModule):
             for name, model in self.models.items():
                 model.eval()
             for training_id in range(len(self.models)):
-                data_id = self.data_modal_to_id[self.id_to_modal[training_id]]
-                rec_loss, kld_loss, mu, _, _ = self.models[training_id].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
+                training_modal = self.id_to_modal[training_id]
+                data_id = self.data_modal_to_id[training_modal]
+                rec_loss, kld_loss, mu, _, _ = self.models[training_modal].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
                 contrast_loss = 0
                 label = torch.arange(batch.shape[0]).to(batch.device)  # (b,)
-                logit = self.models[training_id].get_logit(mu)  # (b, c)
+                logit = self.models[training_modal].get_logit(mu)  # (b, c)
                 logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                 for i in range(len(self.models)):
                     if i != training_id:
-                        data_id = self.data_modal_to_id[self.id_to_modal[i]]
-                        other_logit = self.models[i].get_logit(self.models[i].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
+                        compare_modal = self.id_to_modal[i]
+                        data_id = self.data_modal_to_id[compare_modal]
+                        other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
                         other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                         cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
                         contrast_loss += F.cross_entropy(cor_matrix, label)
