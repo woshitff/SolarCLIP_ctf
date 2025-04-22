@@ -380,7 +380,7 @@ def train(config, opt):
         filename="{epoch:02d}",
         save_top_k=-1,
         every_n_epochs=save_epoch,
-        save_image_local=True,
+        save_image_local=config.training.img_local,
     )
     print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
 
