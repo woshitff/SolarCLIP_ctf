@@ -257,13 +257,17 @@ class SolarImageLogger(Callback):
                     if image_array.shape[1] < 3:
                         plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                     else:
-                        image_array = image_array[i, :3, :, :].transpose(1, 2, 0)
+                        if image_array.shape[1] >3:
+                            image_array = image_array[i, :3, :, :].transpose(1, 2, 0)
+                        image_array = image_array[i, :, :, :].transpose(1, 2, 0)
                         plt.imshow(image_array, vmin=vmin, vmax=vmax)
                 elif len(image_array.shape) == 3:
                     if image_array.shape[0] < 3:
                         plt.imshow(image_array[i, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                     else:
-                        image_array = image_array[i, :3, :, :].transpose(1, 2, 0)
+                        if image_array.shape[0] > 3:
+                            image_array = image_array[i, :3, :, :]
+                        image_array = image_array[i, :, :, :].transpose(1, 2, 0)
                         plt.imshow(image_array, vmin=vmin, vmax=vmax)
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
