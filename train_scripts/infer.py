@@ -57,13 +57,19 @@ def load_model(config: OmegaConf):
     model.eval()
     print("Model loaded successfully.")
 
+
+def load_data(time: int, input_modal: str):
+    input_data = get_image_from_time(time, input_modal)
+    input_data = input_data.unsqueeze(0).unsqueeze(0)
+    
+    return input_data
+
 def modal_transfer(time: int, input_modal: str, output_modal: str, save_dir: str = None):
+    input_data = load_data(time, input_modal)
+
     global model
     if model is None:
         raise ValueError("Model is not loaded. Please call load_model first.")
-    
-    input_data = get_image_from_time(time, input_modal)
-    input_data = input_data.unsqueeze(0).unsqueeze(0)
     output_data = model.infer(input_data)
     
     if save_dir is not None:
