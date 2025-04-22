@@ -386,6 +386,7 @@ def train(config, opt):
     trainer = pl.Trainer(
         accelerator="gpu",
         # precision='bf16-mixed',
+        strategy="ddp",
         max_epochs=epochs,
         logger=logger,
         callbacks=[checkpoint_callback],
