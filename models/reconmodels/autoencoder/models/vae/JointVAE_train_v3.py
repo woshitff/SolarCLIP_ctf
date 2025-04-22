@@ -109,8 +109,8 @@ class multi_model(pl.LightningModule):
 
         self.data_id_to_modal = self.config.data.params.train.params.modal_list
         assert self.data_id_to_modal == self.config.data.params.validation.params.modal_list # train and val modal list should be the same
-        assert len(self.data_modal_list) == len(self.models), "train and val modal list should be the same as the model list"
-        self.data_modal_to_id = { modal: i for i, modal in enumerate(self.data_modal_list) }
+        assert len(self.data_id_to_modal) == len(self.models), "train and val modal list should be the same as the model list"
+        self.data_modal_to_id = { modal: i for i, modal in enumerate(self.data_id_to_modal) }
 
     
 
