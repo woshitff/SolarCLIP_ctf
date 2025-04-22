@@ -281,14 +281,14 @@ class MultiCheckpoint(ModelCheckpoint):
 
             for name, model in pl_module.models.items():
                 # save multi model checkpoints
-                save_path = os.path.join(file_path, name)
+                save_path = os.path.join(os.path.dirname(file_path), name)
                 os.makedirs(save_path, exist_ok=True)
                 torch.save({
                     "model": model.state_dict(),
                     "optimizer": trainer.optimizers[pl_module.modal_to_id[name]].state_dict(),
                     "scheduler": trainer.lr_schedulers[pl_module.modal_to_id[name]].state_dict(),
                     "epoch": trainer.current_epoch,
-                }, os.path.join(save_path, f"epoch_{trainer.current_epoch+1}.pt"))
+                }, os.path.join(save_path, f"epoch_{trainer.current_epoch}.pt"))
 
                 # plot images
                 if data is not None:
