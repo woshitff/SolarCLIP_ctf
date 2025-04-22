@@ -361,7 +361,7 @@ def train(config, opt):
     print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
 
     print("Project config")
-    print(OmegaConf.to_yaml(config))
+    # print(OmegaConf.to_yaml(config))
     OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
     print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir)
 
