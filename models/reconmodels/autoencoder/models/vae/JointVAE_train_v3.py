@@ -203,28 +203,28 @@ class multi_model(pl.LightningModule):
         with torch.no_grad():
             for name, model in self.models.items():
                 model.eval()
-            for training_id in range(len(self.models)):
-                training_modal = self.id_to_modal[training_id]
-                data_id = self.data_modal_to_id[training_modal]
-                rec_loss, kld_loss, mu, _, _ = self.models[training_modal].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
-                contrast_loss = 0
-                label = torch.arange(batch.shape[0]).to(batch.device)  # (b,)
-                logit = self.models[training_modal].get_logit(mu)  # (b, c)
-                logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
-                for i in range(len(self.models)):
-                    if i != training_id:
-                        compare_modal = self.id_to_modal[i]
-                        data_id = self.data_modal_to_id[compare_modal]
-                        other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
-                        other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
-                        cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
-                        contrast_loss += F.cross_entropy(cor_matrix, label)
-                loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
+            training_id = random.randint(0, len(self.models) - 1)
+            training_modal = self.id_to_modal[training_id]
+            data_id = self.data_modal_to_id[training_modal]
+            rec_loss, kld_loss, mu, _, _ = self.models[training_modal].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
+            contrast_loss = 0
+            label = torch.arange(batch.shape[0]).to(batch.device)  # (b,)
+            logit = self.models[training_modal].get_logit(mu)  # (b, c)
+            logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+            for i in range(len(self.models)):
+                if i != training_id:
+                    compare_modal = self.id_to_modal[i]
+                    data_id = self.data_modal_to_id[compare_modal]
+                    other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
+                    other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+                    cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
+                    contrast_loss += F.cross_entropy(cor_matrix, label)
+            loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
 
-                self.log(f"val_loss_{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True)
-                self.log(f"val_rec_loss_{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True)
-                self.log(f"val_kld_loss_{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
-                self.log(f"val_contrast_loss_{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
+            self.log(f"val_loss_{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val_rec_loss_{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val_kld_loss_{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val_contrast_loss_{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
          
 
 def solar_painting(image_array, modal, title = None):

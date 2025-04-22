@@ -465,7 +465,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 1
+    batch_size: 32
     num_workers: 11
     wrap: false
     train:
@@ -520,11 +520,11 @@ data:
 
 training:
   # device: 0
-  epochs: 1000
-  test_freq: 1000
-  save_freq: 1000
-  contrast_weight_min: 0.0
-  contrast_weight_max: 1.0
+  epochs: 100
+  test_freq: 100
+  save_freq: 100
+  contrast_weight_min: 0.0001
+  contrast_weight_max: 0.01
   reconstruct_weight: 1
-  kl_weight: 0.1
+  kl_weight: 0.000001
   img_local: True
