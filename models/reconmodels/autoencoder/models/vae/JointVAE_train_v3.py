@@ -107,8 +107,8 @@ class multi_model(pl.LightningModule):
         self.automatic_optimization = False # to use manual optimization
         self.get_models()
 
-        self.data_id_to_modal = list(self.config.data.params.train.modal_list)
-        assert self.data_modal_list == list(self.config.data.params.val.modal_list), "train and val modal list should be the same"
+        self.data_id_to_modal = OmegaConf.to_container(self.config.data.params.train.modal_list)
+        assert self.data_modal_list == OmegaConf.to_container(self.config.data.params.val.modal_list), "train and val modal list should be the same"
         assert len(self.data_modal_list) == len(self.models), "train and val modal list should be the same as the model list"
         self.data_modal_to_id = { modal: i for i, modal in enumerate(self.data_modal_list) }
 
