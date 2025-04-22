@@ -256,7 +256,10 @@ class SolarImageLogger(Callback):
                 if len(image_array.shape) == 4:
                     plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                 elif len(image_array.shape) == 3:
-                    plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                    if image_array.shape[1]  < 3:
+                        plt.imshow(image_array[0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
+                    else:
+                        plt.imshow(image_array[:3, :, :])
                 plt.title(f"{k} - Image {i}")
                 plt.subplots_adjust(wspace=0, hspace=0)
 

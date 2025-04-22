@@ -1388,10 +1388,10 @@ class LatentDiffusion(DDPM):
                 return {key: log[key] for key in return_keys}
 
         modal['inputs'] = self.first_stage_key
-        modal["inputs_latent"] = "latent"
+        modal["inputs_latent"] = self.first_stage_key
         modal['reconstruction'] = self.first_stage_key
         modal['conditioning'] = self.cond_stage_key
-        modal['conditioning_latent'] = "latent"
+        modal['conditioning_latent'] = self.cond_stage_key
         modal['samples'] = self.first_stage_key
         modal['progressive_row'] = self.first_stage_key
 
@@ -1800,11 +1800,11 @@ class SolarLatentDiffusion(LatentDiffusion):
                 return {key: log[key] for key in return_keys}
 
         modal['inputs'] = self.first_stage_key
-        modal["inputs_latent"] = self.first_stage_key
+        modal["inputs_latent"] = "latent"
         modal['reconstruction'] = self.first_stage_key
         modal['conditioning'] = self.cond_stage_key
         modal['conditioning_latent'] = self.cond_stage_key
-        modal['samples_latent'] = self.first_stage_key
+        modal['samples_latent'] = "latent"
         modal['samples'] = self.first_stage_key
         modal['diffusion_row'] = self.first_stage_key
         modal["denoise_row"] = self.first_stage_key
