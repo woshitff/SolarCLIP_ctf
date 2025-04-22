@@ -484,7 +484,10 @@ class DDPM(pl.LightningModule):
         loss = loss_simple + self.original_elbo_weight * loss_vlb
 
         loss_dict.update({f'{log_prefix}/loss': loss})
+        loss_dict.update({f'{log_prefix}/z.mean': x_start.mean().item()})
+        loss_dict.update({f'{log_prefix}/z.std': x_start.std().item()})
         print(f'loss: {loss}')
+        
         return loss, loss_dict
 
     def forward(self, x, *args, **kwargs):
