@@ -219,7 +219,7 @@ if __name__ == "__main__":
         # trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
             trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=wandb_logger, callbacks=trainer_kwargs["callbacks"])
         else:
-            trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"], precision=16)
+            trainer = Trainer(**trainer_config, strategy='ddp_find_unused_parameters_true', logger=trainer_kwargs["logger"], callbacks=trainer_kwargs["callbacks"])
         
         #### run training
         try:
