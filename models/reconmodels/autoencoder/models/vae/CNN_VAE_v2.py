@@ -441,7 +441,9 @@ class CNN_VAE(pl.LightningModule):
                  vae_modal: str = 'magnet_image',
                  kl_weight: float = 1.0,
                  loss_type: str = 'MSE',
-                 dd_config: dict = None):
+                 dd_config: dict = None,
+                 if_classify: bool = False,
+                 **kwargs):
         super().__init__()
         self.save_hyperparameters()
 
@@ -451,6 +453,18 @@ class CNN_VAE(pl.LightningModule):
 
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
+        self.if_classify = if_classify
+        if if_classify:
+            self.class_block = nn.Sequential(
+                ResnetBlock(in_channels=dd_config['z_channels'],
+                            out_channels=dd_config['z_channels']*2,
+                            dropout=0.0),
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),
+                nn.Linear(dd_config['z_channels']*2, 512),
+                nn.GELU(),
+                nn.Linear(512, 512),
+            )
 
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path)
@@ -476,6 +490,15 @@ class CNN_VAE(pl.LightningModule):
         mu, logvar = torch.chunk(x, 2, dim=1)
         logvar = torch.clamp(logvar, -30, 30)
         return mu, logvar
+
+    def logit(self, mu):
+        """
+        mu: (B, C_out, H_out, W_out) eg: (B, 3, 64, 64)
+        logit: (B, 512)
+        """
+        assert self.if_classify, "if_classify must be True"
+        logit = self.class_block(mu)
+        return logit
 
     def reparameterize(self, mu, logvar, scale=1.0):
         std = torch.exp(0.5*logvar)
@@ -629,7 +652,8 @@ class CNN_VAE_two(pl.LightningModule):
                  dd_config: dict = None,
                  first_stage_config: dict = None,
                  train_first_stage: bool = False,
-                 norm:bool  = True,
+                 norm:bool  = False,
+                 if_classify: bool = False,
                  **kwargs):
         super().__init__()
         self.save_hyperparameters()
@@ -645,6 +669,18 @@ class CNN_VAE_two(pl.LightningModule):
         self.norm = norm
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
+        self.if_classify = if_classify
+        if if_classify:
+            self.class_block = nn.Sequential(
+                ResnetBlock(in_channels=dd_config['z_channels'],
+                            out_channels=dd_config['z_channels']*2,
+                            dropout=0.0),
+                nn.AdaptiveAvgPool2d((1, 1)),
+                nn.Flatten(),
+                nn.Linear(dd_config['z_channels']*2, 512),
+                nn.GELU(),
+                nn.Linear(512, 512),
+            )
 
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path)
@@ -678,6 +714,15 @@ class CNN_VAE_two(pl.LightningModule):
         # print('*'*10,'len:',len(self.list),'*'*10)
         # print('*'*10,'avg:',np.average(self.list),'*'*10)
         return mu, logvar
+
+    def classify(self, mu):
+        """
+        mu: (B, C_out, H_out, W_out) eg: (B, 3, 64, 64)
+        logit: (B, 512)
+        """
+        assert self.if_classify, "if_classify must be True"
+        logit = self.class_block(mu)
+        return logit
 
     def reparameterize(self, mu, logvar, scale=1.0):
         std = torch.exp(0.5*logvar)

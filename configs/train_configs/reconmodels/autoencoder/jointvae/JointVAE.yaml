@@ -9,6 +9,7 @@ model:
       vae_modal: 'hmi'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -50,6 +51,7 @@ model:
       vae_modal: '0094'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -91,6 +93,7 @@ model:
       vae_modal: '0131'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -132,6 +135,7 @@ model:
       vae_modal: '0171'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -173,7 +177,7 @@ model:
       vae_modal: '0193'
       kl_weight: 0.1
       loss_type: 'MSE'
-
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -215,6 +219,7 @@ model:
       vae_modal: '0211'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -256,6 +261,7 @@ model:
       vae_modal: '0304'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -297,6 +303,7 @@ model:
       vae_modal: '0335'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -338,6 +345,7 @@ model:
       vae_modal: '1600'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -379,6 +387,7 @@ model:
       vae_modal: '1700'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
@@ -420,6 +429,7 @@ model:
       vae_modal: '4500'
       kl_weight: 0.1
       loss_type: 'MSE'
+      if_classify: True
       dd_config:
         double_z: True
         z_channels: 32
