@@ -177,7 +177,7 @@ class SolarImageLogger(Callback):
         self.log_first_step = log_first_step
 
     def get_cmap_and_limits(self, inputs, mode):
-        cmap = "RdBu_r" if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'hmi_image' else "Reds"
+        cmap = "RdBu_r" if mode == 'hmi_image_vae' or mode == 'hmi_image_cliptoken' or mode == 'latent' or mode == 'hmi_image' else "Reds"
         vmin = np.min(inputs)
         vmax = np.max(inputs)
         # print('mode',mode)
@@ -191,7 +191,7 @@ class SolarImageLogger(Callback):
             # vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 2
             vmax = np.max([np.abs(vmin), np.abs(vmax)]) / 1
             vmin = 0
-        elif mode == None:
+        elif mode == None or mode == "latent":
             pass
         else:
             raise ValueError("Unknown modal type")

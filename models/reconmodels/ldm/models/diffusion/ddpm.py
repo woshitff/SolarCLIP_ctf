@@ -1388,11 +1388,10 @@ class LatentDiffusion(DDPM):
                 return {key: log[key] for key in return_keys}
 
         modal['inputs'] = self.first_stage_key
-        modal["inputs_latent"] = self.first_stage_key
+        modal["inputs_latent"] = "latent"
         modal['reconstruction'] = self.first_stage_key
         modal['conditioning'] = self.cond_stage_key
-        modal['conditioning_latent'] = self.cond_stage_key
-        modal['samples_latent'] = self.first_stage_key
+        modal['conditioning_latent'] = "latent"
         modal['samples'] = self.first_stage_key
 
         return log, modal
