@@ -28,12 +28,19 @@ def JointContrastiveLoss(models: dict = None, data: torch.Tensor = None, modal: 
             feature= feature / (feature.norm(dim=-1, keepdim=True)+1e-32)
             moments.update({f"{modal_name}":feature})
         elif mode == 'logit':
-            logit = model.classify(feature)
-            logit = logit / (logit.norm(dim=-1, keepdim=True)+1e-32)
+            logit = model.classify(feature) # (b, c)
+            logit = logit / (logit.norm(dim=-1, keepdim=True)+1e-32) # Normalize logits
             moments.update({f"{modal_name}":logit})
+        else:
+            raise ValueError("Invalid mode. Choose 'feature' or 'logit'.")
 
-    target_feature = features[modal]  
-    other_features = {name: feature for name, feature in features.items() if name != modal}
-    loss = sum((target_feature * feature).sum(dim=-1).mean() for feature in other_features.values()) / len(other_features)
+    target_moment = moments[modal]  
+    other_moment = {name: moment for name, moment in moments.items() if name != modal}
+    if mode == 'feature':
+        loss = sum((target_moment * moment).sum(dim=-1).mean() for moment in other_moment.values()) / len(other_moment)
+    elif mode == 'logit':
+        loss = 0
+        for name, moment in other_moment.items():
+            loss += F.mse_loss(target_moment, moment) / len(other_moment)
 
     return loss

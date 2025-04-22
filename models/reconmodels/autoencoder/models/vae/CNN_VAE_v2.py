@@ -433,6 +433,41 @@ class Decoder(nn.Module):
         if self.tanh_out:
             h = torch.tanh(h)
         return h
+    
+class AttentionPool2d(nn.Module):
+    def __init__(self, spacial_dim: int, embed_dim: int, num_heads: int, output_dim: int = None):
+        super().__init__()
+        self.positional_embedding = nn.Parameter(torch.randn(spacial_dim ** 2 + 1, embed_dim) / embed_dim ** 0.5)
+        self.k_proj = nn.Linear(embed_dim, embed_dim)
+        self.q_proj = nn.Linear(embed_dim, embed_dim)
+        self.v_proj = nn.Linear(embed_dim, embed_dim)
+        self.c_proj = nn.Linear(embed_dim, output_dim or embed_dim)
+        self.num_heads = num_heads
+
+    def forward(self, x):
+        x = x.flatten(start_dim=2).permute(2, 0, 1)  # NCHW -> (HW)NC
+        x = torch.cat([x.mean(dim=0, keepdim=True), x], dim=0)  # (HW+1)NC
+        x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC
+        x, _ = F.multi_head_attention_forward(
+            query=x[:1], key=x, value=x,
+            embed_dim_to_check=x.shape[-1],
+            num_heads=self.num_heads,
+            q_proj_weight=self.q_proj.weight,
+            k_proj_weight=self.k_proj.weight,
+            v_proj_weight=self.v_proj.weight,
+            in_proj_weight=None,
+            in_proj_bias=torch.cat([self.q_proj.bias, self.k_proj.bias, self.v_proj.bias]),
+            bias_k=None,
+            bias_v=None,
+            add_zero_attn=False,
+            dropout_p=0,
+            out_proj_weight=self.c_proj.weight,
+            out_proj_bias=self.c_proj.bias,
+            use_separate_proj_weight=True,
+            training=self.training,
+            need_weights=False
+        )
+        return x.squeeze(0)
 
 
 class CNN_VAE(pl.LightningModule):
@@ -453,17 +488,15 @@ class CNN_VAE(pl.LightningModule):
 
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
+        self.feature_spatial = dd_config['resolution'] / math.prod(dd_config['ch_mult'])
+        self.feature_dim = dd_config['z_channels']
         self.if_classify = if_classify
         if if_classify:
-            self.class_block = nn.Sequential(
-                ResnetBlock(in_channels=dd_config['z_channels'],
-                            out_channels=dd_config['z_channels']*2,
-                            dropout=0.0),
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),
-                nn.Linear(dd_config['z_channels']*2, 512),
-                nn.GELU(),
-                nn.Linear(512, 512),
+            AttentionPool2d(
+                spacial_dim=self.feature_spatial,
+                embed_dim=self.feature_dim,
+                num_heads=8,
+                output_dim=512
             )
 
         if ckpt_path is not None:
@@ -472,7 +505,7 @@ class CNN_VAE(pl.LightningModule):
     def init_from_ckpt(self, ckpt_path):
         if os.path.splitext(ckpt_path)[-1] == '.pt':
             checkpoint = torch.load(ckpt_path)
-            self.load_state_dict(checkpoint['model'])
+            self.load_state_dict(checkpoint['model'], strict=False)
         elif os.path.splitext(ckpt_path)[-1] == '.ckpt':
             checkpoint = torch.load(ckpt_path)
             if 'loss' in checkpoint['state_dict']:
@@ -491,7 +524,7 @@ class CNN_VAE(pl.LightningModule):
         logvar = torch.clamp(logvar, -30, 30)
         return mu, logvar
 
-    def logit(self, mu):
+    def get_logit(self, mu):
         """
         mu: (B, C_out, H_out, W_out) eg: (B, 3, 64, 64)
         logit: (B, 512)
@@ -550,23 +583,23 @@ class CNN_VAE(pl.LightningModule):
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
     
-    def calculate_loss(self, x):
+    def calculate_loss(self, x, return_moment=False):
         """
         a method to get the loss only from input x
         """
         recon_x, mu, logvar = self(x)
         if self.loss_type == 'MSE':
-            with torch.no_grad():
-                RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
-            RECON_LOSS_weighted = F.mse_loss(recon_x, x, reduction='none')
-            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+            RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
         elif self.loss_type == 'BCE':
             RECON_LOSS = F.binary_cross_entropy(recon_x, x, reduction='sum')
         else:
             raise ValueError(f"loss_type {self.loss_type} is not supported")
         KLD = (-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))/mu.numel()
 
-        return RECON_LOSS_weighted, KLD
+        if return_moment:
+            return RECON_LOSS, KLD, mu, logvar, recon_x
+        else:
+            return RECON_LOSS, KLD
     
     def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):
         if self.loss_type == 'MSE':
@@ -664,22 +697,21 @@ class CNN_VAE_two(pl.LightningModule):
         self.list = []
         self.key = key
         self.first_stage = CNN_VAE(**first_stage_config)
+        self.train_first_stage = train_first_stage
         if not train_first_stage:
             self.first_stage.eval()
         self.norm = norm
         self.encoder = Encoder(**dd_config)
         self.decoder = Decoder(**dd_config)
+        self.feature_spatial = self.first_stage.feature_spatial / math.prod(dd_config['ch_mult'])
+        self.feature_dim = dd_config['z_channels']
         self.if_classify = if_classify
         if if_classify:
-            self.class_block = nn.Sequential(
-                ResnetBlock(in_channels=dd_config['z_channels'],
-                            out_channels=dd_config['z_channels']*2,
-                            dropout=0.0),
-                nn.AdaptiveAvgPool2d((1, 1)),
-                nn.Flatten(),
-                nn.Linear(dd_config['z_channels']*2, 512),
-                nn.GELU(),
-                nn.Linear(512, 512),
+            self.class_block = AttentionPool2d(
+                spacial_dim=self.feature_spatial,
+                embed_dim=self.feature_dim,
+                num_heads=8,
+                output_dim=512
             )
 
         if ckpt_path is not None:
@@ -688,7 +720,7 @@ class CNN_VAE_two(pl.LightningModule):
     def init_from_ckpt(self, ckpt_path):
         if os.path.splitext(ckpt_path)[-1] == '.pt':
             checkpoint = torch.load(ckpt_path)
-            self.load_state_dict(checkpoint['model'])
+            self.load_state_dict(checkpoint['model'], strict=False)
         elif os.path.splitext(ckpt_path)[-1] == '.ckpt':
             checkpoint = torch.load(ckpt_path)
             if 'loss' in checkpoint['state_dict']:
@@ -703,7 +735,11 @@ class CNN_VAE_two(pl.LightningModule):
         x: (B, C, H, W) eg: (B, 1, 1024, 1024)
         output: (B, C_out, H_out, W_out) eg: (B, 3, 64, 64)
         """
-        mu, logvar = self.first_stage.encode(x)
+        if self.train_first_stage:
+            mu, logvar = self.first_stage.encode(x)
+        else:
+            with torch.no_grad():
+                mu, logvar = self.first_stage.encode(x)
         # x = self.first_stage.reparameterize(mu, logvar)
         x = self.encoder(mu) # (B, C, H, W) -> (B, C_out, H_out, W_out)
         mu, logvar = torch.chunk(x, 2, dim=1)
@@ -715,7 +751,7 @@ class CNN_VAE_two(pl.LightningModule):
         # print('*'*10,'avg:',np.average(self.list),'*'*10)
         return mu, logvar
 
-    def classify(self, mu):
+    def get_logit(self, mu):
         """
         mu: (B, C_out, H_out, W_out) eg: (B, 3, 64, 64)
         logit: (B, 512)
@@ -740,7 +776,12 @@ class CNN_VAE_two(pl.LightningModule):
         output: (B, input_dim, H, W) eg: (B, 1, 1024, 1024)
         """
         x = self.decoder(z)
-        return self.first_stage.decode(x)
+        if self.train_first_stage:
+            x = self.first_stage.decode(x)
+        else:
+            with torch.no_grad():
+                x = self.first_stage.decode(x)
+        return x
 
     def sample(self, x):
         mu, logvar = self.encode(x)
@@ -769,23 +810,23 @@ class CNN_VAE_two(pl.LightningModule):
         x = x.to(memory_format=torch.contiguous_format).float()
         return x
     
-    def calculate_loss(self, x):
+    def calculate_loss(self, x, return_moment=False):
         """
         a method to get the loss only from input x
         """
         recon_x, mu, logvar = self(x)
         if self.loss_type == 'MSE':
-            with torch.no_grad():
-                RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
-            RECON_LOSS_weighted = F.mse_loss(recon_x, x, reduction='none')
-            RECON_LOSS_weighted = RECON_LOSS_weighted.mean()
+            RECON_LOSS = F.mse_loss(recon_x, x, reduction='mean')
         elif self.loss_type == 'BCE':
             RECON_LOSS = F.binary_cross_entropy(recon_x, x, reduction='sum')
         else:
             raise ValueError(f"loss_type {self.loss_type} is not supported")
         KLD = (-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()))/mu.numel()
 
-        return RECON_LOSS_weighted, KLD
+        if return_moment:
+            return RECON_LOSS, KLD, mu, logvar, recon_x
+        else:
+            return RECON_LOSS, KLD
     
 
     def loss_function(self, recon_x, x, weights, mu, logvar, lambda_kl):

@@ -466,7 +466,7 @@ data:
   target: data.build.DataModuleFromConfig
   params:
     batch_size: 1
-    num_workers: 9
+    num_workers: 11
     wrap: false
     train:
       target: data.dataset.SolarDataset_v2.multimodal_dataset
@@ -524,7 +524,7 @@ training:
   test_freq: 1000
   save_freq: 1000
   contrast_weight_min: 0.0
-  contrast_weight_max: 10.0
+  contrast_weight_max: 1.0
   reconstruct_weight: 1
-  kl_weight: 0
+  kl_weight: 0.1
   img_local: True
