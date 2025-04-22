@@ -258,7 +258,7 @@ class SolarImageLogger(Callback):
                         plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
                     else:
                         if image_array.shape[1] >3:
-                            image_array = image_array[i, :3, :, :].transpose(1, 2, 0)
+                            image_array = image_array[i, :3, :, :]
                         image_array = image_array.transpose(1, 2, 0)
                         plt.imshow(image_array, vmin=vmin, vmax=vmax)
                 elif len(image_array.shape) == 3:

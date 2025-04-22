@@ -1,0 +1,361 @@
+LDMWrapper: Running in eps-prediction mode
+No module 'xformers'. Proceeding without it.
+making attention of type 'vanilla' with 1536 in_channels
+DiffusionWrapper has 862.59 M params.
+Keeping EMAs of 282.
+Working with z of shape (1, 8, 1, 1) = 8 dimensions.
+Working with z of shape (1, 32, 1, 1) = 32 dimensions.
+Loaded model from /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+Using first stage also as cond stage.
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+#### Data #####
+train, multimodal_dataset, 4568
+validation, multimodal_dataset, 454
+Merged modelckpt-cfg: 
+{'target': 'pytorch_lightning.callbacks.ModelCheckpoint', 'params': {'dirpath': 'logs_trans_ldm/ldm0094_crossattn_3/checkpoints', 'filename': '{epoch:06}', 'verbose': True, 'save_last': False, 'save_top_k': -1, 'every_n_epochs': 20, 'save_weights_only': True}}
+Caution: Saving checkpoints every n train steps without deleting. This might require some free space.
+before trainer init {'accelerator': 'gpu', 'max_epochs': 300, 'devices': 'auto'}
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+Project config
+model:
+  base_learning_rate: 1.0e-05
+  target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
+  params:
+    ckpt_path: null
+    linear_start: 0.00085
+    linear_end: 0.012
+    log_every_t: 40
+    timesteps: 300
+    first_stage_key: '0094'
+    cond_stage_key: '0094'
+    spatial_size:
+    - 32
+    - 32
+    channels: 32
+    cond_stage_trainable: false
+    conditioning_key: concat
+    scale_factor: 16
+    monitor: val/loss_simple_ema
+    use_ema: true
+    unet_config:
+      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.model.Model
+      params:
+        ch: 384
+        out_ch: 32
+        ch_mult:
+        - 1
+        - 2
+        - 4
+        - 4
+        num_res_blocks: 2
+        attn_resolutions: []
+        dropout: 0.0
+        resamp_with_conv: true
+        in_channels: 64
+        resolution: 64
+        use_timestep: true
+        use_linear_attn: false
+        attn_type: vanilla
+    first_stage_config:
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
+      params:
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+        vae_modal: aia0094_image
+        kl_weight: 0.1
+        loss_type: MSE
+        norm: false
+        dd_config:
+          double_z: true
+          z_channels: 32
+          resolution: 1024
+          in_channels: 8
+          out_ch: 8
+          ch: 32
+          ch_mult:
+          - 1
+          - 2
+          - 2
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        first_stage_config:
+          ckpt_path: null
+          vae_modal: aia0094_image
+          kl_weight: 0.1
+          loss_type: MSE
+          dd_config:
+            double_z: true
+            z_channels: 8
+            resolution: 1024
+            in_channels: 1
+            out_ch: 1
+            ch: 16
+            ch_mult:
+            - 1
+            - 2
+            - 2
+            - 2
+            num_res_blocks: 2
+            attn_resolutions: []
+            dropout: 0.0
+    cond_stage_config: __is_first_stage__
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 4
+    num_workers: 9
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list:
+        - '0094'
+        - '0094'
+        load_imgs: false
+        enhance_list:
+        - 1024
+        - 0.5
+        - 90
+        time_interval:
+        - 0
+        - 4800
+        time_step: 1
+    validation:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list:
+        - '0094'
+        - '0094'
+        load_imgs: false
+        enhance_list:
+        - 1024
+        - 0.5
+        - 90
+        time_interval:
+        - 4800
+        - 5265
+        time_step: 1
+
+Lightning config
+trainer:
+  accelerator: gpu
+  max_epochs: 300
+  devices: auto
+callbacks:
+  default_metrics_over_trainsteps_ckpt:
+    target: pytorch_lightning.callbacks.ModelCheckpoint
+    params:
+      dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints
+      filename: LDM_009420094_best_val_loss_epoch_crossattn
+      verbose: true
+      save_top_k: 1
+      monitor: val/loss_simple_ema
+      every_n_epochs: 1
+      save_weights_only: true
+
+Sanity Checking: |          | 0/? [00:00<?, ?it/s]LDMWrapper: Running in eps-prediction mode
+No module 'xformers'. Proceeding without it.
+making attention of type 'vanilla' with 1536 in_channels
+DiffusionWrapper has 862.59 M params.
+Keeping EMAs of 282.
+Working with z of shape (1, 8, 1, 1) = 8 dimensions.
+Working with z of shape (1, 32, 1, 1) = 32 dimensions.
+Loaded model from /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+Using first stage also as cond stage.
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+#### Data #####
+train, multimodal_dataset, 4568
+validation, multimodal_dataset, 454
+Merged modelckpt-cfg: 
+{'target': 'pytorch_lightning.callbacks.ModelCheckpoint', 'params': {'dirpath': 'logs_trans_ldm/ldm0094_crossattn_3/checkpoints', 'filename': '{epoch:06}', 'verbose': True, 'save_last': False, 'save_top_k': -1, 'every_n_epochs': 20, 'save_weights_only': True}}
+Caution: Saving checkpoints every n train steps without deleting. This might require some free space.
+before trainer init {'accelerator': 'gpu', 'max_epochs': 300, 'devices': 'auto'}
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+LDMWrapper: Running in eps-prediction mode
+No module 'xformers'. Proceeding without it.
+making attention of type 'vanilla' with 1536 in_channels
+DiffusionWrapper has 862.59 M params.
+Keeping EMAs of 282.
+Working with z of shape (1, 8, 1, 1) = 8 dimensions.
+Working with z of shape (1, 32, 1, 1) = 32 dimensions.
+Loaded model from /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+Using first stage also as cond stage.
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+#### Data #####
+train, multimodal_dataset, 4568
+validation, multimodal_dataset, 454
+Merged modelckpt-cfg: 
+{'target': 'pytorch_lightning.callbacks.ModelCheckpoint', 'params': {'dirpath': 'logs_trans_ldm/ldm0094_crossattn_3/checkpoints', 'filename': '{epoch:06}', 'verbose': True, 'save_last': False, 'save_top_k': -1, 'every_n_epochs': 20, 'save_weights_only': True}}
+Caution: Saving checkpoints every n train steps without deleting. This might require some free space.
+before trainer init {'accelerator': 'gpu', 'max_epochs': 300, 'devices': 'auto'}
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+LDMWrapper: Running in eps-prediction mode
+No module 'xformers'. Proceeding without it.
+making attention of type 'vanilla' with 1536 in_channels
+DiffusionWrapper has 862.59 M params.
+Keeping EMAs of 282.
+Working with z of shape (1, 8, 1, 1) = 8 dimensions.
+Working with z of shape (1, 32, 1, 1) = 32 dimensions.
+Loaded model from /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+Using first stage also as cond stage.
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+#### Data #####
+train, multimodal_dataset, 4568
+validation, multimodal_dataset, 454
+Merged modelckpt-cfg: 
+{'target': 'pytorch_lightning.callbacks.ModelCheckpoint', 'params': {'dirpath': 'logs_trans_ldm/ldm0094_crossattn_3/checkpoints', 'filename': '{epoch:06}', 'verbose': True, 'save_last': False, 'save_top_k': -1, 'every_n_epochs': 20, 'save_weights_only': True}}
+Caution: Saving checkpoints every n train steps without deleting. This might require some free space.
+before trainer init {'accelerator': 'gpu', 'max_epochs': 300, 'devices': 'auto'}
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 4568 samples
+ 0094 has 5146 samples
+ 0094 has 5146 samples
+All modal has 454 samples
+Sanity Checking:   0%|          | 0/2 [00:00<?, ?it/s]Sanity Checking DataLoader 0:   0%|          | 0/2 [00:00<?, ?it/s]enter if circle
+Sampling: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+enter if circle
+Sampling: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+enter if circle
+Sampling: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+enter if circle
+Sampling: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Sampling: Restored training weights
+sample_mean_std -0.06184113770723343 2.277973175048828
+Plotting Quantized Denoised: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Sampling: Restored training weights
+sample_mean_std -0.062002941966056824 2.277628183364868
+Plotting Quantized Denoised: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Sampling: Restored training weights
+sample_mean_std -0.0619242787361145 2.277430295944214
+Plotting Quantized Denoised: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Sampling: Restored training weights
+sample_mean_std -0.06234711781144142 2.277259588241577
+Plotting Quantized Denoised: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Quantized Denoised: Restored training weights
+Plotting Inpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Quantized Denoised: Restored training weights
+Plotting Inpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Quantized Denoised: Restored training weights
+Plotting Inpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Quantized Denoised: Restored training weights
+Plotting Inpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Inpaint: Restored training weights
+Plotting Outpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Inpaint: Restored training weights
+Plotting Outpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Inpaint: Restored training weights
+Plotting Outpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Inpaint: Restored training weights
+Plotting Outpaint: Switched to EMA weights
+Data shape for DDIM sampling is (4, 32, 32, 32), eta 0.0
+Running DDIM Sampling with 50 timesteps
+Plotting Outpaint: Restored training weights
+Plotting Progressives: Switched to EMA weights
+Plotting Outpaint: Restored training weights
+Plotting Progressives: Switched to EMA weights
+Plotting Outpaint: Restored training weights
+Plotting Progressives: Switched to EMA weights
+Plotting Outpaint: Restored training weights
+Plotting Progressives: Switched to EMA weights
+Plotting Progressives: Restored training weights
+Plotting Progressives: Restored training weights
+Plotting Progressives: Restored training weights
+Plotting Progressives: Restored training weights
+Training error: Invalid shape (32, 3, 32) for image data
+                                                                   
