@@ -290,7 +290,7 @@ class MultiCheckpoint(ModelCheckpoint):
                 torch.save({
                     "model": model.state_dict(),
                     "optimizer": trainer.optimizers[pl_module.modal_to_id[name]].state_dict(),
-                    "scheduler": trainer.lightning_module.lr_schedulers[pl_module.modal_to_id[name]].state_dict(),
+                    "scheduler": pl_module.lr_schedulers()[pl_module.modal_to_id[name]].state_dict(),
                     "epoch": trainer.current_epoch,
                 }, os.path.join(save_path, f"epoch_{trainer.current_epoch}.pt"))
                 # plot images
