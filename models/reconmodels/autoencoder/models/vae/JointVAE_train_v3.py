@@ -262,9 +262,10 @@ def latent_painting(image_array, modal, title = None):
     return fig
 
 class MultiCheckpoint(ModelCheckpoint):
-    def __init__(self, save_image_local = False, **kwargs):
+    def __init__(self, save_image_local = False, image_num = 4, **kwargs):
         super().__init__(**kwargs)
         self.save_image_local =save_image_local
+        self.image_num = image_num
 
     def on_train_start(self, trainer, pl_module):
         # 模拟一个epoch 0的检查点保存
@@ -272,11 +273,11 @@ class MultiCheckpoint(ModelCheckpoint):
             # 创建临时文件路径
             file_path = os.path.join(self.dirpath, "epoch=0-init.ckpt")
             # 调用MultiCheckpoint的保存逻辑
-            self._save_model(trainer, file_path)
+            self._save_checkpoint(trainer, file_path)
             print(f"Initial checkpoint saved at epoch 0: {file_path}")
 
-    def _save_model(self, trainer: pl.trainer, file_path: str):
-        super()._save_model(trainer, file_path) # Call the original save model method
+    def _save_checkpoint(self, trainer: pl.trainer, file_path: str):
+        super()._save_checkpoint(trainer, file_path) # Call the original save model method
 
         pl_module = trainer.lightning_module
 
@@ -286,6 +287,8 @@ class MultiCheckpoint(ModelCheckpoint):
                 val_loader = trainer.val_dataloaders[0]
                 random_batch_idx = torch.randint(0, len(val_loader), (1,)).item()
                 data = val_loader.dataset[random_batch_idx]
+                b = min(data.shape[0], self.image_num)
+                data = data[:b, :, :, :]  # (b, c, h, w)
                 data = data.to(trainer.root_gpu)  #  (b, c, h, w)
             else:
                 data = None
