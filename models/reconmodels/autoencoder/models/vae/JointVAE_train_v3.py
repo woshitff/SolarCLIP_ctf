@@ -237,10 +237,10 @@ def solar_painting(image_array, modal, title = None):
         cmap = "Reds"
         vmin = 0
         vmax = np.max(image_array)
-    fig = plt.figure(figsize=(32, 16))
     num_images = min(image_array.shape[0], 4)
+    fig = plt.figure(figsize=(num_images*16, 16))
     for i in range(num_images):
-        plt.subplot(1, 2, i+1)
+        plt.subplot(1, num_images, i+1)
         plt.imshow(image_array[i, 0, :, :], cmap=cmap, vmin=vmin, vmax=vmax)
         plt.title(title)
         plt.subplots_adjust(wspace=0, hspace=0)
@@ -248,14 +248,14 @@ def solar_painting(image_array, modal, title = None):
 
 def latent_painting(image_array, modal, title = None):
     assert len(image_array.shape) == 4 # (b, c, h, w)
-    fig = plt.figure(figsize=(32, 16))
     num_images = min(image_array.shape[0], 4)
+    fig = plt.figure(figsize=(num_images*16, 16))
     c = image_array.shape[1]
     visual_channels = np.random.choice(c, 3, replace=(c < 3))
     image_array = image_array[:, visual_channels, :, :]
     image_array = (image_array - image_array.min()) / (image_array.max() - image_array.min())
     for i in range(num_images):
-        plt.subplot(1, 2, i+1)
+        plt.subplot(1, num_images, i+1)
         plt.imshow(image_array[i,: :, :].permute(1, 2, 0))
         plt.title(title)
         plt.subplots_adjust(wspace=0, hspace=0)
@@ -299,7 +299,6 @@ class MultiCheckpoint(ModelCheckpoint):
                         model.eval()
                         mu = model.encode(data[:, pl_module.data_modal_to_id[name], :, :, :])[0]  # (b, c, h, w)
                         rec = model.decode(mu)  # (b, c, h, w)
-                        print(6)
                     input_fig = solar_painting(data[:, pl_module.data_modal_to_id[name], :, :, :].cpu().numpy(), name, title = f"{name} - Input")
                     rec_fig = solar_painting(rec.cpu().numpy(), name, title = f"{name} - Reconstructed")
                     latent_fig = latent_painting(mu.cpu().numpy(), name, title = f"{name} - Latent")
