@@ -266,10 +266,20 @@ class MultiCheckpoint(ModelCheckpoint):
         super().__init__(**kwargs)
         self.save_image_local =save_image_local
 
-    def _save_model(self, trainer: pl.trainer, pl_module: pl.LightningModule, file_path: str):
-        print('test1\n')
-        super()._save_model(trainer, pl_module, file_path) # Call the original save model method
-        print('test2\n')
+    def on_train_start(self, trainer, pl_module):
+        # 模拟一个epoch 0的检查点保存
+        if trainer.is_global_zero:
+            # 创建临时文件路径
+            file_path = os.path.join(self.multi_checkpoint.dirpath, "epoch=0-init.ckpt")
+            
+            # 调用MultiCheckpoint的保存逻辑
+            self.multi_checkpoint._save_model(trainer, file_path)
+            print(f"Initial checkpoint saved at epoch 0: {file_path}")
+
+    def _save_model(self, trainer: pl.trainer, file_path: str):
+        super()._save_model(trainer, file_path) # Call the original save model method
+
+        pl_module = trainer.lightning_module
 
         if trainer.is_global_zero:
             # prepare for plotting
