@@ -355,14 +355,14 @@ def train(config, opt):
         name = cfg_name
         nowname = now + "_" + name + opt.postfix
         logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
-        ckptdir = os.path.join(logdir, 'checkpoints')
-        cfgdir = os.path.join(logdir, 'configs')
-        print(f"Logdir: {logdir}, ckptdir: {ckptdir}, cfgdir: {cfgdir}")
-        os.makedirs(logdir, exist_ok=True)
-        os.makedirs(ckptdir, exist_ok=True)
-        os.makedirs(cfgdir, exist_ok=True)
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
+    ckptdir = os.path.join(logdir, 'checkpoints')
+    cfgdir = os.path.join(logdir, 'configs')
+    print(f"Logdir: {logdir}, ckptdir: {ckptdir}, cfgdir: {cfgdir}")
+    os.makedirs(logdir, exist_ok=True)
+    os.makedirs(ckptdir, exist_ok=True)
+    os.makedirs(cfgdir, exist_ok=True)
     print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir, '\n 1\n')
 
     print("Project config")
