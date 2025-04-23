@@ -256,7 +256,7 @@ def latent_painting(image_array, modal, title = None):
     image_array = (image_array - image_array.min()) / (image_array.max() - image_array.min())
     for i in range(num_images):
         plt.subplot(1, num_images, i+1)
-        plt.imshow(image_array[i,: :, :].permute(1, 2, 0))
+        plt.imshow(image_array[i,: :, :].transpose(1, 2, 0))
         plt.title(title)
         plt.subplots_adjust(wspace=0, hspace=0)
     return fig
