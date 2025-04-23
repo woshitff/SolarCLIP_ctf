@@ -267,12 +267,12 @@ class MultiCheckpoint(ModelCheckpoint):
         self.save_image_local =save_image_local
 
     def _save_model(self, trainer: pl.trainer, pl_module: pl.LightningModule, file_path: str):
+        print('test1\n')
         super()._save_model(trainer, pl_module, file_path) # Call the original save model method
-        print(f"Rank {trainer.global_rank}: Reached checkpoint saving point")
+        print('test2\n')
 
         if trainer.is_global_zero:
             # prepare for plotting
-            print("Saving model and plotting images...")
             if trainer.val_dataloaders is not None:
                 val_loader = trainer.val_dataloaders[0]
                 random_batch_idx = torch.randint(0, len(val_loader), (1,)).item()
@@ -280,19 +280,16 @@ class MultiCheckpoint(ModelCheckpoint):
                 data = data.to(trainer.root_gpu)  #  (b, c, h, w)
             else:
                 data = None
-            print(f"current model to {file_path}")
             for name, model in pl_module.models.items():
                 # save multi model checkpoints
                 save_path = os.path.join(os.path.dirname(file_path), name)
                 os.makedirs(save_path, exist_ok=True)
-                print(f"Saving model to {save_path}")
                 torch.save({
                     "model": model.state_dict(),
                     "optimizer": trainer.optimizers[pl_module.modal_to_id[name]].state_dict(),
                     "scheduler": trainer.lr_schedulers[pl_module.modal_to_id[name]].state_dict(),
                     "epoch": trainer.current_epoch,
                 }, os.path.join(save_path, f"epoch_{trainer.current_epoch}.pt"))
-                print(f"Saved model to {os.path.join(save_path, f'epoch_{trainer.current_epoch}.pt')}")
                 # plot images
                 if data is not None:
                     with torch.no_grad():
@@ -313,7 +310,6 @@ class MultiCheckpoint(ModelCheckpoint):
                     plt.close(input_fig)
                     plt.close(rec_fig)
                     plt.close(latent_fig)
-                print(f"Saved images to {os.path.join(save_path, f'epoch_{trainer.current_epoch}.png')}")
                 
             if torch.distributed.is_initialized():
                 torch.distributed.barrier()
