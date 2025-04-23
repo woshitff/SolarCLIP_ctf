@@ -277,13 +277,17 @@ class MultiCheckpoint(ModelCheckpoint):
             print(f"Initial checkpoint saved at epoch 0: {file_path}")
 
     def _save_checkpoint(self, trainer: pl.trainer, file_path: str):
+        print(1)
         super()._save_checkpoint(trainer, file_path) # Call the original save model method
 
+        print(2)
         pl_module = trainer.lightning_module
 
         if trainer.is_global_zero:
             # prepare for plotting
+            print(3)
             if trainer.val_dataloaders is not None:
+                print(4)
                 val_loader = trainer.val_dataloaders[0]
                 random_batch_idx = torch.randint(0, len(val_loader), (1,)).item()
                 data = val_loader.dataset[random_batch_idx]
@@ -292,6 +296,7 @@ class MultiCheckpoint(ModelCheckpoint):
                 data = data.to(trainer.root_gpu)  #  (b, c, h, w)
             else:
                 data = None
+            print(5)
             for name, model in pl_module.models.items():
                 # save multi model checkpoints
                 save_path = os.path.join(os.path.dirname(file_path), name)
@@ -311,13 +316,16 @@ class MultiCheckpoint(ModelCheckpoint):
                         model.eval()
                         mu = model.encode(data[:, pl_module.data_modal_to_id[name], :, :, :])[0]  # (b, c, h, w)
                         rec = model.decode(mu)  # (b, c, h, w)
+                        print(6)
                     input_fig = solar_painting(data[:, pl_module.data_modal_to_id[name], :, :, :].cpu().numpy(), name, title = f"{name} - Input")
                     rec_fig = solar_painting(rec.cpu().numpy(), name, title = f"{name} - Reconstructed")
                     latent_fig = latent_painting(mu.cpu().numpy(), name, title = f"{name} - Latent")
+                    print(7)
                     if self.save_image_local:
                         input_fig.savefig(os.path.join(save_path, f"epoch_{trainer.current_epoch:02d}_input.png"))
                         rec_fig.savefig(os.path.join(save_path, f"epoch_{trainer.current_epoch:02d}_recon.png"))
                         latent_fig.savefig(os.path.join(save_path, f"epoch_{trainer.current_epoch:02d}_latent.png"))
+                    print(8)
                     if trainer.logger:
                         trainer.logger.experiment.add_figure(f"{name}/input", input_fig, global_step=trainer.global_step)
                         trainer.logger.experiment.add_figure(f"{name}/recon", rec_fig, global_step=trainer.global_step)
@@ -325,6 +333,7 @@ class MultiCheckpoint(ModelCheckpoint):
                     plt.close(input_fig)
                     plt.close(rec_fig)
                     plt.close(latent_fig)
+                    print(9)
                 
             if torch.distributed.is_initialized():
                 torch.distributed.barrier()
