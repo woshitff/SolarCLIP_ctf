@@ -275,13 +275,11 @@ class MultiCheckpoint(ModelCheckpoint):
             # prepare for plotting
             device = trainer.strategy.root_device if hasattr(trainer.strategy, "root_device") else trainer.device
             if trainer.val_dataloaders is not None:
-                print(4)
                 random_batch_idx = torch.randint(0, len(trainer.val_dataloaders), (self.image_num,))
                 data = torch.stack([trainer.val_dataloaders.dataset[i] for i in random_batch_idx], dim=0)  # (b, c, h, w)
                 data = data.to(device)  #  (b, c, h, w)
             else:
                 data = None
-            print(5)
             for name, model in pl_module.models.items():
                 # save multi model checkpoints
                 save_path = os.path.join(os.path.dirname(file_path), name)
@@ -292,7 +290,7 @@ class MultiCheckpoint(ModelCheckpoint):
                 torch.save({
                     "model": model.state_dict(),
                     "optimizer": trainer.optimizers[pl_module.modal_to_id[name]].state_dict(),
-                    "scheduler": trainer.lr_schedulers[pl_module.modal_to_id[name]].state_dict(),
+                    "scheduler": trainer.lightning_module.lr_schedulers[pl_module.modal_to_id[name]].state_dict(),
                     "epoch": trainer.current_epoch,
                 }, os.path.join(save_path, f"epoch_{trainer.current_epoch}.pt"))
                 # plot images
