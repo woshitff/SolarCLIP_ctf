@@ -11,7 +11,6 @@ import datetime
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.distributed as dist
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -322,6 +321,7 @@ class MultiCheckpoint(ModelCheckpoint):
 
 def train(config, opt):
 
+    trainer = pl.Trainer() # to locate rank 0
     pl.seed_everything(opt.seed)
 
     #### init data
@@ -348,9 +348,7 @@ def train(config, opt):
     save_epoch = epochs//training_config.save_freq
 
     #### Init Logger
-    if not dist.is_initialized():
-        dist.init_process_group(backend="nccl", init_method="env://")
-    if dist.get_rank() == 0:
+    if trainer.is_global_zero:
         now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
         cfg_fname = os.path.split(opt.config[0])[-1]
         cfg_name = os.path.splitext(cfg_fname)[0]
@@ -363,7 +361,8 @@ def train(config, opt):
         os.makedirs(logdir, exist_ok=True)
         os.makedirs(ckptdir, exist_ok=True)
         os.makedirs(cfgdir, exist_ok=True)
-    dist.barrier()
+    if torch.distributed.is_initialized():
+        torch.distributed.barrier()
     print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir, '\n 1\n')
 
     print("Project config")
