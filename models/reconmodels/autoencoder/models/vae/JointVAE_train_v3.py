@@ -11,6 +11,7 @@ import datetime
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.distributed as dist
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -347,18 +348,22 @@ def train(config, opt):
     save_epoch = epochs//training_config.save_freq
 
     #### Init Logger
-    now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-    cfg_fname = os.path.split(opt.config[0])[-1]
-    cfg_name = os.path.splitext(cfg_fname)[0]
-    name = cfg_name
-    nowname = now + "_" + name + opt.postfix
-    logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
-    ckptdir = os.path.join(logdir, 'checkpoints')
-    cfgdir = os.path.join(logdir, 'configs')
-    print(f"Logdir: {logdir}, ckptdir: {ckptdir}, cfgdir: {cfgdir}")
-    os.makedirs(logdir, exist_ok=True)
-    os.makedirs(ckptdir, exist_ok=True)
-    os.makedirs(cfgdir, exist_ok=True)
+    if not dist.is_initialized():
+        dist.init_process_group(backend="nccl", init_method="env://")
+    if dist.get_rank() == 0:
+        now = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        cfg_fname = os.path.split(opt.config[0])[-1]
+        cfg_name = os.path.splitext(cfg_fname)[0]
+        name = cfg_name
+        nowname = now + "_" + name + opt.postfix
+        logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
+        ckptdir = os.path.join(logdir, 'checkpoints')
+        cfgdir = os.path.join(logdir, 'configs')
+        print(f"Logdir: {logdir}, ckptdir: {ckptdir}, cfgdir: {cfgdir}")
+        os.makedirs(logdir, exist_ok=True)
+        os.makedirs(ckptdir, exist_ok=True)
+        os.makedirs(cfgdir, exist_ok=True)
+    dist.barrier()
     print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir, '\n 1\n')
 
     print("Project config")
