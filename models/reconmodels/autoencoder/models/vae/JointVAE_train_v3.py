@@ -346,6 +346,8 @@ def train(config, opt):
         OmegaConf.save(config, os.path.join(cfgdir, "project.yaml"))
     else:
         logdir = ''
+        ckptdir = ''
+        cfgdir = ''
 
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
