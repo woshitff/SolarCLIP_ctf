@@ -268,6 +268,7 @@ class MultiCheckpoint(ModelCheckpoint):
 
     def _save_model(self, trainer: pl.trainer, pl_module: pl.LightningModule, file_path: str):
         super()._save_model(trainer, pl_module, file_path) # Call the original save model method
+        print(f"Rank {trainer.global_rank}: Reached checkpoint saving point")
 
         if trainer.is_global_zero:
             # prepare for plotting
