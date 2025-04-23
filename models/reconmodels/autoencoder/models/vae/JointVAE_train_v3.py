@@ -322,23 +322,6 @@ class MultiCheckpoint(ModelCheckpoint):
 def train(config, opt):
 
     trainer = pl.Trainer() # to locate rank 0
-    pl.seed_everything(opt.seed)
-
-    #### init data
-    data = instantiate_from_config(config.data)
-    # NOTE according to https://pytorch-lightning.readthedocs.io/en/latest/datamodules.html
-    # calling these ourselves should not be necessary but it is.
-    # lightning still takes care of proper multiprocessing though
-    data.prepare_data()
-    data.setup()
-    print("#### Data #####")
-    for k in data.datasets:
-        print(f"{k}, {data.datasets[k].__class__.__name__}, {len(data.datasets[k])}")
-    train_dataloader = DataLoader(data.datasets["train"], batch_size=data.batch_size, 
-                          shuffle=True, num_workers=data.num_workers)
-    val_dataloader = DataLoader(data.datasets["validation"], batch_size=data.batch_size, 
-                          shuffle=False, num_workers=data.num_workers)
-
 
     #### Init basic traing config
     training_config = config.training
@@ -362,9 +345,7 @@ def train(config, opt):
         os.makedirs(cfgdir, exist_ok=True)
         OmegaConf.save(config, os.path.join(cfgdir, "project.yaml"))
     else:
-        logdir = None
-        ckptdir = None
-        cfgdir = None
+        logdir = ''
 
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
@@ -374,6 +355,21 @@ def train(config, opt):
         ckptdir = os.path.join(logdir, 'checkpoints')
         cfgdir = os.path.join(logdir, 'configs')
     
+
+    #### init data
+    pl.seed_everything(opt.seed)
+    data = instantiate_from_config(config.data)
+    data.prepare_data()
+    data.setup()
+    if trainer.is_global_zero:
+        print("#### Data #####")
+        for k in data.datasets:
+            print(f"{k}, {data.datasets[k].__class__.__name__}, {len(data.datasets[k])}")
+    train_dataloader = DataLoader(data.datasets["train"], batch_size=data.batch_size, 
+                          shuffle=True, num_workers=data.num_workers)
+    val_dataloader = DataLoader(data.datasets["validation"], batch_size=data.batch_size, 
+                          shuffle=False, num_workers=data.num_workers)
+
 
     if opt.logger == 'wandb':
         logger = None # TODO add wandb logger
