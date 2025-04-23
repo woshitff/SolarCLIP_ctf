@@ -190,10 +190,10 @@ class multi_model(pl.LightningModule):
         optimizers[training_id].step()
         schedulers[training_id].step()
 
-        self.log(f"train_loss_{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True)
-        self.log(f"train_rec_loss_{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True)
-        self.log(f"train_kld_loss_{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
-        self.log(f"train_contrast_loss_{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
+        self.log(f"train/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True)
+        self.log(f"train/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True)
+        self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
+        self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
         self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
 
     def validation_step(self, batch, batch_idx):
@@ -221,10 +221,10 @@ class multi_model(pl.LightningModule):
                     contrast_loss += F.cross_entropy(cor_matrix, label)
             loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
 
-            self.log(f"val_loss_{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val_rec_loss_{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val_kld_loss_{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val_contrast_loss_{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
          
 
 def solar_painting(image_array, modal, title = None):
@@ -270,10 +270,9 @@ class MultiCheckpoint(ModelCheckpoint):
         # 模拟一个epoch 0的检查点保存
         if trainer.is_global_zero:
             # 创建临时文件路径
-            file_path = os.path.join(self.multi_checkpoint.dirpath, "epoch=0-init.ckpt")
-            
+            file_path = os.path.join(self.dirpath, "epoch=0-init.ckpt")
             # 调用MultiCheckpoint的保存逻辑
-            self.multi_checkpoint._save_model(trainer, file_path)
+            self._save_model(trainer, file_path)
             print(f"Initial checkpoint saved at epoch 0: {file_path}")
 
     def _save_model(self, trainer: pl.trainer, file_path: str):
