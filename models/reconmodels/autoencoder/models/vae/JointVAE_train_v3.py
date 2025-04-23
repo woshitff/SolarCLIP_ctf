@@ -355,20 +355,27 @@ def train(config, opt):
         name = cfg_name
         nowname = now + "_" + name + opt.postfix
         logdir = os.path.join(opt.logdir, nowname)   # logs/reconmodels/autoencoder/jointvae/{nowname}/
+        ckptdir = os.path.join(logdir, 'checkpoints')
+        cfgdir = os.path.join(logdir, 'configs')
+        os.makedirs(logdir, exist_ok=True)
+        os.makedirs(ckptdir, exist_ok=True)
+        os.makedirs(cfgdir, exist_ok=True)
+    else:
+        logdir = None
+        ckptdir = None
+        cfgdir = None
+        
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
-    ckptdir = os.path.join(logdir, 'checkpoints')
-    cfgdir = os.path.join(logdir, 'configs')
-    print(f"Logdir: {logdir}, ckptdir: {ckptdir}, cfgdir: {cfgdir}")
-    os.makedirs(logdir, exist_ok=True)
-    os.makedirs(ckptdir, exist_ok=True)
-    os.makedirs(cfgdir, exist_ok=True)
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir, '\n 1\n')
+    
+    if torch.distributed.is_initialized():
+        logdir = trainer.strategy.broadcast(logdir, src=0)
+        ckptdir = os.path.join(logdir, 'checkpoints')
+        cfgdir = os.path.join(logdir, 'configs')
 
     print("Project config")
     # print(OmegaConf.to_yaml(config))
     OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir,'\n 2\n')
 
     if opt.logger == 'wandb':
         logger = None # TODO add wandb logger
@@ -387,7 +394,6 @@ def train(config, opt):
         every_n_epochs=save_epoch,
         save_image_local=config.training.img_local,
     )
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir,'\n 3\n')
 
     #### init model
 
@@ -405,7 +411,6 @@ def train(config, opt):
         check_val_every_n_epoch = test_epoch,
     )
     #### training
-    print("Logdir: ", logdir, "ckptdir: ", ckptdir, "cfgdir: ", cfgdir,'\n 4\n')
     if opt.resume:
         resume_path = os.path.join(ckptdir, opt.resume)
         if os.path.isdir(resume_path):
