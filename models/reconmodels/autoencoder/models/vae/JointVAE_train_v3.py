@@ -360,6 +360,7 @@ def train(config, opt):
         os.makedirs(logdir, exist_ok=True)
         os.makedirs(ckptdir, exist_ok=True)
         os.makedirs(cfgdir, exist_ok=True)
+        OmegaConf.save(config, os.path.join(cfgdir, "project.yaml"))
     else:
         logdir = None
         ckptdir = None
@@ -372,10 +373,7 @@ def train(config, opt):
         logdir = trainer.strategy.broadcast(logdir, src=0)
         ckptdir = os.path.join(logdir, 'checkpoints')
         cfgdir = os.path.join(logdir, 'configs')
-
-    print("Project config")
-    # print(OmegaConf.to_yaml(config))
-    OmegaConf.save(config, os.path.join(cfgdir, "project.yaml"))
+    
 
     if opt.logger == 'wandb':
         logger = None # TODO add wandb logger
