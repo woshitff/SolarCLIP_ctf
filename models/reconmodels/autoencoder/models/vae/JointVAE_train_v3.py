@@ -267,15 +267,6 @@ class MultiCheckpoint(ModelCheckpoint):
         self.save_image_local =save_image_local
         self.image_num = image_num
 
-    def on_train_start(self, trainer, pl_module):
-        # 模拟一个epoch 0的检查点保存
-        if trainer.is_global_zero:
-            # 创建临时文件路径
-            file_path = os.path.join(self.dirpath, "epoch=0-init.ckpt")
-            # 调用MultiCheckpoint的保存逻辑
-            self._save_checkpoint(trainer, file_path)
-            print(f"Initial checkpoint saved at epoch 0: {file_path}")
-
     def _save_checkpoint(self, trainer: pl.trainer, file_path: str):
         print(1)
         super()._save_checkpoint(trainer, file_path) # Call the original save model method
