@@ -279,11 +279,9 @@ class MultiCheckpoint(ModelCheckpoint):
             print(3)
             if trainer.val_dataloaders is not None:
                 print(4)
-                val_loader = trainer.val_dataloaders[0]
-                random_batch_idx = torch.randint(0, len(val_loader), (1,)).item()
+                val_loader = trainer.val_dataloaders
+                random_batch_idx = torch.randint(0, len(val_loader), (self.image_num,)).item()
                 data = val_loader.dataset[random_batch_idx]
-                b = min(data.shape[0], self.image_num)
-                data = data[:b, :, :, :]  # (b, c, h, w)
                 data = data.to(trainer.root_gpu)  #  (b, c, h, w)
             else:
                 data = None
