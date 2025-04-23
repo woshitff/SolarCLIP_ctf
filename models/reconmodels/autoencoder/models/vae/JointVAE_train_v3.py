@@ -364,7 +364,7 @@ def train(config, opt):
         logdir = None
         ckptdir = None
         cfgdir = None
-        
+
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
     
@@ -375,7 +375,7 @@ def train(config, opt):
 
     print("Project config")
     # print(OmegaConf.to_yaml(config))
-    OmegaConf.save(config, os.path.join(cfgdir, "{}-project.yaml".format(now)))
+    OmegaConf.save(config, os.path.join(cfgdir, "project.yaml"))
 
     if opt.logger == 'wandb':
         logger = None # TODO add wandb logger
