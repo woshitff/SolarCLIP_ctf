@@ -268,20 +268,17 @@ class MultiCheckpoint(ModelCheckpoint):
         self.image_num = image_num
 
     def _save_checkpoint(self, trainer: pl.trainer, file_path: str):
-        print(1)
         super()._save_checkpoint(trainer, file_path) # Call the original save model method
-
-        print(2)
         pl_module = trainer.lightning_module
 
         if trainer.is_global_zero:
             # prepare for plotting
-            print(3)
+            device = trainer.strategy.root_device if hasattr(trainer.strategy, "root_device") else trainer.device
             if trainer.val_dataloaders is not None:
                 print(4)
                 random_batch_idx = torch.randint(0, len(trainer.val_dataloaders), (self.image_num,))
                 data = torch.stack([trainer.val_dataloaders.dataset[i] for i in random_batch_idx], dim=0)  # (b, c, h, w)
-                data = data.to(trainer.root_gpu)  #  (b, c, h, w)
+                data = data.to(device)  #  (b, c, h, w)
             else:
                 data = None
             print(5)
