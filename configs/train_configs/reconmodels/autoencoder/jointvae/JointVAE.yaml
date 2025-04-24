@@ -466,7 +466,7 @@ data:
   target: data.build.DataModuleFromConfig
   params:
     batch_size: 32
-    num_workers: 11
+    num_workers: 8
     wrap: false
     train:
       target: data.dataset.SolarDataset_v2.multimodal_dataset

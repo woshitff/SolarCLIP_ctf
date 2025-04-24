@@ -316,7 +316,6 @@ class MultiCheckpoint(ModelCheckpoint):
                 
         if torch.distributed.is_initialized():
             torch.distributed.barrier()
-        print(f"Checkpoint saved to {file_path}")
                         
 
 
@@ -400,7 +399,7 @@ def train(config, opt):
     trainer = pl.Trainer(
         accelerator="gpu",
         # precision='bf16-mixed',
-        strategy='ddp_spawn_find_unused_parameters_true',
+        strategy='ddp_find_unused_parameters_true',
         max_epochs=epochs,
         logger=logger,
         callbacks=[checkpoint_callback],
