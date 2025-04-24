@@ -195,16 +195,16 @@ class multi_model(pl.LightningModule):
 
             # log
             for name, model in self.models.items():
-                self.log(f"train/loss/{name}", loss, logger=True, on_epoch=True)
-                self.log(f"train/rec_loss/{name}", rec_loss_[name], logger=True, on_epoch=True)
-                self.log(f"train/kld_loss/{name}", kld_loss_[name], logger=True, on_epoch=True)
-                self.log(f"train/contrast_loss/{name}", contrast_loss_[name], logger=True, on_epoch=True)
-                self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
-                self.log(f'scheduler/{name}', self.lr_schedulers()[self.modal_to_id[name]].get_last_lr()[0], logger=True, on_epoch=True)
-            self.log(f"train/avg/loss", loss, logger=True, on_epoch=True)
-            self.log(f"train/avg/rec_loss", rec_loss, logger=True, on_epoch=True)
-            self.log(f"train/avg/kld_loss", kld_loss, logger=True, on_epoch=True)
-            self.log(f"train/avg/contrast_loss", contrast_loss, logger=True, on_epoch=True)
+                self.log(f"train/loss/{name}", loss, logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"train/rec_loss/{name}", rec_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"train/kld_loss/{name}", kld_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"train/contrast_loss/{name}", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True, sync_dist=True)
+                self.log(f'scheduler/{name}', self.lr_schedulers()[self.modal_to_id[name]].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"train/avg/loss", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"train/avg/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"train/avg/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"train/avg/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
 
         else:
             training_id = random.randint(0, len(self.models) - 1)  # randomly select a model to train
@@ -238,12 +238,12 @@ class multi_model(pl.LightningModule):
             optimizers[training_id].step()
 
             # log
-            self.log(f"train/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True)
-            self.log(f"train/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True)
-            self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
-            self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
-            self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
-            self.log(f'scheduler/{self.id_to_modal[training_id]}', self.lr_schedulers()[training_id].get_last_lr()[0], logger=True, on_epoch=True)
+            self.log(f"train/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"train/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f'scheduler/{self.id_to_modal[training_id]}', self.lr_schedulers()[training_id].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
     
     def on_train_epoch_end(self):
         schedulers = self.lr_schedulers()

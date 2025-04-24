@@ -520,7 +520,7 @@ data:
 
 training:
   # device: 0
-  epochs: 1000
+  epochs: 100
   test_freq: 100
   save_freq: 100
   contrast_weight_min: 0.001
