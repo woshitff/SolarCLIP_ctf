@@ -142,7 +142,6 @@ class multi_model(pl.LightningModule):
                 raise ValueError(f'Optimizer {getattr(self.config.model, modal_name).base_learning_optimizer} is not supported')
             optimizers.append(optimizer)
 
-            scheduler_name = f"scheduler_{modal_name}"
             if getattr(self.config.model, modal_name).base_learning_schedule == 'CosineAnnealingLR':
                 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                 optimizer, T_max=self.config.training.epochs)
@@ -184,17 +183,21 @@ class multi_model(pl.LightningModule):
 
         # optimize
         optimizers = self.optimizers()
-        schedulers = self.lr_schedulers()
         optimizers[training_id].zero_grad()
         self.manual_backward(loss)
         optimizers[training_id].step()
-        schedulers[training_id].step()
 
         self.log(f"train/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True)
         self.log(f"train/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True)
         self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
         self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
         self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
+    
+    def on_train_epoch_end(self):
+        schedulers = self.lr_schedulers()
+        if schedulers is not None:
+            for scheduler in schedulers:
+                scheduler.step()
 
     def validation_step(self, batch, batch_idx):
         current_epoch = self.current_epoch
