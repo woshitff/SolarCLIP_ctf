@@ -104,6 +104,7 @@ class multi_model(pl.LightningModule):
     def __init__(self, config:OmegaConf):
         super(multi_model, self).__init__()
         self.config = config
+        self.full_model_train = config.training.full_model_train
         self.automatic_optimization = False # to use manual optimization
         self.get_models()
 
@@ -152,47 +153,97 @@ class multi_model(pl.LightningModule):
     
     # functions for training
     def training_step(self, batch, batch_idx):
-        # hyperparameters: contrast_weight, training_id
         current_epoch = self.current_epoch
         contrast_weight = self.config.training.contrast_weight_min + (self.config.training.contrast_weight_max - self.config.training.contrast_weight_min) * math.sin(math.pi/2 * current_epoch / self.config.training.epochs) # increase contrast weight from min to max
+        label = torch.arange(batch.shape[0]).to(batch.device)  # (b,) label for contrastive loss
 
-        training_id = random.randint(0, len(self.models) - 1)  # randomly select a model to train
-        training_modal = self.id_to_modal[training_id]  # get the training modal name
-        self.models[training_modal].train()  # set the selected model to train mode
+        if self.full_model_train:
+            rec_loss_ = {}
+            kld_loss_ = {}
+            logits_ = {}
+            contrast_loss_ = {}
+            for name, model in self.models.items():
+                # get rec_loss, kld_loss and logits for each model
+                model.train()
+                rec_loss, kld_loss, mu, _, _ = model.calculate_loss(batch[:, self.data_modal_to_id[name], :, :, :], return_moment=True)
+                rec_loss_[name] = rec_loss
+                kld_loss_[name] = kld_loss
+                logit = model.get_logit(mu)
+                logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+                logits_[name] = logit
+            
+            # calculate contrast loss
+            for name, model in self.models.items():
+                contrast_loss = 0
+                for name2, model2 in self.models.items():
+                    if name != name2:
+                        cor_matrix = torch.matmul(logits_[name], logits_[name2].T)
+                        contrast_loss += F.cross_entropy(cor_matrix, label)
+                contrast_loss_[name] = contrast_loss
 
-        # loss for the selected model
-        data_id = self.data_modal_to_id[training_modal]  # get the data id for the selected model
-        rec_loss, kld_loss, mu, _, _ = self.models[training_modal].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
+            # optimize
+            rec_loss = sum(rec_loss_.values()) / len(self.models)
+            kld_loss = sum(kld_loss_.values()) / len(self.models)
+            contrast_loss = sum(contrast_loss_.values()) / len(self.models)
+            loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
+            optimizers = self.optimizers()
+            for optimizer in optimizers:
+                optimizer.zero_grad()
+            self.manual_backward(loss)
+            for optimizer in optimizers:
+                optimizer.step()
 
-        # contrastive loss
-        contrast_loss = 0
-        label = torch.arange(batch.shape[0]).to(batch.device)  # (b,)
-        logit = self.models[training_modal].get_logit(mu)  # (b, c)
-        logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
-        for i in range(len(self.models)):
-            if i != training_id:
-                compare_modal = self.id_to_modal[i]  # get the compare modal name
-                self.models[compare_modal].eval()  # set the other models to eval mode
-                data_id = self.data_modal_to_id[compare_modal]  # get the data id for the other model
-                with torch.no_grad():
-                    other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
-                    other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
-                    cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
-                    contrast_loss += F.cross_entropy(cor_matrix, label)
-        loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
+            # log
+            for name, model in self.models.items():
+                self.log(f"train/loss/{name}", loss, logger=True, on_epoch=True)
+                self.log(f"train/rec_loss/{name}", rec_loss_[name], logger=True, on_epoch=True)
+                self.log(f"train/kld_loss/{name}", kld_loss_[name], logger=True, on_epoch=True)
+                self.log(f"train/contrast_loss/{name}", contrast_loss_[name], logger=True, on_epoch=True)
+                self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
+                self.log(f'scheduler/{name}', self.lr_schedulers()[self.modal_to_id[name]].get_last_lr()[0], logger=True, on_epoch=True)
+            self.log(f"train/avg/loss", loss, logger=True, on_epoch=True)
+            self.log(f"train/avg/rec_loss", rec_loss, logger=True, on_epoch=True)
+            self.log(f"train/avg/kld_loss", kld_loss, logger=True, on_epoch=True)
+            self.log(f"train/avg/contrast_loss", contrast_loss, logger=True, on_epoch=True)
 
-        # optimize
-        optimizers = self.optimizers()
-        optimizers[training_id].zero_grad()
-        self.manual_backward(loss)
-        optimizers[training_id].step()
+        else:
+            training_id = random.randint(0, len(self.models) - 1)  # randomly select a model to train
+            training_modal = self.id_to_modal[training_id]  # get the training modal name
+            self.models[training_modal].train()  # set the selected model to train mode
 
-        self.log(f"train/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True)
-        self.log(f"train/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True)
-        self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
-        self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
-        self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
-        self.log(f'train/scheduler/{self.id_to_modal[training_id]}', self.lr_schedulers()[training_id].get_last_lr()[0], logger=True, on_epoch=True)
+            # loss for the selected model
+            data_id = self.data_modal_to_id[training_modal]  # get the data id for the selected model
+            rec_loss, kld_loss, mu, _, _ = self.models[training_modal].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
+
+            # contrastive loss
+            contrast_loss = 0
+            logit = self.models[training_modal].get_logit(mu)  # (b, c)
+            logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+            for i in range(len(self.models)):
+                if i != training_id:
+                    compare_modal = self.id_to_modal[i]  # get the compare modal name
+                    self.models[compare_modal].eval()  # set the other models to eval mode
+                    data_id = self.data_modal_to_id[compare_modal]  # get the data id for the other model
+                    with torch.no_grad():
+                        other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
+                        other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+                        cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
+                        contrast_loss += F.cross_entropy(cor_matrix, label)
+            loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
+
+            # optimize
+            optimizers = self.optimizers()
+            optimizers[training_id].zero_grad()
+            self.manual_backward(loss)
+            optimizers[training_id].step()
+
+            # log
+            self.log(f"train/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True)
+            self.log(f"train/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True)
+            self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
+            self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
+            self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
+            self.log(f'scheduler/{self.id_to_modal[training_id]}', self.lr_schedulers()[training_id].get_last_lr()[0], logger=True, on_epoch=True)
     
     def on_train_epoch_end(self):
         schedulers = self.lr_schedulers()
@@ -399,7 +450,7 @@ def train(config, opt):
     #### init trainer
     trainer = pl.Trainer(
         accelerator="gpu",
-        # precision='bf16-mixed',
+        precision='bf16-mixed',
         strategy='ddp_find_unused_parameters_true',
         max_epochs=epochs,
         logger=logger,
