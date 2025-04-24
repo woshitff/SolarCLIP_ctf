@@ -192,6 +192,7 @@ class multi_model(pl.LightningModule):
         self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True)
         self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True)
         self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True)
+        self.log(f'train/scheduler/{self.id_to_modal[training_id]}', self.lr_schedulers()[training_id].get_last_lr()[0], logger=True, on_epoch=True)
     
     def on_train_epoch_end(self):
         schedulers = self.lr_schedulers()
