@@ -195,12 +195,12 @@ class multi_model(pl.LightningModule):
 
             # log
             for name, model in self.models.items():
-                self.log(f"train/loss/{name}", loss, logger=True, on_epoch=True, sync_dist=True)
-                self.log(f"train/rec_loss/{name}", rec_loss_[name], logger=True, on_epoch=True, sync_dist=True)
-                self.log(f"train/kld_loss/{name}", kld_loss_[name], logger=True, on_epoch=True, sync_dist=True)
-                self.log(f"train/contrast_loss/{name}", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"{name}/train/loss", loss, logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"{name}/train/rec_loss/", rec_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"{name}/train/kld_loss", kld_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"{name}/train/contrast_loss", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
                 self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True, sync_dist=True)
-                self.log(f'scheduler/{name}', self.lr_schedulers()[self.modal_to_id[name]].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f'{name}/scheduler', self.lr_schedulers()[self.modal_to_id[name]].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
             self.log(f"train/avg/loss", loss, logger=True, on_epoch=True, sync_dist=True)
             self.log(f"train/avg/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
             self.log(f"train/avg/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
@@ -238,12 +238,12 @@ class multi_model(pl.LightningModule):
             optimizers[training_id].step()
 
             # log
-            self.log(f"train/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"train/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"train/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"train/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"{training_modal}/train/loss", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"{training_modal}/train/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"{training_modal}/train/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"{training_modal}/train/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
             self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f'scheduler/{self.id_to_modal[training_id]}', self.lr_schedulers()[training_id].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
+            self.log(f'{training_modal}/scheduler', self.lr_schedulers()[training_id].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
     
     def on_train_epoch_end(self):
         schedulers = self.lr_schedulers()
@@ -254,32 +254,48 @@ class multi_model(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         current_epoch = self.current_epoch
         contrast_weight = self.config.training.contrast_weight_min + (self.config.training.contrast_weight_max - self.config.training.contrast_weight_min) * math.sin(math.pi/2 * current_epoch / self.config.training.epochs) # increase contrast weight from min to max
+        label = torch.arange(batch.shape[0]).to(batch.device)  # (b,) label for contrastive loss
 
         with torch.no_grad():
+            rec_loss_ = {}
+            kld_loss_ = {}
+            logits_ = {}
+            contrast_loss_ = {}
             for name, model in self.models.items():
+                # get rec_loss, kld_loss and logits for each model
                 model.eval()
-            training_id = random.randint(0, len(self.models) - 1)
-            training_modal = self.id_to_modal[training_id]
-            data_id = self.data_modal_to_id[training_modal]
-            rec_loss, kld_loss, mu, _, _ = self.models[training_modal].calculate_loss(batch[:, data_id, :, :, :], return_moment=True)
-            contrast_loss = 0
-            label = torch.arange(batch.shape[0]).to(batch.device)  # (b,)
-            logit = self.models[training_modal].get_logit(mu)  # (b, c)
-            logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
-            for i in range(len(self.models)):
-                if i != training_id:
-                    compare_modal = self.id_to_modal[i]
-                    data_id = self.data_modal_to_id[compare_modal]
-                    other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
-                    other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
-                    cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
-                    contrast_loss += F.cross_entropy(cor_matrix, label)
+                rec_loss, kld_loss, mu, _, _ = model.calculate_loss(batch[:, self.data_modal_to_id[name], :, :, :], return_moment=True)
+                rec_loss_[name] = rec_loss
+                kld_loss_[name] = kld_loss
+                logit = model.get_logit(mu)
+                logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+                logits_[name] = logit
+            
+            # calculate contrast loss
+            for name, model in self.models.items():
+                contrast_loss = 0
+                for name2, model2 in self.models.items():
+                    if name != name2:
+                        cor_matrix = torch.matmul(logits_[name], logits_[name2].T)
+                        contrast_loss += F.cross_entropy(cor_matrix, label)
+                contrast_loss_[name] = contrast_loss
+
+            # optimize
+            rec_loss = sum(rec_loss_.values()) / len(self.models)
+            kld_loss = sum(kld_loss_.values()) / len(self.models)
+            contrast_loss = sum(contrast_loss_.values()) / len(self.models)
             loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
 
-            self.log(f"val/loss/{self.id_to_modal[training_id]}", loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val/rec_loss/{self.id_to_modal[training_id]}", rec_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val/kld_loss/{self.id_to_modal[training_id]}", kld_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val/contrast_loss/{self.id_to_modal[training_id]}", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            # log
+            for name, model in self.models.items():
+                self.log(f"{name}/val/loss", loss, logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"{name}/val/rec_loss/", rec_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"{name}/val/kld_loss", kld_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+                self.log(f"{name}/val/contrast_loss", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/avg/loss", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/avg/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/avg/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"val/avg/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
          
 
 def solar_painting(image_array, modal, title = None):
