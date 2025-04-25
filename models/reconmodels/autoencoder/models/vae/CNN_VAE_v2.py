@@ -468,6 +468,14 @@ class AttentionPool2d(nn.Module):
             need_weights=False
         )
         return x.squeeze(0)
+    
+class LayerNorm(nn.LayerNorm):
+    """Subclass torch's LayerNorm to handle fp16."""
+
+    def forward(self, x: torch.Tensor):
+        orig_type = x.dtype
+        ret = super().forward(x.type(torch.float32))
+        return ret.type(orig_type)
 
 
 class CNN_VAE(pl.LightningModule):
@@ -492,11 +500,14 @@ class CNN_VAE(pl.LightningModule):
         self.feature_dim = dd_config['z_channels']
         self.if_classify = if_classify
         if if_classify:
-            AttentionPool2d(
-                spacial_dim=self.feature_spatial,
-                embed_dim=self.feature_dim,
-                num_heads=8,
-                output_dim=512
+            self.class_block = nn.Sequential(
+                AttentionPool2d(
+                    spacial_dim=self.feature_spatial,
+                    embed_dim=self.feature_dim,
+                    num_heads=4,
+                    output_dim=512
+                ),
+                LayerNorm(512),
             )
 
         if ckpt_path is not None:
@@ -707,12 +718,16 @@ class CNN_VAE_two(pl.LightningModule):
         self.feature_dim = dd_config['z_channels']
         self.if_classify = if_classify
         if if_classify:
-            self.class_block = AttentionPool2d(
-                spacial_dim=self.feature_spatial,
-                embed_dim=self.feature_dim,
-                num_heads=8,
-                output_dim=512
+            self.class_block = nn.Sequential(
+                AttentionPool2d(
+                    spacial_dim=self.feature_spatial,
+                    embed_dim=self.feature_dim,
+                    num_heads=4,
+                    output_dim=512
+                ),
+                LayerNorm(512),
             )
+
 
         if ckpt_path is not None:
             self.init_from_ckpt(ckpt_path)

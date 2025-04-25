@@ -171,7 +171,7 @@ class multi_model(pl.LightningModule):
                 kld_loss_[name] = kld_loss
                 logit = model.get_logit(mu)
                 # logit = model.class_block(mu)  # (b, c)
-                logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+                # logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                 logits_[name] = logit
 
             if self.mean_logit:
