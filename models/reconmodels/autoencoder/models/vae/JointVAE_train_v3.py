@@ -184,16 +184,6 @@ class multi_model(pl.LightningModule):
                     cor_matrix = torch.matmul(logits_[name], mean_logit.T)
                     contrast_loss = F.cross_entropy(cor_matrix, label)
                     contrast_loss_[name] = contrast_loss
-                    print(name)
-                    print(cor_matrix)
-                    print(label)
-                    for param in model.class_block.parameters():
-                        print("Parameter value:", param)
-                        if param.grad is not None:
-                            print("Gradient:", param.grad)
-                        else:
-                            print("Gradient: None")
-                        break
                 else:
                     for name2, model2 in self.models.items():
                         if name != name2:
@@ -210,6 +200,23 @@ class multi_model(pl.LightningModule):
             for optimizer in optimizers:
                 optimizer.zero_grad()
             self.manual_backward(loss)
+            if self.global_rank == 0:
+                for name, model in self.models.items():
+                    print(f"Model {name} parameters:")
+                    for param in model.encoder.parameters():
+                        print("encoder value:", param)
+                        if param.grad is not None:
+                            print("Gradient:", param.grad)
+                        else:
+                            print("Gradient: None")
+                        break
+                    for param in model.class_block.parameters():
+                            print("classifier value:", param)
+                            if param.grad is not None:
+                                print("Gradient:", param.grad)
+                            else:
+                                print("Gradient: None")
+                            break
             for optimizer in optimizers:
                 optimizer.step()
 
