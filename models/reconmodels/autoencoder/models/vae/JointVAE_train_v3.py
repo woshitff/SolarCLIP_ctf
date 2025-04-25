@@ -204,20 +204,12 @@ class multi_model(pl.LightningModule):
             if self.global_rank == 0:
                 for name, model in self.models.items():
                     print(f"Model {name} parameters:")
-                    for param in model.encoder.parameters():
-                        print("encoder value:", param)
-                        if param.grad is not None:
-                            print("Gradient:", param.grad)
-                        else:
-                            print("Gradient: None")
-                        break
                     for param in model.class_block.parameters():
                         print("classifier value:", param)
                         if param.grad is not None:
                             print("Gradient:", param.grad)
                         else:
                             print("Gradient: None")
-                        break
                     break
                         
             for optimizer in optimizers:
