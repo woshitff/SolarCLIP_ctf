@@ -169,7 +169,8 @@ class multi_model(pl.LightningModule):
                 rec_loss, kld_loss, mu, _, _ = model.calculate_loss(batch[:, self.data_modal_to_id[name], :, :, :], return_moment=True)
                 rec_loss_[name] = rec_loss
                 kld_loss_[name] = kld_loss
-                logit = model.get_logit(mu)
+                # logit = model.get_logit(mu)
+                logit = model.class_block(mu)  # (b, c)
                 logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                 logits_[name] = logit
 
@@ -199,24 +200,6 @@ class multi_model(pl.LightningModule):
             optimizers = self.optimizers()
             for optimizer in optimizers:
                 optimizer.zero_grad()
-            if self.global_rank == 0:
-                for name, model in self.models.items():
-                    print(f"Model {name} parameters:")
-                    for param in model.encoder.parameters():
-                        print("encoder value:", param)
-                        if param.grad is not None:
-                            print("Gradient:", param.grad)
-                        else:
-                            print("Gradient: None")
-                        break
-                    for param in model.class_block.parameters():
-                        print("classifier value:", param)
-                        if param.grad is not None:
-                            print("Gradient:", param.grad)
-                        else:
-                            print("Gradient: None")
-                        break
-                    break
             self.manual_backward(loss)
             if self.global_rank == 0:
                 for name, model in self.models.items():
