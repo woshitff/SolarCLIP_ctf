@@ -465,7 +465,7 @@ model:
 data:
   target: data.build.DataModuleFromConfig
   params:
-    batch_size: 32
+    batch_size: 16
     num_workers: 8
     wrap: false
     train:
