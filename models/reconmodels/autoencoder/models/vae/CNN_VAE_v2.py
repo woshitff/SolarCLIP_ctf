@@ -468,15 +468,6 @@ class AttentionPool2d(nn.Module):
             need_weights=False
         )
         return x.squeeze(0)
-    
-class LayerNorm(nn.LayerNorm):
-    """Subclass torch's LayerNorm to handle fp16."""
-
-    def forward(self, x: torch.Tensor):
-        orig_type = x.dtype
-        ret = super().forward(x.type(torch.float32))
-        return ret.type(orig_type)
-
 
 class CNN_VAE(pl.LightningModule):
     def __init__(self,
@@ -507,7 +498,7 @@ class CNN_VAE(pl.LightningModule):
                     num_heads=4,
                     output_dim=512
                 ),
-                LayerNorm(512),
+                    nn.LayerNorm(512),
             )
 
         if ckpt_path is not None:
@@ -725,7 +716,7 @@ class CNN_VAE_two(pl.LightningModule):
                     num_heads=4,
                     output_dim=512
                 ),
-                LayerNorm(512),
+                nn.LayerNorm(512),
             )
 
 
