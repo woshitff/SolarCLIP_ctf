@@ -169,8 +169,8 @@ class multi_model(pl.LightningModule):
                 rec_loss, kld_loss, mu, _, _ = model.calculate_loss(batch[:, self.data_modal_to_id[name], :, :, :], return_moment=True)
                 rec_loss_[name] = rec_loss
                 kld_loss_[name] = kld_loss
-                # logit = model.get_logit(mu)
-                logit = model.class_block(mu)  # (b, c)
+                logit = model.get_logit(mu)
+                # logit = model.class_block(mu)  # (b, c)
                 logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                 logits_[name] = logit
 
