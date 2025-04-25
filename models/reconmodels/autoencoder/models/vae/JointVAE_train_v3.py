@@ -201,17 +201,17 @@ class multi_model(pl.LightningModule):
             for optimizer in optimizers:
                 optimizer.zero_grad()
             self.manual_backward(loss)
-            if self.global_rank == 0:
-                for name, model in self.models.items():
-                    print(f"Model {name} parameters:")
-                    for param_name, param in model.class_block.named_parameters():
-                        print(f"Parameter name: {param_name}")
-                        if param.grad is not None:
-                            print("Gradient:", param.grad)
-                        else:
-                            print("Gradient: None")
-                    break
-                        
+            # check gradients
+            # if self.global_rank == 0:
+            #     for name, model in self.models.items():
+            #         print(f"Model {name} parameters:")
+            #         for param_name, param in model.class_block.named_parameters():
+            #             print(f"Parameter name: {param_name}")
+            #             if param.grad is not None:
+            #                 print("Gradient:", param.grad)
+            #             else:
+            #                 print("Gradient: None")
+            #         break     
             for optimizer in optimizers:
                 optimizer.step()
 
