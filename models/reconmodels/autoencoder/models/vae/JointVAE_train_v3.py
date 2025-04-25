@@ -507,7 +507,7 @@ def train(config, opt):
     #### init trainer
     trainer = pl.Trainer(
         accelerator="gpu",
-        precision='32',
+        precision='bf16-mixed',
         strategy='ddp_find_unused_parameters_true',
         max_epochs=epochs,
         logger=logger,
