@@ -171,7 +171,7 @@ class multi_model(pl.LightningModule):
                 kld_loss_[name] = kld_loss
                 logit = model.get_logit(mu)
                 # logit = model.class_block(mu)  # (b, c)
-                # logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+                logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                 logits_[name] = logit
 
             if self.mean_logit:
@@ -193,9 +193,9 @@ class multi_model(pl.LightningModule):
                     contrast_loss_[name] = contrast_loss/ (len(self.models)-1) # average contrast loss for each model
 
             # optimize
-            rec_loss = sum(rec_loss_.values()) / len(rec_loss_)
-            kld_loss = sum(kld_loss_.values()) / len(kld_loss_)
-            contrast_loss = sum(contrast_loss_.values()) / len(contrast_loss_)
+            rec_loss = sum(rec_loss_.values())
+            kld_loss = sum(kld_loss_.values())
+            contrast_loss = sum(contrast_loss_.values())
             loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
             optimizers = self.optimizers()
             for optimizer in optimizers:
@@ -223,10 +223,10 @@ class multi_model(pl.LightningModule):
                 self.log(f"{name}/train/contrast_loss", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
                 self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True, sync_dist=True)
                 self.log(f'{name}/scheduler', self.lr_schedulers()[self.modal_to_id[name]].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/train/loss", loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/train/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/train/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/train/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/loss", loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/rec_loss", rec_loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/kld_loss", kld_loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/contrast_loss", contrast_loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
 
         else:
             training_id = random.randint(0, len(self.models) - 1)  # randomly select a model to train
@@ -322,9 +322,9 @@ class multi_model(pl.LightningModule):
                     contrast_loss_[name] = contrast_loss/ (len(self.models)-1) # average contrast loss for each model
 
             # optimize
-            rec_loss = sum(rec_loss_.values()) / len(rec_loss_)
-            kld_loss = sum(kld_loss_.values()) / len(kld_loss_)
-            contrast_loss = sum(contrast_loss_.values()) / len(contrast_loss_)
+            rec_loss = sum(rec_loss_.values())
+            kld_loss = sum(kld_loss_.values())
+            contrast_loss = sum(contrast_loss_.values())
             loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
 
             # log
@@ -333,10 +333,10 @@ class multi_model(pl.LightningModule):
                 self.log(f"{name}/val/rec_loss/", rec_loss_[name], logger=True, on_epoch=True, sync_dist=True)
                 self.log(f"{name}/val/kld_loss", kld_loss_[name], logger=True, on_epoch=True, sync_dist=True)
                 self.log(f"{name}/val/contrast_loss", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/val/loss", loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/val/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/val/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"avg/val/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/loss", loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/rec_loss", rec_loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/kld_loss", kld_loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/contrast_loss", contrast_loss/len(self.models), logger=True, on_epoch=True, sync_dist=True)
          
 
 def solar_painting(image_array, modal, title = None):
