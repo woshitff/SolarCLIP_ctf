@@ -105,6 +105,7 @@ class multi_model(pl.LightningModule):
         super(multi_model, self).__init__()
         self.config = config
         self.full_model_train = config.training.full_model_train
+        self.mean_logit = config.training.mean_logit
         self.automatic_optimization = False # to use manual optimization
         self.get_models()
 
@@ -171,20 +172,33 @@ class multi_model(pl.LightningModule):
                 logit = model.get_logit(mu)
                 logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                 logits_[name] = logit
+
+            if self.mean_logit:
+                mean_logit = torch.mean(torch.stack(list(logits_.values())), dim=0)  # (b, c)
+                mean_logit = mean_logit/(mean_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
             
             # calculate contrast loss
             for name, model in self.models.items():
                 contrast_loss = 0
-                for name2, model2 in self.models.items():
-                    if name != name2:
-                        cor_matrix = torch.matmul(logits_[name], logits_[name2].T)
-                        contrast_loss += F.cross_entropy(cor_matrix, label)
-                contrast_loss_[name] = contrast_loss
+                if self.mean_logit:
+                    cor_matrix = torch.matmul(logits_[name], mean_logit.T)
+                    contrast_loss = F.cross_entropy(cor_matrix, label)
+                    contrast_loss_[name] = contrast_loss
+                    print(name)
+                    print(cor_matrix)
+                    print(label)
+                    print(model.class_block.parameters())
+                else:
+                    for name2, model2 in self.models.items():
+                        if name != name2:
+                            cor_matrix = torch.matmul(logits_[name], logits_[name2].T)
+                            contrast_loss += F.cross_entropy(cor_matrix, label)
+                    contrast_loss_[name] = contrast_loss/ (len(self.models)-1) # average contrast loss for each model
 
             # optimize
-            rec_loss = sum(rec_loss_.values()) / len(self.models)
-            kld_loss = sum(kld_loss_.values()) / len(self.models)
-            contrast_loss = sum(contrast_loss_.values()) / len(self.models)
+            rec_loss = sum(rec_loss_.values()) / len(rec_loss_)
+            kld_loss = sum(kld_loss_.values()) / len(kld_loss_)
+            contrast_loss = sum(contrast_loss_.values()) / len(contrast_loss_)
             loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
             optimizers = self.optimizers()
             for optimizer in optimizers:
@@ -201,10 +215,10 @@ class multi_model(pl.LightningModule):
                 self.log(f"{name}/train/contrast_loss", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
                 self.log(f"contrast_weight", contrast_weight, logger=True, on_epoch=True, sync_dist=True)
                 self.log(f'{name}/scheduler', self.lr_schedulers()[self.modal_to_id[name]].get_last_lr()[0], logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"train/avg/loss", loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"train/avg/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"train/avg/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"train/avg/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/loss", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/train/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
 
         else:
             training_id = random.randint(0, len(self.models) - 1)  # randomly select a model to train
@@ -219,6 +233,7 @@ class multi_model(pl.LightningModule):
             contrast_loss = 0
             logit = self.models[training_modal].get_logit(mu)  # (b, c)
             logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
+            other_logits = {}
             for i in range(len(self.models)):
                 if i != training_id:
                     compare_modal = self.id_to_modal[i]  # get the compare modal name
@@ -227,8 +242,17 @@ class multi_model(pl.LightningModule):
                     with torch.no_grad():
                         other_logit = self.models[compare_modal].get_logit(self.models[compare_modal].encode(batch[:, data_id, :, :, :])[0])  # (b, c)
                         other_logit = other_logit/(other_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
-                        cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
-                        contrast_loss += F.cross_entropy(cor_matrix, label)
+                        other_logits[compare_modal] = other_logit
+            if self.mean_logit:
+                other_logits[training_modal] = logit
+                mean_logit = torch.mean(torch.stack(list(other_logits.values())), dim=0)  # (b, c)
+                cor_matrix = torch.matmul(logits_[name], mean_logit.T)
+                contrast_loss = F.cross_entropy(cor_matrix, label)
+            else:
+                for other_logit in other_logits.values():
+                    cor_matrix = torch.matmul(logit, other_logit.T)  # (b, b)
+                    contrast_loss += F.cross_entropy(cor_matrix, label)
+                contrast_loss = contrast_loss / (len(self.models) - 1)  # average contrast loss for the selected model
             loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
 
             # optimize
@@ -263,27 +287,36 @@ class multi_model(pl.LightningModule):
             contrast_loss_ = {}
             for name, model in self.models.items():
                 # get rec_loss, kld_loss and logits for each model
-                model.eval()
+                model.train()
                 rec_loss, kld_loss, mu, _, _ = model.calculate_loss(batch[:, self.data_modal_to_id[name], :, :, :], return_moment=True)
                 rec_loss_[name] = rec_loss
                 kld_loss_[name] = kld_loss
                 logit = model.get_logit(mu)
                 logit = logit/(logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
                 logits_[name] = logit
+
+            if self.mean_logit:
+                mean_logit = torch.mean(torch.stack(list(logits_.values())), dim=0)  # (b, c)
+                mean_logit = mean_logit/(mean_logit.norm(dim=1, keepdim=True)+ 1e-32)  # (b, c)
             
             # calculate contrast loss
             for name, model in self.models.items():
                 contrast_loss = 0
-                for name2, model2 in self.models.items():
-                    if name != name2:
-                        cor_matrix = torch.matmul(logits_[name], logits_[name2].T)
-                        contrast_loss += F.cross_entropy(cor_matrix, label)
-                contrast_loss_[name] = contrast_loss
+                if self.mean_logit:
+                    cor_matrix = torch.matmul(logits_[name], mean_logit.T)
+                    contrast_loss = F.cross_entropy(cor_matrix, label)
+                    contrast_loss_[name] = contrast_loss
+                else:
+                    for name2, model2 in self.models.items():
+                        if name != name2:
+                            cor_matrix = torch.matmul(logits_[name], logits_[name2].T)
+                            contrast_loss += F.cross_entropy(cor_matrix, label)
+                    contrast_loss_[name] = contrast_loss/ (len(self.models)-1) # average contrast loss for each model
 
             # optimize
-            rec_loss = sum(rec_loss_.values()) / len(self.models)
-            kld_loss = sum(kld_loss_.values()) / len(self.models)
-            contrast_loss = sum(contrast_loss_.values()) / len(self.models)
+            rec_loss = sum(rec_loss_.values()) / len(rec_loss_)
+            kld_loss = sum(kld_loss_.values()) / len(kld_loss_)
+            contrast_loss = sum(contrast_loss_.values()) / len(contrast_loss_)
             loss = contrast_weight * contrast_loss + self.config.training.reconstruct_weight * rec_loss + self.config.training.kl_weight * kld_loss
 
             # log
@@ -292,10 +325,10 @@ class multi_model(pl.LightningModule):
                 self.log(f"{name}/val/rec_loss/", rec_loss_[name], logger=True, on_epoch=True, sync_dist=True)
                 self.log(f"{name}/val/kld_loss", kld_loss_[name], logger=True, on_epoch=True, sync_dist=True)
                 self.log(f"{name}/val/contrast_loss", contrast_loss_[name], logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val/avg/loss", loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val/avg/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val/avg/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
-            self.log(f"val/avg/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/loss", loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/rec_loss", rec_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/kld_loss", kld_loss, logger=True, on_epoch=True, sync_dist=True)
+            self.log(f"avg/val/contrast_loss", contrast_loss, logger=True, on_epoch=True, sync_dist=True)
          
 
 def solar_painting(image_array, modal, title = None):

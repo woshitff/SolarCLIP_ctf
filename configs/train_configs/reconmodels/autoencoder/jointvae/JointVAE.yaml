@@ -529,3 +529,4 @@ training:
   kl_weight: 0.000001
   img_local: True
   full_model_train: True
+  mean_logit: True
