@@ -187,7 +187,13 @@ class multi_model(pl.LightningModule):
                     print(name)
                     print(cor_matrix)
                     print(label)
-                    print(model.class_block.parameters())
+                    for param in model.class_block.parameters():
+                        print("Parameter value:", param)
+                        if param.grad is not None:
+                            print("Gradient:", param.grad)
+                        else:
+                            print("Gradient: None")
+                        break
                 else:
                     for name2, model2 in self.models.items():
                         if name != name2:
