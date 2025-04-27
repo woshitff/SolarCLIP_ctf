@@ -294,7 +294,7 @@ model:
           attn_resolutions: []
           dropout: 0.0
   '0335':
-    base_learning_rate: 1.e-4
+    base_learning_rate: 1e-5
     base_learning_optimizer: "AdamW"
     base_learning_schedule: "CosineAnnealingLR"
     target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
