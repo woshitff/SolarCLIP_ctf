@@ -1,0 +1,147 @@
+model:
+  base_learning_rate: 1.0e-05
+  # base_learning_optimizer: "AdamW"
+  # base_learning_schedule: "CosineAnnealingLR"
+  target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
+  params:
+    ckpt_path: #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_009420094_best_val_loss_epoch.ckpt
+    linear_start: 0.00085
+    linear_end: 0.0120
+    log_every_t: 40
+    timesteps: 300
+    # add_tramsform: False
+    first_stage_key: "0094" # "first_stage_key_img"
+    cond_stage_key: "0094" # "cond_key_mag"
+    # image_size: 32
+    spatial_size: [32, 32]
+    channels: 32
+    cond_stage_trainable: false
+    conditioning_key: concat
+    scale_factor: 16
+    monitor: val/loss_simple_ema
+    use_ema: true
+
+    unet_config:
+      target: models.reconmodels.ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        spatial_size: 1024
+        in_channels: 32
+        model_channels: 256
+        out_channels: 32
+        num_res_blocks: 2
+        attention_resolutions: [16, 8]
+        dropout: 0.0
+        channel_mult: [1, 2, 4, 8]
+        num_heads: 8
+    
+    first_stage_config:
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
+      params:
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0094_new.pt
+        # ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt
+         #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/ctf_105/SolarCLIP_ctf/logs/reconmodels/autoencoder/jointvae/2025-04-20T20-49-24_JointVAE/checkpoints/0094/epoch_66.pt
+        vae_modal: aia0094_image
+        kl_weight: 0.1
+        loss_type: 'MSE'
+        norm: True
+
+        dd_config:
+          double_z: True
+          z_channels: 32
+          resolution: 1024
+          in_channels: 8
+          out_ch: 8
+          ch: 32
+          ch_mult: [1,2,2]
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        first_stage_config:
+          ckpt_path: null
+          vae_modal: 'aia0094_image'
+          kl_weight: 0.1
+          loss_type: 'MSE'
+          dd_config:
+            double_z: True
+            z_channels: 8
+            resolution: 1024
+            in_channels: 1
+            out_ch: 1
+            ch: 16
+            ch_mult: [1,2,2,2]
+            num_res_blocks: 2
+            attn_resolutions: []
+            dropout: 0.0
+
+    cond_stage_config: __is_first_stage__
+
+
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 4
+    num_workers: 9
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list: 
+          # - 'magnet'
+          - '0094'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 4800
+        time_step: 1
+    validation:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list: 
+          # - 'magnet'
+          - '0094'
+          - '0094'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 4800
+          - 5265
+        time_step: 1
+
+lightning:
+  trainer:
+    # strategy: "ddp"
+    accelerator: "gpu"
+    # devices: 2
+    max_epochs: 300
+    # benchmark: True
+  callbacks:
+    default_metrics_over_trainsteps_ckpt:
+      target: pytorch_lightning.callbacks.ModelCheckpoint
+      params:
+        dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints
+        filename: LDM_009420094_best_val_loss_epoch_crossattn
+        verbose: true
+        save_top_k: 1
+        monitor: val/loss_simple_ema
+        every_n_epochs: 1
+        save_weights_only: true
+    # early_stop:
+    #   target: pytorch_lightning.callbacks.EarlyStopping
+    #   params:
+    #     monitor: val/loss_simple_ema
+    #     patience: 100
+    #     verbose: true
+    #     mode: min
+  # logger:
+  #   target: pytorch_lightning.loggers.TensorBoardLogger
+  #   params:
+  #     name: tensorboard_logs
+  #     save_dir: logs
