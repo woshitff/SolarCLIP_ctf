@@ -16,7 +16,7 @@ model:
     spatial_size: [32, 32]
     channels: 32
     cond_stage_trainable: false
-    conditioning_key: concat
+    conditioning_key: crossattn
     scale_factor: 16
     monitor: val/loss_simple_ema
     use_ema: true
