@@ -22,7 +22,7 @@ model:
     use_ema: true
 
     unet_config:
-      target: models.reconmodels.ldm.modules.diffusionmodules.openaimodel.UNetModel
+      target: models.reconmodels.ldm.modules.diffusionmodules.dpmmodels.openaimodel.UNetModel
       params:
         spatial_size: 1024
         in_channels: 32
