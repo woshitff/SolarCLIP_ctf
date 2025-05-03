@@ -1461,7 +1461,10 @@ class LDMWrapper(LatentDiffusion):
         z = self.encode_first_stage(x)
         # z = self.get_first_stage_encoding(x_).detach()
         z = z * self.scale_factor
-        cond = self.cond_encode(xc)
+        if self.model.conditioning_key is not None:
+            cond = self.cond_encode(xc)
+        else:
+            cond = None
         out = [z, cond]
         if return_first_stage_outputs:
             xrec = self.decode_first_stage(z)
