@@ -73,7 +73,7 @@ model:
             attn_resolutions: []
             dropout: 0.0
 
-    cond_stage_config: __is_first_stage__
+    cond_stage_config: __is_unconditional__
 
 
 data:
