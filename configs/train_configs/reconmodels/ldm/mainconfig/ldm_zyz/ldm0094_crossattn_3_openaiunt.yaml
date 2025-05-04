@@ -17,7 +17,7 @@ model:
     channels: 32
     cond_stage_trainable: false
     conditioning_key: 
-    scale_factor: 16
+    scale_factor: 8
     monitor: val/loss_simple_ema
     use_ema: true
 
