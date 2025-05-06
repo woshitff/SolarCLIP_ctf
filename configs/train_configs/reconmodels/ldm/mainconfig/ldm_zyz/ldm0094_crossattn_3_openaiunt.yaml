@@ -4,7 +4,7 @@ model:
   # base_learning_schedule: "CosineAnnealingLR"
   target: models.reconmodels.ldm.models.diffusion.ddpm.LDMWrapper
   params:
-    ckpt_path: #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_009420094_best_val_loss_epoch.ckpt
+    ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/LDM_009420094_best_val_loss_epoch_crossattn-v17.ckpt #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/ldm_self/LDM_009420094_best_val_loss_epoch.ckpt
     linear_start: 0.00085
     linear_end: 0.0120
     log_every_t: 40
@@ -16,7 +16,7 @@ model:
     spatial_size: [32, 32]
     channels: 32
     cond_stage_trainable: false
-    conditioning_key: 
+    conditioning_key: crossattn
     scale_factor: 1
     monitor: val/loss_simple_ema
     use_ema: true
@@ -73,7 +73,45 @@ model:
             attn_resolutions: []
             dropout: 0.0
 
-    cond_stage_config: __is_unconditional__
+    cond_stage_config: 
+      target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_three
+      params:
+          dim: 1024
+          vae_train: False
+          vae_config:
+            ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0094_new.pt
+            vae_modal: aia0094_image
+            kl_weight: 0.1
+            loss_type: 'MSE'
+            norm: True
+
+            dd_config:
+              double_z: True
+              z_channels: 32
+              resolution: 1024
+              in_channels: 8
+              out_ch: 8
+              ch: 32
+              ch_mult: [1,2,2]
+              num_res_blocks: 2
+              attn_resolutions: []
+              dropout: 0.0
+            first_stage_config:
+              ckpt_path: null
+              vae_modal: 'aia0094_image'
+              kl_weight: 0.1
+              loss_type: 'MSE'
+              dd_config:
+                double_z: True
+                z_channels: 8
+                resolution: 1024
+                in_channels: 1
+                out_ch: 1
+                ch: 16
+                ch_mult: [1,2,2,2]
+                num_res_blocks: 2
+                attn_resolutions: []
+                dropout: 0.0
 
 
 data:
@@ -127,7 +165,7 @@ lightning:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints
-        filename: LDM_009420094_best_val_loss_epoch_crossattn
+        filename: LDM_009420094_best_val_loss_epoch_crossattn_joint
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema
