@@ -399,6 +399,7 @@ class ContextTransformer(nn.Module):
             if self.use_linear:
                 x = self.proj_in(x)
             for i, block in enumerate(self.transformer_blocks):
+                print(context[i].shape)
                 x = block(x, context=context[i]) #x: (b, 256, 256), context: (b, 256, 768)
             if self.use_linear:
                 x = self.proj_out(x)
