@@ -719,7 +719,7 @@ class UNetModel(nn.Module):
         self.output_blocks.apply(convert_module_to_f32)
 
     def forward(self, x, timesteps=None, context=None, y=None,**kwargs):
-        print(context.shape)
+        # print(context.shape)
         """
         Apply the model to an input batch.
         :param x: an [N x C x ...] Tensor of inputs.
@@ -728,6 +728,9 @@ class UNetModel(nn.Module):
         :param y: an [N] Tensor of labels, if class-conditional.
         :return: an [N x C x ...] Tensor of outputs.
         """
+        if context is not None:
+            # print('context shape:', context.shape)
+            context = context.reshape(context.shape[0], context.shape[1]*context.shape[2], context.shape[3])
         assert (y is not None) == (
             self.num_classes is not None
         ), "must specify y if and only if the model is class-conditional"

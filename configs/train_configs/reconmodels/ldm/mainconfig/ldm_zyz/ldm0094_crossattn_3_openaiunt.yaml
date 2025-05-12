@@ -26,7 +26,7 @@ model:
       params:
         spatial_size: 1024
         in_channels: 32
-        model_channels: 256
+        model_channels: 192
         out_channels: 32
         num_res_blocks: 2
         use_context_transformer: True
@@ -74,7 +74,7 @@ model:
             attn_resolutions: []
             dropout: 0.0
 
-    cond_stage_config: 
+    cond_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
         # ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0094_new.pt
@@ -165,7 +165,7 @@ lightning:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints
-        filename: LDM_009420094_best_val_loss_epoch_crossattn_joint
+        filename: LDM_009420094_best_val_loss_epoch_crossattn_joint_openai
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema

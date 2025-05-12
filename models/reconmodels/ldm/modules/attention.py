@@ -221,6 +221,7 @@ class CrossAttention(nn.Module):
 
         q = self.to_q(x)
         context = default(context, x)
+        # print(f'CrossAttention context: {context.shape}')
         k = self.to_k(context)
         v = self.to_v(context)
 
@@ -325,7 +326,9 @@ class BasicTransformerBlock(nn.Module):
         return checkpoint(self._forward, (x, context), self.parameters(), self.checkpoint)
 
     def _forward(self, x, context=None):
+        # print(f'BasicTransformerBlock Input: {x.shape}')
         x = self.attn1(self.norm1(x), context=context if self.disable_self_attn else None) + x
+        # print(f'BasicTransformerBlock after attn1: {x.shape}')
         x = self.attn2(self.norm2(x), context=context) + x
         x = self.ff(self.norm3(x)) + x
         return x
@@ -345,9 +348,10 @@ class ContextTransformer(nn.Module):
                  disable_self_attn=False, use_linear=False,
                  use_checkpoint=True): # 256, 8, 32, 1, 0.1
         super().__init__()
+        self.context_dim = context_dim
         if exists(context_dim) and not isinstance(context_dim, list):
             context_dim = [context_dim]
-        print('context_dim:' , context_dim)
+        # print('context_dim:' , context_dim)
         self.in_channels = in_channels
         inner_dim = n_heads * d_head
         self.inner_dim = inner_dim
@@ -381,6 +385,8 @@ class ContextTransformer(nn.Module):
     def forward(self, x, context=None):
         # note: if no context is given, cross-attention defaults to self-attention
         # print(f'ContextTransformer Input: {x.shape}')
+        # print(f'ContextTransformer context: {context.shape}')
+        # print(f'ContextTransformer context_dim: {self.context_dim}')
         if not isinstance(context, list):
             context = [context]
         if isimage(x):

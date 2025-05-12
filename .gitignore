@@ -26,3 +26,5 @@ test.out
 *.ckpt
 logs/
 logs_trans_ldm/
+*.out
+test2.out
