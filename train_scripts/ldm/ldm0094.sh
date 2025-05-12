@@ -1,1 +1,1 @@
-python train_scripts/train.py > test2.out --b 'configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm0094_crossattn_3_openaiunt.yaml'
+python train_scripts/train.py > test3.out --b 'configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm0094_concat_0094.yaml'
