@@ -1,1 +1,1 @@
-python train_scripts/train.py > test3.out --b 'configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm4500_concat_0094.yaml'
+python train_scripts/train.py --b 'configs/train_configs/reconmodels/ldm/mainconfig/ldm_zyz/ldm4500_concat_0094.yaml'
