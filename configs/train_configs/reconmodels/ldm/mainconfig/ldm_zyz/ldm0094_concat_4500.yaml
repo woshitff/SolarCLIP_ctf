@@ -11,12 +11,12 @@ model:
     timesteps: 300
     # add_tramsform: False
     first_stage_key: "0094" # "first_stage_key_img"
-    cond_stage_key: "0094" # "cond_key_img"
+    cond_stage_key: "4500" # "cond_key_mag"
     # image_size: 32
     spatial_size: [32, 32]
     channels: 32
     cond_stage_trainable: false
-    conditioning_key: crossattn
+    conditioning_key: concat
     scale_factor: 16
     monitor: val/loss_simple_ema
     use_ema: true
@@ -40,7 +40,7 @@ model:
         use_timestep: true
         use_linear_attn: false
         attn_type: "vanilla"
-
+    
     first_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
@@ -83,8 +83,8 @@ model:
     cond_stage_config:
       target: models.reconmodels.autoencoder.models.vae.CNN_VAE_v2.CNN_VAE_two
       params:
-        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0304_new.pt
-        # ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0304_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0094_new.pt
+        # ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0094_new.pt
+        ckpt_path: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae4500_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints/joint/0094_new.pt
          #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/logs/reconmodels/autoencoder/vae/ae0094_second/checkpoints/trainstep_checkpoints/best_val_loss_epoch.ckpt #/mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/ctf_105/SolarCLIP_ctf/logs/reconmodels/autoencoder/jointvae/2025-04-20T20-49-24_JointVAE/checkpoints/0094/epoch_66.pt
         vae_modal: aia0094_image
         kl_weight: 0.1
@@ -132,7 +132,7 @@ data:
         modal_list: 
           # - 'magnet'
           - '0094'
-          - '0304'
+          - '4500'
         load_imgs: false
         enhance_list:
           - 1024
@@ -148,7 +148,7 @@ data:
         modal_list: 
           # - 'magnet'
           - '0094'
-          - '0304'
+          - '0094'
         load_imgs: false
         enhance_list:
           - 1024
@@ -171,7 +171,7 @@ lightning:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
         dirpath: /mnt/tianwen-tianqing-nas/tianwen/ctf/solarclip/zyz_106/checkpoints
-        filename: LDM_030420094_best_val_loss_epoch_concat_dpunet
+        filename: LDM_009420094_best_val_loss_epoch_concat_dpunet
         verbose: true
         save_top_k: 1
         monitor: val/loss_simple_ema
