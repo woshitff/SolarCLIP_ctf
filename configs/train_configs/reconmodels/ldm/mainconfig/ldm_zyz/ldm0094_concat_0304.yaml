@@ -11,7 +11,7 @@ model:
     timesteps: 300
     # add_tramsform: False
     first_stage_key: "0094" # "first_stage_key_img"
-    cond_stage_key: "0094" # "cond_key_img"
+    cond_stage_key: "0304" # "cond_key_img"
     # image_size: 32
     spatial_size: [32, 32]
     channels: 32
