@@ -131,7 +131,7 @@ data:
       params:
         modal_list: 
           # - 'magnet'
-          - '0094'
+          - '4500'
           - '0094'
         load_imgs: false
         enhance_list:

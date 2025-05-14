@@ -148,7 +148,7 @@ data:
         modal_list: 
           # - 'magnet'
           - '0094'
-          - '0094'
+          - '4500'
         load_imgs: false
         enhance_list:
           - 1024
