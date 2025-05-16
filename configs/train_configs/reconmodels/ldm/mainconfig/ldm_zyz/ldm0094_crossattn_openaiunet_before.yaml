@@ -28,6 +28,7 @@ model:
         in_channels: 32
         model_channels: 192
         out_channels: 32
+        context_dim: 32
         num_res_blocks: 2
         use_context_transformer: True
         attention_resolutions: [16, 8]
