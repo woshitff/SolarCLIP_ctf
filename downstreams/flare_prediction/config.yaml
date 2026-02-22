@@ -1,0 +1,126 @@
+# model configs
+model_configs:
+  is_causal: false
+  attention_probs_dropout_prob: 0.1
+  block_type: "f3rope"
+  conv3d_kernel_size: [1, 64, 64]
+  decoder_block_type: "fsta"
+  decoder_hidden_size: 768
+  decoder_intermediate_size: 3072
+  decoder_num_attention_heads: 12
+  decoder_num_hidden_layers: 3
+  encode_decode: "3d-tsfm-ln"
+  encoder_decoder_bias: true
+  encode_depth: "two3D"
+  hidden_act: "gelu_fast"
+  hidden_dropout_prob: 0.1
+  hidden_norm_type: "ln"
+  hidden_size: 768
+  image_size: 1024
+  initializer_range: 0.02
+  intermediate_size: 3072
+  layer_norm_eps: 1.0e-06
+  logits_lenth: 768
+  loss_patch: "3sgm-discrete"
+  mask_ratio: 0
+  mask_ratio_for_tokenencoder: 0
+  model_type: "vivit"
+  multi_PE: false
+  time_PE: true
+  LaLo_PE: true
+  threeD_RoPE: true
+  num_attention_heads: 12
+  num_channels: 1
+  num_frames: &num_frames 7
+  num_hidden_layers: 16
+  num_frames_next: 1
+  qkv_bias: true
+  rescale_plus: 0
+  task: "next_tubelet"
+  token_weights: null
+  torch_dtype: "float32"
+  weight_order: "log1p-log1p"
+  tubelet_size: [1, 64, 64]
+  
+# wandb configs
+wandb_config:
+  name: "notrainer_1-64-64_6p1-16layer_norepeat"
+  project: "solar-transformer"
+  key: "99f8f0875da5df4e119430dcdd439c09847cb990" 
+  entity: "nankai_remote"
+
+# data configs
+data:
+  target: data.build.DataModuleFromConfig
+  params:
+    batch_size: 27
+    num_workers: 8
+    wrap: false
+    train:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list: 
+          - 'hmi'
+          - '0094'
+          - '0131'
+          - '0171'
+          - '0193'
+          - '0211'
+          - '0304'
+          - '0335'
+          - '1600'
+          - '1700'
+          - '4500'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 0
+          - 5000
+        time_step: 1
+    validation:
+      target: data.dataset.SolarDataset_v2.multimodal_dataset
+      params:
+        modal_list: 
+          - 'hmi'
+          - '0094'
+          - '0131'
+          - '0171'
+          - '0193'
+          - '0211'
+          - '0304'
+          - '0335'
+          - '1600'
+          - '1700'
+          - '4500'
+        load_imgs: false
+        enhance_list:
+          - 1024
+          - 0.5
+          - 90
+        time_interval: 
+          - 5000
+          - 5400
+        time_step: 1
+
+
+# training configs
+training_configs:
+  encoder_decoder_path: "/mnt/tianwen-tianqing-nas/tianwen/home/gaozhe/codes/solar-transformer/logs/base/notrainer_1-64-64_embed/best"
+  load_from_checkpoint: 
+  total_epoch: 100 
+  train_batchsize: 64
+  eval_batchsize: 64
+  num_workers: 0
+  pin_memory: false
+  save_best: true
+  log_step: 25
+  eval_by_epoch: true # save by epoch or by step
+  eval_step: 1
+  save_step: 10 # must be whole number * eval_step
+  output_dir: "/mnt/tianwen-tianqing-nas/tianwen/home/gaozhe/codes/solar-transformer/logs/base/notrainer_1-64-64_6p1-16layer_norepeat" 
+  lr: 0.00001
+  gradient_checkpointing_enable: true
+  early_stop: 10
